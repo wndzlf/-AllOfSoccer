@@ -73,7 +73,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 app.use('/api/teams', authMiddleware, teamRoutes);
-app.use('/api/matches', authMiddleware, matchRoutes);
+app.use('/api/matches', matchRoutes);
 app.use('/api/chats', authMiddleware, chatRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/uploads', authMiddleware, uploadRoutes);

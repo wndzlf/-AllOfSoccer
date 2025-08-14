@@ -6,7 +6,7 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // 매칭 목록 조회 (필터링, 정렬, 페이징)
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const {
       page = 1,
@@ -77,7 +77,6 @@ router.get('/', auth, async (req, res) => {
       include: [
         {
           model: Team,
-          as: 'team',
           include: [
             {
               model: User,

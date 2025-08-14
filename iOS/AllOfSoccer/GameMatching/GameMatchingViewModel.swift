@@ -105,9 +105,55 @@ class GameMatchingViewModel {
     }
 
     private func fetchMatchingList() async throws {
-        self.matchingListViewModel = [GameMatchListViewModel.mockData,
-                                      GameMatchListViewModel.mockData1,
-                                      GameMatchListViewModel.mockData2]
+        // 서버에서 매칭 데이터 가져오기
+        APIService.shared.getMatches(
+            page: 1,
+            limit: 20,
+            status: "recruiting"
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let matchResponse):
+                    // 서버 데이터를 ViewModel로 변환
+                    self?.matchingListViewModel = matchResponse.data.map { match in
+                        // 날짜 형식 변환 (서버: "2024-01-01" -> UI: "01.01.월")
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd"
+                        let date = dateFormatter.date(from: match.date) ?? Date()
+                        
+                        let displayFormatter = DateFormatter()
+                        displayFormatter.dateFormat = "MM.dd.E"
+                        displayFormatter.locale = Locale(identifier: "ko_KR")
+                        let displayDate = displayFormatter.string(from: date)
+                        
+                        // 시간은 기본값으로 설정 (서버에서 시간 정보가 별도로 없음)
+                        let time = "20:00"
+                        
+                        // 설명 생성
+                        let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
+                        
+                        return GameMatchListViewModel(
+                            date: displayDate,
+                            time: time,
+                            address: match.location,
+                            description: description,
+                            isFavorite: true,
+                            isRecruiting: match.status == "recruiting",
+                            teamName: match.team?.name ?? "알 수 없음"
+                        )
+                    }
+                    self?.presenter?.reloadMatchingList()
+                    
+                case .failure(let error):
+                    print("매칭 데이터 가져오기 실패: \(error)")
+                    // 에러 시 목 데이터 사용
+                    self?.matchingListViewModel = [GameMatchListViewModel.mockData,
+                                                  GameMatchListViewModel.mockData1,
+                                                  GameMatchListViewModel.mockData2]
+                    self?.presenter?.showErrorMessage()
+                }
+            }
+        }
     }
 
     // MARK: - Properties
