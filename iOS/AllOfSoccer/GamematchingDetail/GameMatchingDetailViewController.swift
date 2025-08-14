@@ -184,6 +184,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         copyAddressButton.setTitle("주소 복사", for: .normal)
         copyAddressButton.setTitleColor(Colors.primaryGreen, for: .normal)
         copyAddressButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        copyAddressButton.addTarget(self, action: #selector(copyAddressButtonTapped), for: .touchUpInside)
         
         contentView.addSubview(dateLabel)
         contentView.addSubview(locationLabel)
@@ -568,6 +569,30 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         let alert = UIAlertController(
             title: "메시지 전송 완료",
             message: "메시지가 성공적으로 전송되었습니다.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "확인", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Copy Address Action
+    @objc private func copyAddressButtonTapped() {
+        print("주소 복사 버튼이 탭되었습니다.")
+        
+        // 주소 텍스트를 클립보드에 복사
+        UIPasteboard.general.string = viewModel.data.address
+        
+        // 복사 완료 피드백 제공
+        showAddressCopiedAlert()
+    }
+    
+    private func showAddressCopiedAlert() {
+        let alert = UIAlertController(
+            title: "주소 복사 완료",
+            message: "주소가 클립보드에 복사되었습니다.",
             preferredStyle: .alert
         )
         
