@@ -158,12 +158,12 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     
     private func setupDateAndLocationSection() {
         // Date Label
-        dateLabel.text = viewModel.data.date
+        dateLabel.text = viewModel.currentData.date
         dateLabel.font = UIFont.systemFont(ofSize: 20)
         dateLabel.textColor = .black
         
         // Location Label
-        locationLabel.text = viewModel.data.location
+        locationLabel.text = viewModel.currentData.location
         locationLabel.font = UIFont.systemFont(ofSize: 20)
         locationLabel.textColor = .black
         
@@ -173,7 +173,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         mapPinImageView.contentMode = .scaleAspectFit
         
         // Address Label
-        addressLabel.text = viewModel.data.address
+        addressLabel.text = viewModel.currentData.address
         addressLabel.font = UIFont.systemFont(ofSize: 14)
         addressLabel.textColor = Colors.lightGrayText
         
@@ -205,7 +205,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         feeTitleLabel.textColor = .black
         
         // Fee Amount
-        feeAmountLabel.text = viewModel.data.feeAmount
+        feeAmountLabel.text = viewModel.currentData.feeAmount
         feeAmountLabel.font = UIFont.boldSystemFont(ofSize: 20)
         feeAmountLabel.textColor = Colors.primaryGreen
         
@@ -230,7 +230,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         formatStackView.spacing = 16
         
         // Create format items from ViewModel
-        for formatItem in viewModel.data.formatItems {
+        for formatItem in viewModel.currentData.formatItems {
             let itemStackView = UIStackView()
             itemStackView.axis = .vertical
             itemStackView.alignment = .center
@@ -269,7 +269,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         teamIconImageView.contentMode = .scaleAspectFit
         
         // Team Title
-        teamTitleLabel.text = viewModel.data.teamName
+        teamTitleLabel.text = viewModel.currentData.teamName
         teamTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         teamTitleLabel.textColor = .black
         
@@ -279,7 +279,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         ageLabel.textColor = Colors.grayText
         
         // Age Value Label
-        ageValueLabel.text = viewModel.data.ageRange
+        ageValueLabel.text = viewModel.currentData.ageRange
         ageValueLabel.font = UIFont.systemFont(ofSize: 16)
         ageValueLabel.textColor = .black
         
@@ -289,7 +289,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         skillLabel.textColor = Colors.grayText
         
         // Skill Value Label
-        skillValueLabel.text = viewModel.data.skillLevel
+        skillValueLabel.text = viewModel.currentData.skillLevel
         skillValueLabel.font = UIFont.systemFont(ofSize: 16)
         skillValueLabel.textColor = .black
         
@@ -313,7 +313,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         topIconStack.spacing = 2
         
         // Create top uniform icons from ViewModel data
-        for uniformItem in viewModel.data.uniformInfo.topUniform {
+        for uniformItem in viewModel.currentData.uniformInfo.topUniform {
             let topIcon = UIImageView()
             topIcon.contentMode = .scaleAspectFit
             topIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
@@ -331,7 +331,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         contactLabel.textColor = Colors.grayText
         
         // Contact Value Label
-        contactValueLabel.text = viewModel.data.contactNumber
+        contactValueLabel.text = viewModel.currentData.contactNumber
         contactValueLabel.font = UIFont.systemFont(ofSize: 16)
         contactValueLabel.textColor = .black
         
@@ -358,7 +358,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         noteContainerView.borderWidth = 0
         
         // Note Label
-        noteLabel.text = viewModel.data.noteText
+        noteLabel.text = viewModel.currentData.noteText
         noteLabel.font = UIFont.systemFont(ofSize: 14)
         noteLabel.textColor = .black
         noteLabel.numberOfLines = 0
@@ -398,7 +398,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // 3. Map Pin Icon & Address
         mapPinImageView.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: Layout.mediumIconSize, height: Layout.mediumIconSize)
-        addressLabel.frame = CGRect(x: mapPinImageView.frame.maxX + 4, y: currentY + 0.5, width: 179, height: 17)
+        addressLabel.frame = CGRect(x: mapPinImageView.frame.maxX + 4, y: currentY + 0.5, width: screenWidth - mapPinImageView.frame.maxX - 80, height: 17)
         separatorView.frame = CGRect(x: addressLabel.frame.maxX + 10, y: currentY + 2, width: 1, height: 14)
         copyAddressButton.frame = CGRect(x: separatorView.frame.maxX + 10, y: currentY - 5.5, width: 53, height: 29)
         currentY += mapPinImageView.frame.height + 20
@@ -419,18 +419,18 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // 6. Team Info Section
         teamIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.iconSize, height: Layout.smallIconSize)
-        teamTitleLabel.frame = CGRect(x: teamIconImageView.frame.maxX + 9, y: currentY - 3.5, width: 77.5, height: 20.5)
+        teamTitleLabel.frame = CGRect(x: teamIconImageView.frame.maxX + 9, y: currentY - 3.5, width: screenWidth - teamIconImageView.frame.maxX - 20, height: 20.5)
         teamTitleLabel.sizeToFit()
         currentY += teamTitleLabel.frame.height + 20
         
         // 6-1. Age
         ageLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
-        ageValueLabel.frame = CGRect(x: ageLabel.frame.maxX + 34, y: currentY, width: 146, height: 19.5)
+        ageValueLabel.frame = CGRect(x: ageLabel.frame.maxX + 34, y: currentY, width: screenWidth - ageLabel.frame.maxX - 50, height: 19.5)
         currentY += ageLabel.frame.height + 15
         
         // 6-2. Skill
         skillLabel.frame = CGRect(x: 40, y: currentY, width: 28, height: 19.5)
-        skillValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: 28, height: 19.5)
+        skillValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: screenWidth - ageValueLabel.frame.minX - 20, height: 19.5)
         currentY += skillLabel.frame.height + 15
         
         // 6-3. Uniform
@@ -440,13 +440,19 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // 6-4. Contact
         contactLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
-        contactValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: 113.5, height: 19.5)
+        contactValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: screenWidth - ageValueLabel.frame.minX - 20, height: 19.5)
         currentY += contactLabel.frame.height + 25
         
-        // 7. Note Section
+        // 7. Note Section - 동적 높이 계산
         noteArrowImageView.frame = CGRect(x: 41, y: currentY - 10, width: Layout.largeIconSize, height: Layout.largeIconSize)
-        noteContainerView.frame = CGRect(x: 42, y: currentY, width: screenWidth - 85, height: Layout.noteContainerHeight)
-        noteLabel.frame = CGRect(x: 25, y: 18, width: noteContainerView.frame.width - 50, height: 50.5)
+        
+        // Note 텍스트의 실제 높이 계산
+        let noteTextWidth = screenWidth - 85 - 50 // noteContainerView 너비 - 좌우 패딩
+        let noteTextHeight = calculateTextHeight(text: viewModel.currentData.noteText, width: noteTextWidth, font: noteLabel.font)
+        let noteContainerHeight = max(Layout.noteContainerHeight, noteTextHeight + 36) // 상하 패딩 18씩 추가
+        
+        noteContainerView.frame = CGRect(x: 42, y: currentY, width: screenWidth - 85, height: noteContainerHeight)
+        noteLabel.frame = CGRect(x: 25, y: 18, width: noteTextWidth, height: noteTextHeight)
         currentY += noteContainerView.frame.height + 25
         
         // 8. Message Button
@@ -464,6 +470,18 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         print("Content Height: \(contentHeight)")
         print("ScrollView Content Size: \(scrollView.contentSize)")
         print("ScrollView Frame: \(scrollView.frame)")
+    }
+    
+    // MARK: - Helper Methods
+    private func calculateTextHeight(text: String, width: CGFloat, font: UIFont) -> CGFloat {
+        let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)
+        let boundingBox = text.boundingRect(
+            with: constraintRect,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [NSAttributedString.Key.font: font],
+            context: nil
+        )
+        return ceil(boundingBox.height)
     }
     
     private func configureData() {
@@ -504,14 +522,14 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         print("메세지 보내기 버튼이 탭되었습니다.")
         
         // 연락처 번호에서 하이픈 제거
-        let phoneNumber = viewModel.data.contactNumber.replacingOccurrences(of: "-", with: "")
+        let phoneNumber = viewModel.currentData.contactNumber.replacingOccurrences(of: "-", with: "")
         
         // SMS 기능이 사용 가능한지 확인
         if MFMessageComposeViewController.canSendText() {
             let messageComposer = MFMessageComposeViewController()
             messageComposer.messageComposeDelegate = self
             messageComposer.recipients = [phoneNumber]
-            messageComposer.body = "안녕하세요! \(viewModel.data.teamName) 팀 모집 글을 보고 연락드립니다."
+            messageComposer.body = "안녕하세요! \(viewModel.currentData.teamName) 팀 모집 글을 보고 연락드립니다."
             
             self.present(messageComposer, animated: true, completion: nil)
         } else {
@@ -583,7 +601,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         print("주소 복사 버튼이 탭되었습니다.")
         
         // 주소 텍스트를 클립보드에 복사
-        UIPasteboard.general.string = viewModel.data.address
+        UIPasteboard.general.string = viewModel.currentData.address
         
         // 복사 완료 피드백 제공
         showAddressCopiedAlert()
