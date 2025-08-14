@@ -44,7 +44,6 @@ class GameMatchingDetailViewController: UIViewController {
     
     // MARK: - Uniform Stack Views
     private let topUniformStackView = UIStackView()
-    private let bottomUniformStackView = UIStackView()
     
     // MARK: - Note Section
     private let noteArrowImageView = UIImageView()
@@ -236,6 +235,12 @@ class GameMatchingDetailViewController: UIViewController {
             iconImageView.contentMode = .scaleAspectFit
             iconImageView.frame = CGRect(x: 0, y: 0, width: Layout.formatIconSize, height: Layout.formatIconHeight)
             
+            // Set SF Symbol icon
+            if !formatItem.iconName.isEmpty {
+                iconImageView.image = UIImage(systemName: formatItem.iconName)
+                iconImageView.tintColor = Colors.primaryGreen
+            }
+            
             let titleLabel = UILabel()
             titleLabel.text = formatItem.title
             titleLabel.font = UIFont.systemFont(ofSize: 16)
@@ -303,35 +308,17 @@ class GameMatchingDetailViewController: UIViewController {
         topIconStack.spacing = 2
         
         // Create top uniform icons from ViewModel data
-        for uniformName in viewModel.data.uniformInfo.topUniform {
+        for uniformItem in viewModel.data.uniformInfo.topUniform {
             let topIcon = UIImageView()
             topIcon.contentMode = .scaleAspectFit
             topIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
-            // TODO: Set actual uniform image when available
-            topIcon.backgroundColor = .lightGray // Placeholder
+            topIcon.image = UIImage(systemName: uniformItem.iconName)
+            topIcon.tintColor = uniformItem.color
             topIconStack.addArrangedSubview(topIcon)
         }
         
         topUniformStackView.addArrangedSubview(topLabel)
         topUniformStackView.addArrangedSubview(topIconStack)
-        
-        // Bottom Uniform Stack
-        bottomUniformStackView.axis = .horizontal
-        bottomUniformStackView.spacing = 6
-        
-        let bottomLabel = UILabel()
-        bottomLabel.text = "하의"
-        bottomLabel.font = UIFont.systemFont(ofSize: 16)
-        bottomLabel.textColor = .black
-        
-        let bottomIcon = UIImageView()
-        bottomIcon.contentMode = .scaleAspectFit
-        bottomIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
-        // TODO: Set actual uniform image when available
-        bottomIcon.backgroundColor = .lightGray // Placeholder
-        
-        bottomUniformStackView.addArrangedSubview(bottomLabel)
-        bottomUniformStackView.addArrangedSubview(bottomIcon)
         
         // Contact Label
         contactLabel.text = "연락처"
@@ -351,7 +338,6 @@ class GameMatchingDetailViewController: UIViewController {
         contentView.addSubview(skillValueLabel)
         contentView.addSubview(uniformLabel)
         contentView.addSubview(topUniformStackView)
-        contentView.addSubview(bottomUniformStackView)
         contentView.addSubview(contactLabel)
         contentView.addSubview(contactValueLabel)
     }
@@ -428,6 +414,7 @@ class GameMatchingDetailViewController: UIViewController {
         // 6. Team Info Section
         teamIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.iconSize, height: Layout.smallIconSize)
         teamTitleLabel.frame = CGRect(x: teamIconImageView.frame.maxX + 9, y: currentY - 3.5, width: 77.5, height: 20.5)
+        teamTitleLabel.sizeToFit()
         currentY += teamTitleLabel.frame.height + 20
         
         // 6-1. Age
@@ -443,7 +430,6 @@ class GameMatchingDetailViewController: UIViewController {
         // 6-3. Uniform
         uniformLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
         topUniformStackView.frame = CGRect(x: skillValueLabel.frame.minX, y: currentY, width: 68, height: 16)
-        bottomUniformStackView.frame = CGRect(x: topUniformStackView.frame.maxX + 10, y: currentY, width: 50, height: 16)
         currentY += uniformLabel.frame.height + 15
         
         // 6-4. Contact

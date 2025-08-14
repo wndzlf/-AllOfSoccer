@@ -5,7 +5,7 @@
 //  Created by 최원석 on 2021/08/15.
 //
 
-import Foundation
+import UIKit
 
 struct GameMatchingDetailData {
     // MARK: - Date and Location
@@ -35,9 +35,13 @@ struct FormatItem {
     let iconName: String
 }
 
+struct UniformItem {
+    let iconName: String
+    let color: UIColor
+}
+
 struct UniformInfo {
-    let topUniform: [String] // 유니폼 색상 또는 이미지 이름
-    let bottomUniform: String
+    let topUniform: [UniformItem] // 상의 유니폼 정보
 }
 
 class GameMatchingDetailViewModel {
@@ -49,19 +53,20 @@ class GameMatchingDetailViewModel {
         address: "서울시 용산구 한강대로23길 55",
         feeAmount: "9,000원",
         formatItems: [
-            FormatItem(title: "6 vs 6", iconName: ""),
-            FormatItem(title: "남성 매치", iconName: ""),
-            FormatItem(title: "풋살화", iconName: "")
+            FormatItem(title: "6 vs 6", iconName: "person.2.fill"),
+            FormatItem(title: "남성 매치", iconName: "person.fill"),
+            FormatItem(title: "풋살화", iconName: "figure.soccer"),
         ],
-        teamName: "모두의 축구",
+        teamName: "FC 토토",
         ageRange: "20대 후반 - 30대 초반",
-        skillLevel: "중하",
+        skillLevel: "하하하",
         uniformInfo: UniformInfo(
-            topUniform: ["uniform_red", "uniform_blue"],
-            bottomUniform: "uniform_black"
+            topUniform: [
+                UniformItem(iconName: "tshirt.fill", color: UIColor(red: 0.8, green: 0.2, blue: 0.2, alpha: 1.0)), 
+            ]
         ),
         contactNumber: "010-1234-1234",
-        noteText: "혼자 또는 친구들 하고 오세요!ㅣㅏㅟㅏㄴㅁ위ㅏㅁㄴ우이ㅏㅁ눙ㅁ니ㅏㅜ미ㅏ우미ㅏ"
+        noteText: "안녕하세요 FC 토토입니다. 잘부탁드립니다. 실력 최하하 매너 최상상 팁입니다!!!! "
     )
     
     // MARK: - Public Properties
