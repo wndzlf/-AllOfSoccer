@@ -68,7 +68,7 @@ class GameMatchingDetailViewController: UIViewController {
     }()
     
     // MARK: - Data
-    private var viewModel: [String] = []
+    private let viewModel = GameMatchingDetailViewModel()
     
     // MARK: - Layout Constants
     private enum Layout {
@@ -155,12 +155,12 @@ class GameMatchingDetailViewController: UIViewController {
     
     private func setupDateAndLocationSection() {
         // Date Label
-        dateLabel.text = "2021-06-26 (토) 10:00"
+        dateLabel.text = viewModel.data.date
         dateLabel.font = UIFont.systemFont(ofSize: 20)
         dateLabel.textColor = .black
         
         // Location Label
-        locationLabel.text = "용산 아이파크몰"
+        locationLabel.text = viewModel.data.location
         locationLabel.font = UIFont.systemFont(ofSize: 20)
         locationLabel.textColor = .black
         
@@ -170,7 +170,7 @@ class GameMatchingDetailViewController: UIViewController {
         mapPinImageView.contentMode = .scaleAspectFit
         
         // Address Label
-        addressLabel.text = "서울시 용산구 한강대로23길 55"
+        addressLabel.text = viewModel.data.address
         addressLabel.font = UIFont.systemFont(ofSize: 14)
         addressLabel.textColor = Colors.lightGrayText
         
@@ -201,7 +201,7 @@ class GameMatchingDetailViewController: UIViewController {
         feeTitleLabel.textColor = .black
         
         // Fee Amount
-        feeAmountLabel.text = "9,000원"
+        feeAmountLabel.text = viewModel.data.feeAmount
         feeAmountLabel.font = UIFont.boldSystemFont(ofSize: 20)
         feeAmountLabel.textColor = Colors.primaryGreen
         
@@ -225,14 +225,8 @@ class GameMatchingDetailViewController: UIViewController {
         formatStackView.distribution = .fillEqually
         formatStackView.spacing = 16
         
-        // Create format items
-        let formatItems = [
-            ("6 vs 6", ""),
-            ("남성 매치", ""),
-            ("풋살화", "")
-        ]
-        
-        for (title, _) in formatItems {
+        // Create format items from ViewModel
+        for formatItem in viewModel.data.formatItems {
             let itemStackView = UIStackView()
             itemStackView.axis = .vertical
             itemStackView.alignment = .center
@@ -243,7 +237,7 @@ class GameMatchingDetailViewController: UIViewController {
             iconImageView.frame = CGRect(x: 0, y: 0, width: Layout.formatIconSize, height: Layout.formatIconHeight)
             
             let titleLabel = UILabel()
-            titleLabel.text = title
+            titleLabel.text = formatItem.title
             titleLabel.font = UIFont.systemFont(ofSize: 16)
             titleLabel.textColor = .black
             titleLabel.textAlignment = .center
@@ -265,7 +259,7 @@ class GameMatchingDetailViewController: UIViewController {
         teamIconImageView.contentMode = .scaleAspectFit
         
         // Team Title
-        teamTitleLabel.text = "모두의 축구"
+        teamTitleLabel.text = viewModel.data.teamName
         teamTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         teamTitleLabel.textColor = .black
         
@@ -275,7 +269,7 @@ class GameMatchingDetailViewController: UIViewController {
         ageLabel.textColor = Colors.grayText
         
         // Age Value Label
-        ageValueLabel.text = "20대 후반 - 30대 초반"
+        ageValueLabel.text = viewModel.data.ageRange
         ageValueLabel.font = UIFont.systemFont(ofSize: 16)
         ageValueLabel.textColor = .black
         
@@ -285,7 +279,7 @@ class GameMatchingDetailViewController: UIViewController {
         skillLabel.textColor = Colors.grayText
         
         // Skill Value Label
-        skillValueLabel.text = "중하"
+        skillValueLabel.text = viewModel.data.skillLevel
         skillValueLabel.font = UIFont.systemFont(ofSize: 16)
         skillValueLabel.textColor = .black
         
@@ -308,16 +302,15 @@ class GameMatchingDetailViewController: UIViewController {
         topIconStack.distribution = .fillEqually
         topIconStack.spacing = 2
         
-        let topIcon1 = UIImageView()
-        topIcon1.contentMode = .scaleAspectFit
-        topIcon1.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
-        
-        let topIcon2 = UIImageView()
-        topIcon2.contentMode = .scaleAspectFit
-        topIcon2.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
-        
-        topIconStack.addArrangedSubview(topIcon1)
-        topIconStack.addArrangedSubview(topIcon2)
+        // Create top uniform icons from ViewModel data
+        for uniformName in viewModel.data.uniformInfo.topUniform {
+            let topIcon = UIImageView()
+            topIcon.contentMode = .scaleAspectFit
+            topIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
+            // TODO: Set actual uniform image when available
+            topIcon.backgroundColor = .lightGray // Placeholder
+            topIconStack.addArrangedSubview(topIcon)
+        }
         
         topUniformStackView.addArrangedSubview(topLabel)
         topUniformStackView.addArrangedSubview(topIconStack)
@@ -334,6 +327,8 @@ class GameMatchingDetailViewController: UIViewController {
         let bottomIcon = UIImageView()
         bottomIcon.contentMode = .scaleAspectFit
         bottomIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
+        // TODO: Set actual uniform image when available
+        bottomIcon.backgroundColor = .lightGray // Placeholder
         
         bottomUniformStackView.addArrangedSubview(bottomLabel)
         bottomUniformStackView.addArrangedSubview(bottomIcon)
@@ -344,7 +339,7 @@ class GameMatchingDetailViewController: UIViewController {
         contactLabel.textColor = Colors.grayText
         
         // Contact Value Label
-        contactValueLabel.text = "010-1234-1234"
+        contactValueLabel.text = viewModel.data.contactNumber
         contactValueLabel.font = UIFont.systemFont(ofSize: 16)
         contactValueLabel.textColor = .black
         
@@ -372,7 +367,7 @@ class GameMatchingDetailViewController: UIViewController {
         noteContainerView.borderWidth = 0
         
         // Note Label
-        noteLabel.text = "혼자 또는 친구들 하고 오세요!ㅣㅏㅟㅏㄴㅁ위ㅏㅁㄴ우이ㅏㅁ눙ㅁ니ㅏㅜ미ㅏ우미ㅏ"
+        noteLabel.text = viewModel.data.noteText
         noteLabel.font = UIFont.systemFont(ofSize: 14)
         noteLabel.textColor = .black
         noteLabel.numberOfLines = 0
@@ -480,7 +475,8 @@ class GameMatchingDetailViewController: UIViewController {
     }
     
     private func configureData() {
-        // Configure any additional data or styling here
+        // ViewModel에서 데이터를 가져와서 UI를 업데이트
+        // 현재는 setupUI() 메서드에서 이미 ViewModel 데이터를 사용하고 있음
     }
     
     // MARK: - Actions
@@ -498,11 +494,15 @@ class GameMatchingDetailViewController: UIViewController {
     @objc private func shareBarButtonTouchup(_ sender: UIBarButtonItem) {
         print("shareBarButton이 찍혔습니다.")
         
+        // Clear previous share items
+        viewModel.clearShareItems()
+        
+        // Add current data to share items
         for testString in 0...3 {
-            self.viewModel.append(String(testString))
+            viewModel.addShareItem(String(testString))
         }
         
-        let activityViewController = UIActivityViewController(activityItems: self.viewModel, applicationActivities: nil)
+        let activityViewController = UIActivityViewController(activityItems: viewModel.getShareItems(), applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = self.view
         self.present(activityViewController, animated: true, completion: nil)
     }
