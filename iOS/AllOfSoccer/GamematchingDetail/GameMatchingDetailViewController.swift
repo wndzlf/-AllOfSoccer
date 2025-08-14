@@ -150,6 +150,9 @@ class GameMatchingDetailViewController: UIViewController {
         scrollView.alwaysBounceVertical = true
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.backgroundColor = .white
+        
+        // 하단 버튼이 잘리지 않도록 contentInset 설정
+        scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: Layout.buttonHeight, right: 0)
     }
     
     private func setupDateAndLocationSection() {
@@ -377,7 +380,7 @@ class GameMatchingDetailViewController: UIViewController {
         let navigationBarHeight: CGFloat = 44 // 네비게이션 바 높이
         let statusBarHeight: CGFloat = 44 // 상태바 높이 (iPhone 14+ 기준)
         let topOffset = navigationBarHeight + statusBarHeight + 5 // 네비게이션 바 아래 여백 줄임
-        var currentY: CGFloat = 5.0
+        var currentY: CGFloat = 15.0
 
         // Scroll View - 네비게이션 바 아래부터 시작
         scrollView.frame = CGRect(x: 0, y: topOffset, width: screenWidth, height: view.frame.height - topOffset)
@@ -447,7 +450,7 @@ class GameMatchingDetailViewController: UIViewController {
         messageButton.frame = CGRect(x: 0, y: currentY, width: screenWidth, height: Layout.buttonHeight)
         
         // Content View - 콘텐츠 크기에 맞게 동적 설정
-        let contentHeight = messageButton.frame.maxY + 50 // 하단 여백 추가
+        let contentHeight = messageButton.frame.maxY + 20 // 하단 여백 줄임
         contentView.frame = CGRect(x: 0, y: 0, width: screenWidth, height: contentHeight)
         
         // ScrollView contentSize 동적 설정
