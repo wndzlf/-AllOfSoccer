@@ -395,9 +395,9 @@ class GameMatchingDetailViewController: UIViewController {
         let screenWidth = view.frame.width
         let navigationBarHeight: CGFloat = 44 // 네비게이션 바 높이
         let statusBarHeight: CGFloat = 44 // 상태바 높이 (iPhone 14+ 기준)
-        let topOffset = navigationBarHeight + statusBarHeight + 10 // 네비게이션 바 아래 여백
-        var currentY: CGFloat = topOffset
-        
+        let topOffset = navigationBarHeight + statusBarHeight + 5 // 네비게이션 바 아래 여백 줄임
+        var currentY: CGFloat = 5.0
+
         // Scroll View - 네비게이션 바 아래부터 시작
         scrollView.frame = CGRect(x: 0, y: topOffset, width: screenWidth, height: view.frame.height - topOffset)
         
