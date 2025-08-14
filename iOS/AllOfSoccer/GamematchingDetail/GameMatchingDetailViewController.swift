@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import MessageUI
 
-class GameMatchingDetailViewController: UIViewController {
+class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewControllerDelegate {
     
     // MARK: - UI Components
     private let scrollView = UIScrollView()
@@ -371,6 +372,7 @@ class GameMatchingDetailViewController: UIViewController {
         messageButton.setTitleColor(.white, for: .normal)
         messageButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         messageButton.backgroundColor = Colors.messageButtonColor
+        messageButton.addTarget(self, action: #selector(messageButtonTapped), for: .touchUpInside)
         
         contentView.addSubview(messageButton)
     }
@@ -494,5 +496,84 @@ class GameMatchingDetailViewController: UIViewController {
         let activityViewController = UIActivityViewController(activityItems: viewModel.getShareItems(), applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = self.view
         self.present(activityViewController, animated: true, completion: nil)
+    }
+    
+    // MARK: - Message Actions
+    @objc private func messageButtonTapped() {
+        print("메세지 보내기 버튼이 탭되었습니다.")
+        
+        // 연락처 번호에서 하이픈 제거
+        let phoneNumber = viewModel.data.contactNumber.replacingOccurrences(of: "-", with: "")
+        
+        // SMS 기능이 사용 가능한지 확인
+        if MFMessageComposeViewController.canSendText() {
+            let messageComposer = MFMessageComposeViewController()
+            messageComposer.messageComposeDelegate = self
+            messageComposer.recipients = [phoneNumber]
+            messageComposer.body = "안녕하세요! \(viewModel.data.teamName) 팀 모집 글을 보고 연락드립니다."
+            
+            self.present(messageComposer, animated: true, completion: nil)
+        } else {
+            // SMS 기능이 사용 불가능한 경우 (시뮬레이터 등)
+            showSMSNotAvailableAlert()
+        }
+    }
+    
+    // MARK: - MFMessageComposeViewControllerDelegate
+    func messageComposeViewController(_ controller: MFMessageComposeViewController, didFinishWith result: MessageComposeResult) {
+        controller.dismiss(animated: true) {
+            switch result {
+            case .cancelled:
+                print("메시지 작성이 취소되었습니다.")
+            case .failed:
+                print("메시지 전송에 실패했습니다.")
+                self.showMessageErrorAlert()
+            case .sent:
+                print("메시지가 성공적으로 전송되었습니다.")
+                self.showMessageSuccessAlert()
+            @unknown default:
+                break
+            }
+        }
+    }
+    
+    // MARK: - Alert Methods
+    private func showSMSNotAvailableAlert() {
+        let alert = UIAlertController(
+            title: "SMS 사용 불가",
+            message: "이 기기에서는 SMS를 보낼 수 없습니다. 실제 기기에서 시도해주세요.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "확인", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    private func showMessageErrorAlert() {
+        let alert = UIAlertController(
+            title: "메시지 전송 실패",
+            message: "메시지 전송에 실패했습니다. 다시 시도해주세요.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "확인", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    private func showMessageSuccessAlert() {
+        let alert = UIAlertController(
+            title: "메시지 전송 완료",
+            message: "메시지가 성공적으로 전송되었습니다.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "확인", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        self.present(alert, animated: true, completion: nil)
     }
 }
