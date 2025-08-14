@@ -88,12 +88,3 @@ class CallPreviusMatchingInformationTableViewCell: UITableViewCell {
 
     }
 }
-
-
-extension UIView {
-
-    internal func debugBorder(width: CGFloat = 1, color: UIColor = .red) {
-        self.layer.borderColor = color.cgColor
-        self.layer.borderWidth = width
-    }
-}
