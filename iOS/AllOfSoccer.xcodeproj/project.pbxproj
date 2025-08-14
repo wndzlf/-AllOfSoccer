@@ -11,8 +11,6 @@
 		9D034CE826903A9E0051FA02 /* -----Global----- in Resources */ = {isa = PBXBuildFile; fileRef = 9D034CE726903A9E0051FA02 /* -----Global----- */; };
 		9D034CEE26903B590051FA02 /* -----Primary View----- in Resources */ = {isa = PBXBuildFile; fileRef = 9D034CED26903B590051FA02 /* -----Primary View----- */; };
 		9D1F225026ADA317000726CB /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D1F224F26ADA317000726CB /* Colors.xcassets */; };
-		9D6B91E2266D08E000AF182B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6B91E1266D08E000AF182B /* AppDelegate.swift */; };
-		9D6B91E4266D08E000AF182B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6B91E3266D08E000AF182B /* SceneDelegate.swift */; };
 		9D6B91EB266D08E100AF182B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D6B91EA266D08E100AF182B /* Assets.xcassets */; };
 		9D6B91EE266D08E100AF182B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D6B91EC266D08E100AF182B /* LaunchScreen.storyboard */; };
 		9DBC70E826A986D0005F6BFA /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9DBC70E726A986D0005F6BFA /* SnapKit */; };
@@ -31,8 +29,6 @@
 		9D034CED26903B590051FA02 /* -----Primary View----- */ = {isa = PBXFileReference; lastKnownFileType = text; path = "-----Primary View-----"; sourceTree = "<group>"; };
 		9D1F224F26ADA317000726CB /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		9D6B91DE266D08E000AF182B /* AllOfSoccer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AllOfSoccer.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9D6B91E1266D08E000AF182B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9D6B91E3266D08E000AF182B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		9D6B91EA266D08E100AF182B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9D6B91ED266D08E100AF182B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D6B91EF266D08E100AF182B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = AllOfSoccer/SupporttingFiles/Info.plist; sourceTree = SOURCE_ROOT; };
@@ -51,6 +47,7 @@
 		CEF0DEF52E4B7A7B00300D17 /* Main */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Main; sourceTree = "<group>"; };
 		CEF0DF022E4B7A8000300D17 /* Login */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Login; sourceTree = "<group>"; };
 		CEF0DF1D2E4B7AA700300D17 /* GameMatching */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = GameMatching; sourceTree = "<group>"; };
+		CEF0DF322E4E04B200300D17 /* Application */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Application; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,15 +82,6 @@
 				57B576079C85BA1CFFC7E15C /* Pods-AllOfSoccer.release.xcconfig */,
 			);
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		9D034CEA26903AB40051FA02 /* Application */ = {
-			isa = PBXGroup;
-			children = (
-				9D6B91E1266D08E000AF182B /* AppDelegate.swift */,
-				9D6B91E3266D08E000AF182B /* SceneDelegate.swift */,
-			);
-			path = Application;
 			sourceTree = "<group>";
 		};
 		9D034CEC26903AF00051FA02 /* SupporttingFiles */ = {
@@ -143,7 +131,7 @@
 				CEF0DEC22E4B7A7300300D17 /* Network */,
 				CEF0DECE2E4B7A7300300D17 /* Extension */,
 				CEF0DEE52E4B7A7300300D17 /* Components */,
-				9D034CEA26903AB40051FA02 /* Application */,
+				CEF0DF322E4E04B200300D17 /* Application */,
 				9D034CEC26903AF00051FA02 /* SupporttingFiles */,
 			);
 			path = AllOfSoccer;
@@ -185,6 +173,7 @@
 				CEF0DEF52E4B7A7B00300D17 /* Main */,
 				CEF0DF022E4B7A8000300D17 /* Login */,
 				CEF0DF1D2E4B7AA700300D17 /* GameMatching */,
+				CEF0DF322E4E04B200300D17 /* Application */,
 			);
 			name = AllOfSoccer;
 			packageProductDependencies = (
@@ -315,8 +304,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D6B91E2266D08E000AF182B /* AppDelegate.swift in Sources */,
-				9D6B91E4266D08E000AF182B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
