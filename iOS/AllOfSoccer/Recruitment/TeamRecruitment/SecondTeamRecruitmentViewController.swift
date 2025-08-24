@@ -120,6 +120,12 @@ class SecondTeamRecruitmentViewController: UIViewController {
         ageRangeSlider.handleBorderColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
         ageRangeSlider.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
         ageRangeSlider.tintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        // 슬라이더 thumb 위치 조정을 위한 설정 추가
+        ageRangeSlider.minDistance = 0
+        ageRangeSlider.maxDistance = 60
+        ageRangeSlider.disableRange = false // 두 thumb 모두 사용
+        ageRangeSlider.enableStep = true
+        ageRangeSlider.hideLabels = true // 기본 라벨 숨기기
         
         // Create age labels
         let ageValues = ["10", "20", "30", "40", "50", "60", "70"]
@@ -145,7 +151,8 @@ class SecondTeamRecruitmentViewController: UIViewController {
         skillSlider.value = 40
         skillSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
         skillSlider.maximumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
-        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 0.0)
+        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        skillSlider.setThumbImage(UIImage(systemName: "circle.fill")?.withTintColor(UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0), renderingMode: .alwaysOriginal), for: .normal)
         
         // Create skill labels
         let skillValues = ["최하", "하", "중하", "중", "중상", "상", "최상"]
@@ -292,21 +299,21 @@ class SecondTeamRecruitmentViewController: UIViewController {
         
         // Age Range constraints
         NSLayoutConstraint.activate([
-            ageRangeLabel.topAnchor.constraint(equalTo: teamNameView.bottomAnchor, constant: 20),
+            ageRangeLabel.topAnchor.constraint(equalTo: teamNameView.bottomAnchor, constant: 32),
             ageRangeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            ageRangeSlider.topAnchor.constraint(equalTo: ageRangeLabel.bottomAnchor, constant: 12),
-            ageRangeSlider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            ageRangeSlider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            ageRangeSlider.topAnchor.constraint(equalTo: ageRangeLabel.bottomAnchor, constant: 24),
+            ageRangeSlider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            ageRangeSlider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             ageRangeSlider.heightAnchor.constraint(equalToConstant: 18)
         ])
         
         // Skill constraints
         NSLayoutConstraint.activate([
-            skillLabel.topAnchor.constraint(equalTo: ageRangeSlider.bottomAnchor, constant: 20),
+            skillLabel.topAnchor.constraint(equalTo: ageRangeSlider.bottomAnchor, constant: 48),
             skillLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            skillSlider.topAnchor.constraint(equalTo: skillLabel.bottomAnchor, constant: 12),
+            skillSlider.topAnchor.constraint(equalTo: skillLabel.bottomAnchor, constant: 24),
             skillSlider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             skillSlider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             skillSlider.heightAnchor.constraint(equalToConstant: 31)
@@ -314,15 +321,15 @@ class SecondTeamRecruitmentViewController: UIViewController {
         
         // Introduction constraints
         NSLayoutConstraint.activate([
-            introductionLabel.topAnchor.constraint(equalTo: skillSlider.bottomAnchor, constant: 20),
+            introductionLabel.topAnchor.constraint(equalTo: skillSlider.bottomAnchor, constant: 40),
             introductionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            introductionTableView.topAnchor.constraint(equalTo: introductionLabel.bottomAnchor, constant: 10),
+            introductionTableView.topAnchor.constraint(equalTo: introductionLabel.bottomAnchor, constant: 16),
             introductionTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             introductionTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             introductionTableView.heightAnchor.constraint(equalToConstant: 128),
             
-            addIntroductionButton.topAnchor.constraint(equalTo: introductionTableView.bottomAnchor, constant: 10),
+            addIntroductionButton.topAnchor.constraint(equalTo: introductionTableView.bottomAnchor, constant: 16),
             addIntroductionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             addIntroductionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             addIntroductionButton.heightAnchor.constraint(equalToConstant: 50)
@@ -379,6 +386,9 @@ class SecondTeamRecruitmentViewController: UIViewController {
     
     private func setupSliders() {
         skillSlider.addTarget(self, action: #selector(skillSliderValueChanged), for: .valueChanged)
+        
+        // RangeSeekSlider 설정 추가
+        ageRangeSlider.delegate = self
     }
     
     private func setupIntroductionTableView() {
@@ -436,55 +446,57 @@ class SecondTeamRecruitmentViewController: UIViewController {
         setLabelsConstraint(slider: self.skillSlider, labelXPositons: labelPositions, labels: self.skillSliderLabels)
     }
 
-    private func setLabelsConstraint(slider: UIControl, labelXPositons: [CGFloat], labels: [UILabel]) {
-        for index in 0..<labels.count {
-            guard let label = labels[safe: index] else { return }
-            guard let labelPosition = labelXPositons[safe: index] else { return }
-            label.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                label.topAnchor.constraint(equalTo: slider.bottomAnchor, constant: 4),
-                label.centerXAnchor.constraint(equalTo: slider.leadingAnchor, constant: labelPosition)
-            ])
-        }
-    }
-
     private func createLabelXPositions(rangeSlider: UIControl?, customSlider: UISlider?) -> [CGFloat] {
         var labelsXPosition: [CGFloat] = []
 
         if let rangeSlider = rangeSlider {
-            let rangeSliderLinePadding: CGFloat = 16
-            let rangeSliderLineWidth = rangeSlider.frame.width - (2 * rangeSliderLinePadding)
-            let division: CGFloat = 6
-            let offset = rangeSliderLineWidth / division
-            let firstLabelXPosition = rangeSliderLinePadding
-
-            var tempLabelsXPosition: [CGFloat] = []
-            tempLabelsXPosition.append(firstLabelXPosition)
-            for index in 1..<7 {
-                let offset = (offset * CGFloat(index))
-                let labelXPosition = firstLabelXPosition + offset
-                tempLabelsXPosition.append(labelXPosition)
+            // RangeSeekSlider의 경우 (나이대)
+            let sliderWidth = rangeSlider.frame.width
+            let handleRadius: CGFloat = 9 // handleDiameter의 절반
+            let effectiveWidth = sliderWidth - (2 * handleRadius) // 실제 사용 가능한 너비
+            let division: CGFloat = 6 // 6개의 간격으로 7개의 포인트
+            let stepWidth = effectiveWidth / division
+            
+            // 각 라벨의 x 위치 계산
+            for i in 0...6 {
+                let xPosition = handleRadius + (stepWidth * CGFloat(i))
+                labelsXPosition.append(xPosition)
             }
-
-            labelsXPosition = tempLabelsXPosition
         } else if let customSlider = customSlider {
-            let sliderLinePadding: CGFloat = (((customSlider.currentThumbImage?.size.width) ?? 1) / 2)
-            let sliderLineWidth = customSlider.frame.width - ((sliderLinePadding) * 2)
-            let offset = (sliderLineWidth / 6)
-            let firstLabelXPosition = sliderLinePadding - 2
-
-            var arrayLabelXPosition: [CGFloat] = []
-            arrayLabelXPosition.append(firstLabelXPosition)
-            for index in 1..<7 {
-                let offset = (offset * CGFloat(index))
-                let labelXPosition = firstLabelXPosition + offset
-                arrayLabelXPosition.append(labelXPosition)
+            // UISlider의 경우 (실력)
+            let sliderWidth = customSlider.frame.width
+            let thumbWidth: CGFloat = 20 // thumb 이미지의 너비
+            let effectiveWidth = sliderWidth - thumbWidth
+            let division: CGFloat = 6
+            let stepWidth = effectiveWidth / division
+            
+            // 각 라벨의 x 위치 계산
+            for i in 0...6 {
+                let xPosition = (thumbWidth/2) + (stepWidth * CGFloat(i))
+                labelsXPosition.append(xPosition)
             }
-
-            labelsXPosition = arrayLabelXPosition
         }
 
         return labelsXPosition
+    }
+
+    private func setLabelsConstraint(slider: UIControl, labelXPositons: [CGFloat], labels: [UILabel]) {
+        for index in 0..<labels.count {
+            guard let label = labels[safe: index] else { return }
+            guard let labelPosition = labelXPositons[safe: index] else { return }
+            
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.removeFromSuperview()
+            contentView.addSubview(label)
+            
+            // 모든 라벨에 대해 중앙 정렬 적용
+            let xPosition = labelPosition - (label.intrinsicContentSize.width / 2)
+            
+            NSLayoutConstraint.activate([
+                label.topAnchor.constraint(equalTo: slider.bottomAnchor, constant: 12),
+                label.leadingAnchor.constraint(equalTo: slider.leadingAnchor, constant: xPosition)
+            ])
+        }
     }
 }
 
@@ -572,5 +584,13 @@ extension SecondTeamRecruitmentViewController: DeleteTeamInformationViewDelegate
 
     func OKButtonDidSelected(_ view: DeleteTeamInformationView) {
         view.removeFromSuperview()
+    }
+}
+
+// RangeSeekSliderDelegate 구현
+extension SecondTeamRecruitmentViewController: RangeSeekSliderDelegate {
+    func rangeSeekSlider(_ slider: RangeSeekSlider, didChange minValue: CGFloat, maxValue: CGFloat) {
+        // 슬라이더 값이 변경될 때마다 레이블 위치 업데이트
+        setAgeLabelsLayout()
     }
 }
