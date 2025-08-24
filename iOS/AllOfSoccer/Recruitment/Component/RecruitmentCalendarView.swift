@@ -154,9 +154,13 @@ class RecruitmentCalendarView: UIView {
     }
 
     private func setCalendar() {
-
         calendar.delegate = self
         calendar.dataSource = self
+        
+        // 현재 날짜를 기본 선택으로 설정
+        let today = Date()
+        calendar.select(today)
+        appendDate(date: today)
     }
 
     private func setViewConstraint() {
@@ -205,9 +209,15 @@ class RecruitmentCalendarView: UIView {
     }
 
     @objc private func okButtonTouchUp(sender: UIButton) {
-        self.selectedDate.map {
-            self.delegate?.okButtonDidSelected(self, selectedDate: $0)
-        }
+        guard let selectedDate = self.selectedDate else { return }
+        
+        // 시간 정보도 포함하여 전달
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        let timeString = dateFormatter.string(from: timeDatePicker.date)
+        
+        let fullDateString = "\(selectedDate) \(timeString)"
+        self.delegate?.okButtonDidSelected(self, selectedDate: fullDateString)
     }
 
     @objc private func monthPrevButtonTouchUp(_ sender: UIButton) {
@@ -261,7 +271,7 @@ extension RecruitmentCalendarView: FSCalendarDelegate {
         let stringDate = dateFormatter.string(from: date)
         self.selectedDate = stringDate
 
-        let buttonTitle = self.selectedDate == nil ? "선택" : "\(stringDate) 선택"
+        let buttonTitle = "\(stringDate) 선택"
         self.okButton.setTitle(buttonTitle, for: .normal)
     }
 

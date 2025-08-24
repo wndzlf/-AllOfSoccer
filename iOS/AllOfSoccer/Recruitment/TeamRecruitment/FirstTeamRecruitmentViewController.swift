@@ -397,6 +397,15 @@ class FirstTeamRecruitmentViewController: UIViewController {
     }
     
     @objc private func nextButtonTouchUp(_ sender: UIButton) {
+        // 날짜와 시간이 선택되었는지 확인
+        guard dateTimeLabel.text != "날짜와 시간을 선택해주세요." else {
+            // 알림 표시
+            let alert = UIAlertController(title: "알림", message: "날짜와 시간을 선택해주세요.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
         let secondViewController = SecondTeamRecruitmentViewController()
         navigationController?.pushViewController(secondViewController, animated: true)
     }
@@ -424,7 +433,9 @@ extension FirstTeamRecruitmentViewController: RecruitmentCalendarViewDelegate {
     }
 
     func okButtonDidSelected(_ view: RecruitmentCalendarView, selectedDate: String) {
+        // 선택된 날짜와 시간을 표시
         dateTimeLabel.text = selectedDate
+        dateTimeLabel.textColor = .black // 선택된 경우 검은색으로 변경
         view.removeFromSuperview()
     }
 }
