@@ -68,8 +68,8 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     }()
     
     // MARK: - Data
-    private let viewModel = GameMatchingDetailViewModel()
-    
+    private let viewModel: GameMatchingDetailViewModel
+
     // MARK: - Layout Constants
     private enum Layout {
         static let horizontalPadding: CGFloat = 16
@@ -83,8 +83,9 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         static let mediumIconSize: CGFloat = 18
         static let largeIconSize: CGFloat = 20
         
-        static let formatIconSize: CGFloat = 90
-        static let formatIconHeight: CGFloat = 65
+        // 진행방식 아이콘 크기 조정
+        static let formatIconSize: CGFloat = 60
+        static let formatIconHeight: CGFloat = 45
         
         static let buttonHeight: CGFloat = 62
         static let noteContainerHeight: CGFloat = 86.5
@@ -101,6 +102,16 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         static let messageButtonColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
     }
 
+    init(viewModel: GameMatchingDetailViewModel) {
+        self.viewModel = viewModel
+
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationItem()
@@ -227,14 +238,14 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         // Format Stack View
         formatStackView.axis = .horizontal
         formatStackView.distribution = .fillEqually
-        formatStackView.spacing = 16
+        formatStackView.spacing = 8
         
         // Create format items from ViewModel
         for formatItem in viewModel.currentData.formatItems {
             let itemStackView = UIStackView()
             itemStackView.axis = .vertical
             itemStackView.alignment = .center
-            itemStackView.spacing = 5
+            itemStackView.spacing = 8
             
             let iconImageView = UIImageView()
             iconImageView.contentMode = .scaleAspectFit
@@ -248,7 +259,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
             
             let titleLabel = UILabel()
             titleLabel.text = formatItem.title
-            titleLabel.font = UIFont.systemFont(ofSize: 16)
+            titleLabel.font = UIFont.systemFont(ofSize: 14)
             titleLabel.textColor = .black
             titleLabel.textAlignment = .center
             
@@ -398,7 +409,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // 3. Map Pin Icon & Address
         mapPinImageView.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: Layout.mediumIconSize, height: Layout.mediumIconSize)
-        addressLabel.frame = CGRect(x: mapPinImageView.frame.maxX + 4, y: currentY + 0.5, width: screenWidth - mapPinImageView.frame.maxX - 80, height: 17)
+        addressLabel.frame = CGRect(x: mapPinImageView.frame.maxX + 4, y: currentY + 0.5, width: screenWidth - mapPinImageView.frame.maxX - 120, height: 17)
         separatorView.frame = CGRect(x: addressLabel.frame.maxX + 10, y: currentY + 2, width: 1, height: 14)
         copyAddressButton.frame = CGRect(x: separatorView.frame.maxX + 10, y: currentY - 5.5, width: 53, height: 29)
         currentY += mapPinImageView.frame.height + 20
@@ -406,15 +417,15 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         // 4. Fee Section
         feeIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.iconSize, height: Layout.iconSize)
         feeTitleLabel.frame = CGRect(x: feeIconImageView.frame.maxX + 9, y: currentY - 0.5, width: 44.5, height: 20.5)
-        currentY += feeTitleLabel.frame.height + 16
+        currentY += feeTitleLabel.frame.height + 12
         feeAmountLabel.frame = CGRect(x: feeTitleLabel.frame.minX, y: currentY, width: 74.5, height: 24)
-        currentY += feeAmountLabel.frame.height + 30
+        currentY += feeAmountLabel.frame.height + 25
         
         // 5. Format Section
         formatIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.smallIconSize, height: Layout.smallIconSize)
         formatTitleLabel.frame = CGRect(x: formatIconImageView.frame.maxX + 9, y: currentY - 3, width: 63, height: 20.5)
         currentY += formatTitleLabel.frame.height + 20
-        formatStackView.frame = CGRect(x: (screenWidth - 302) / 2, y: currentY, width: 302, height: 89.5)
+        formatStackView.frame = CGRect(x: (screenWidth - 240) / 2, y: currentY, width: 240, height: 70)
         currentY += formatStackView.frame.height + 30
         
         // 6. Team Info Section
@@ -426,22 +437,22 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         // 6-1. Age
         ageLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
         ageValueLabel.frame = CGRect(x: ageLabel.frame.maxX + 34, y: currentY, width: screenWidth - ageLabel.frame.maxX - 50, height: 19.5)
-        currentY += ageLabel.frame.height + 15
+        currentY += ageLabel.frame.height + 12
         
         // 6-2. Skill
         skillLabel.frame = CGRect(x: 40, y: currentY, width: 28, height: 19.5)
         skillValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: screenWidth - ageValueLabel.frame.minX - 20, height: 19.5)
-        currentY += skillLabel.frame.height + 15
+        currentY += skillLabel.frame.height + 12
         
         // 6-3. Uniform
         uniformLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
         topUniformStackView.frame = CGRect(x: skillValueLabel.frame.minX, y: currentY, width: 68, height: 16)
-        currentY += uniformLabel.frame.height + 15
+        currentY += uniformLabel.frame.height + 12
         
         // 6-4. Contact
         contactLabel.frame = CGRect(x: 40, y: currentY, width: 42, height: 19.5)
         contactValueLabel.frame = CGRect(x: ageValueLabel.frame.minX, y: currentY, width: screenWidth - ageValueLabel.frame.minX - 20, height: 19.5)
-        currentY += contactLabel.frame.height + 25
+        currentY += contactLabel.frame.height + 20
         
         // 7. Note Section - 동적 높이 계산
         noteArrowImageView.frame = CGRect(x: 41, y: currentY - 10, width: Layout.largeIconSize, height: Layout.largeIconSize)

@@ -150,6 +150,7 @@ class GameMatchingViewModel {
                     self?.matchingListViewModel = [GameMatchListViewModel.mockData,
                                                   GameMatchListViewModel.mockData1,
                                                   GameMatchListViewModel.mockData2]
+                    self?.presenter?.reloadMatchingList()
                     self?.presenter?.showErrorMessage()
                 }
             }

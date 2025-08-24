@@ -530,7 +530,7 @@ extension GameMatchingViewController: UICollectionViewDelegateFlowLayout {
 extension GameMatchingViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = GameMatchingDetailViewController()
+        let vc = GameMatchingDetailViewController(viewModel: GameMatchingDetailViewModel())
         self.navigationController?.pushViewController(vc, animated: true)
     }
 

@@ -73,9 +73,33 @@ internal struct GameMatchListViewModel {
 
 extension GameMatchListViewModel {
 
-    static var mockData: GameMatchListViewModel = GameMatchListViewModel(date: "09.14.월", time: "22:00", address: "양원역 구장", description: "11대 11 실력 하하 구장비 7천원", isFavorite: true, isRecruiting: true, teamName: "FC 캘란")
+    static var mockData: GameMatchListViewModel = GameMatchListViewModel(
+        date: "09.14.월",
+        time: "22:00",
+        address: "양원역 구장",
+        description: "11대 11 실력 하하 구장비 7천원",
+        isFavorite: true,
+        isRecruiting: true,
+        teamName: "FC 캘란"
+    )
 
-    static var mockData1: GameMatchListViewModel = GameMatchListViewModel(date: "09.14.월", time: "22:00", address: "태릉중학교", description: "11대 11 실력 하하 구장비 5만원", isFavorite: true, isRecruiting: true, teamName: "FC 바르셀로나")
+    static var mockData1: GameMatchListViewModel = GameMatchListViewModel(
+        date: "09.14.월",
+        time: "22:00",
+        address: "태릉중학교",
+        description: "11대 11 실력 하하 구장비 5만원",
+        isFavorite: true,
+        isRecruiting: true,
+        teamName: "FC 바르셀로나"
+    )
 
-    static var mockData2: GameMatchListViewModel = GameMatchListViewModel(date: "09.14.월", time: "22:00", address: "용산 아이파크몰", description: "11대 11 실력 하하 구장비 7천원", isFavorite: true, isRecruiting: true, teamName: "FC 뮌헨")
+    static var mockData2: GameMatchListViewModel = GameMatchListViewModel(
+        date: "09.14.월",
+        time: "22:00",
+        address: "용산 아이파크몰",
+        description: "11대 11 실력 하하 구장비 7천원",
+        isFavorite: true,
+        isRecruiting: true,
+        teamName: "FC 뮌헨"
+    )
 }
