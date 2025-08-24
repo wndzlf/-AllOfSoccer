@@ -143,29 +143,15 @@ class GameMatchingViewController: UIViewController {
 
     // 뷰 완성시 코드 추가할 예정
     @IBAction private func teamRecruitmentButtonTouchUp(_ sender: UIButton) {
-        guard let teamRecruitmentNavigationController = UIStoryboard.init(name: "TeamRecruitment", bundle: nil).instantiateViewController(identifier: "FirstTeamRecruitmentViewController") as? UIViewController else {
-            return
-        }
-
+        let vc = FirstTeamRecruitmentViewController()
         self.didSelectedRecruitmentButtonSetting(true)
-
-        self.navigationController?.pushViewController(teamRecruitmentNavigationController, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     @IBAction private func manRecruitmentButtonTouchUp(_ sender: UIButton) {
-//        guard let manRecruitmentNavigationController = UIStoryboard.init(name: "ManRecruitment", bundle: nil).instantiateViewController(identifier: "ManRecruitmentNavigationController") as? UINavigationController  else { return }
-//
-//        manRecruitmentNavigationController.modalPresentationStyle = .fullScreen
-//        self.navigationController?.present(manRecruitmentNavigationController, animated: true, completion: nil)
-
-        guard let teamRecruitmentNavigationController = UIStoryboard.init(name: "TeamRecruitment", bundle: nil).instantiateViewController(identifier: "FirstTeamRecruitmentViewController") as? UIViewController else {
-            return
-        }
-
+        let vc = FirstTeamRecruitmentViewController()
         self.didSelectedRecruitmentButtonSetting(true)
-
-//        teamRecruitmentNavigationController.modalPresentationStyle = .fullScreen
-        self.navigationController?.pushViewController(teamRecruitmentNavigationController, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
 
     }
 

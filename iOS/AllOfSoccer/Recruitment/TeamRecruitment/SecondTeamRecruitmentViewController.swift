@@ -5,71 +5,434 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
     private var tableViewModel: [Comment] = []
 
-    @IBOutlet private weak var skillSlider: OneThumbSlider!
-    @IBOutlet private weak var ageRangeSlider: RangeSeekSlider!
-    @IBOutlet private var ageSliderLabels: [UILabel]!
-    @IBOutlet private var skillSliderLabels: [UILabel]!
-    @IBOutlet private weak var introductionTableView: IntrinsicTableView!
-    @IBOutlet private weak var informationCheckButton: UIButton!
+    // MARK: - UI Components
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    
+    // Header
+    private let headerView = UIView()
+    private let callTeamInformationButton = UIButton(type: .system)
+    
+    // Team Name Section
+    private let teamNameLabel = UILabel()
+    private let teamNameView = RoundView()
+    private let teamNameImageView = UIImageView()
+    private let teamNameTextField = UITextField()
+    
+    // Age Range Section
+    private let ageRangeLabel = UILabel()
+    private let ageRangeSlider = RangeSeekSlider()
+    private var ageSliderLabels: [UILabel] = []
+    
+    // Skill Section
+    private let skillLabel = UILabel()
+    private let skillSlider = OneThumbSlider()
+    private var skillSliderLabels: [UILabel] = []
+    
+    // Introduction Section
+    private let introductionLabel = UILabel()
+    private let introductionTableView = IntrinsicTableView()
+    private let addIntroductionButton = RoundButton()
+    
+    // Contact Section
+    private let contactLabel = UILabel()
+    private let contactView = RoundView()
+    private let contactImageView = UIImageView()
+    private let contactTextField = UITextField()
+    private let informationCheckButton = IBSelectTableButton()
+    private let rememberLabel = UILabel()
+    
+    // Bottom Button
+    private let registerButton = UIButton(type: .system)
 
-    @IBAction private func addIntroductionButton(_ sender: RoundButton) {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        setupNavigationBar()
+        setupUI()
+        setupConstraints()
+        setupActions()
+        setupSliders()
+        setupIntroductionTableView()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setAgeLabelsLayout()
+        setSkillLabelsLayout()
+    }
+    
+    // MARK: - Setup Methods
+    private func setupNavigationBar() {
+        title = "팀 모집 글쓰기"
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        
+        // ScrollView
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Header
+        headerView.backgroundColor = .systemBackground
+        callTeamInformationButton.setTitle("팀 소개 불러오기", for: .normal)
+        callTeamInformationButton.setImage(UIImage(named: "ArchiveBox"), for: .normal)
+        callTeamInformationButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        callTeamInformationButton.setTitleColor(.black, for: .normal)
+        callTeamInformationButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Team Name Section
+        teamNameLabel.text = "팀이름"
+        teamNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        teamNameLabel.textColor = .black
+        teamNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        teamNameView.backgroundColor = .systemBackground
+        teamNameView.layer.cornerRadius = 6
+        teamNameView.translatesAutoresizingMaskIntoConstraints = false
+        
+        teamNameImageView.image = UIImage(named: "UserCircle")
+        teamNameImageView.contentMode = .scaleAspectFit
+        teamNameImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        teamNameTextField.placeholder = "팀이름을 적어주세요."
+        teamNameTextField.font = UIFont.systemFont(ofSize: 14)
+        teamNameTextField.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Age Range Section
+        ageRangeLabel.text = "나이대"
+        ageRangeLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        ageRangeLabel.textColor = .black
+        ageRangeLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        ageRangeSlider.translatesAutoresizingMaskIntoConstraints = false
+        ageRangeSlider.minValue = 10
+        ageRangeSlider.maxValue = 70
+        ageRangeSlider.selectedMinValue = 30
+        ageRangeSlider.selectedMaxValue = 50
+        ageRangeSlider.step = 10
+        ageRangeSlider.enableStep = true
+        ageRangeSlider.handleDiameter = 18
+        ageRangeSlider.lineHeight = 6
+        ageRangeSlider.colorBetweenHandles = UIColor(red: 0.937, green: 0.729, blue: 0.729, alpha: 1.0)
+        ageRangeSlider.handleColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        ageRangeSlider.handleBorderColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        ageRangeSlider.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        ageRangeSlider.tintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        
+        // Create age labels
+        let ageValues = ["10", "20", "30", "40", "50", "60", "70"]
+        ageSliderLabels = ageValues.map { value in
+            let label = UILabel()
+            label.text = value
+            label.font = UIFont.systemFont(ofSize: 12)
+            label.textColor = UIColor(red: 0.439, green: 0.439, blue: 0.439, alpha: 0.847)
+            label.textAlignment = .center
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }
+        
+        // Skill Section
+        skillLabel.text = "실력"
+        skillLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        skillLabel.textColor = .black
+        skillLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        skillSlider.translatesAutoresizingMaskIntoConstraints = false
+        skillSlider.minimumValue = 10
+        skillSlider.maximumValue = 70
+        skillSlider.value = 40
+        skillSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        skillSlider.maximumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 0.0)
+        
+        // Create skill labels
+        let skillValues = ["최하", "하", "중하", "중", "중상", "상", "최상"]
+        skillSliderLabels = skillValues.map { value in
+            let label = UILabel()
+            label.text = value
+            label.font = UIFont.systemFont(ofSize: 12)
+            label.textColor = UIColor(red: 0.439, green: 0.439, blue: 0.439, alpha: 0.847)
+            label.textAlignment = .center
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }
+        
+        // Introduction Section
+        introductionLabel.text = "소개글"
+        introductionLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        introductionLabel.textColor = .black
+        introductionLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        introductionTableView.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        introductionTableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        addIntroductionButton.setTitle("글 추가", for: .normal)
+        addIntroductionButton.setImage(UIImage(systemName: "plus"), for: .normal)
+        addIntroductionButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        addIntroductionButton.setTitleColor(.black, for: .normal)
+        addIntroductionButton.backgroundColor = .white
+        addIntroductionButton.layer.cornerRadius = 6
+        addIntroductionButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Contact Section
+        contactLabel.text = "연락처"
+        contactLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        contactLabel.textColor = .black
+        contactLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        contactView.backgroundColor = .systemBackground
+        contactView.layer.cornerRadius = 6
+        contactView.translatesAutoresizingMaskIntoConstraints = false
+        
+        contactImageView.image = UIImage(named: "Phone")
+        contactImageView.contentMode = .scaleAspectFit
+        contactImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        contactTextField.placeholder = "대표 연락처를 입력해주세요."
+        contactTextField.font = UIFont.systemFont(ofSize: 14)
+        contactTextField.translatesAutoresizingMaskIntoConstraints = false
+        
+        informationCheckButton.translatesAutoresizingMaskIntoConstraints = false
+        informationCheckButton.setImage(UIImage(systemName: "checkmark.circle"), for: .normal)
+        informationCheckButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
+        informationCheckButton.tintColor = UIColor(red: 0.803, green: 0.803, blue: 0.803, alpha: 1.0)
+        
+        rememberLabel.text = "이 정보 다음에 기억하기"
+        rememberLabel.font = UIFont.systemFont(ofSize: 16)
+        rememberLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Bottom Button
+        registerButton.setTitle("등록하기", for: .normal)
+        registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+        registerButton.setTitleColor(.white, for: .normal)
+        registerButton.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        registerButton.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupConstraints() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        // Add subviews to contentView
+        contentView.addSubview(headerView)
+        headerView.addSubview(callTeamInformationButton)
+        
+        contentView.addSubview(teamNameLabel)
+        contentView.addSubview(teamNameView)
+        teamNameView.addSubview(teamNameImageView)
+        teamNameView.addSubview(teamNameTextField)
+        
+        contentView.addSubview(ageRangeLabel)
+        contentView.addSubview(ageRangeSlider)
+        ageSliderLabels.forEach { contentView.addSubview($0) }
+        
+        contentView.addSubview(skillLabel)
+        contentView.addSubview(skillSlider)
+        skillSliderLabels.forEach { contentView.addSubview($0) }
+        
+        contentView.addSubview(introductionLabel)
+        contentView.addSubview(introductionTableView)
+        contentView.addSubview(addIntroductionButton)
+        
+        contentView.addSubview(contactLabel)
+        contentView.addSubview(contactView)
+        contactView.addSubview(contactImageView)
+        contactView.addSubview(contactTextField)
+        contentView.addSubview(informationCheckButton)
+        contentView.addSubview(rememberLabel)
+        
+        view.addSubview(registerButton)
+        
+        // ScrollView constraints
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: registerButton.topAnchor, constant: -29),
+            
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
+        
+        // Header constraints
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 1),
+            headerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 52),
+            
+            callTeamInformationButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            callTeamInformationButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
+        ])
+        
+        // Team Name constraints
+        NSLayoutConstraint.activate([
+            teamNameLabel.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 20),
+            teamNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            
+            teamNameView.topAnchor.constraint(equalTo: teamNameLabel.bottomAnchor, constant: 12),
+            teamNameView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            teamNameView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            teamNameView.heightAnchor.constraint(equalToConstant: 50),
+            
+            teamNameImageView.leadingAnchor.constraint(equalTo: teamNameView.leadingAnchor, constant: 16),
+            teamNameImageView.centerYAnchor.constraint(equalTo: teamNameView.centerYAnchor),
+            teamNameImageView.widthAnchor.constraint(equalToConstant: 18),
+            teamNameImageView.heightAnchor.constraint(equalToConstant: 18),
+            
+            teamNameTextField.leadingAnchor.constraint(equalTo: teamNameImageView.trailingAnchor, constant: 10),
+            teamNameTextField.trailingAnchor.constraint(equalTo: teamNameView.trailingAnchor, constant: -16),
+            teamNameTextField.centerYAnchor.constraint(equalTo: teamNameView.centerYAnchor)
+        ])
+        
+        // Age Range constraints
+        NSLayoutConstraint.activate([
+            ageRangeLabel.topAnchor.constraint(equalTo: teamNameView.bottomAnchor, constant: 20),
+            ageRangeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            
+            ageRangeSlider.topAnchor.constraint(equalTo: ageRangeLabel.bottomAnchor, constant: 12),
+            ageRangeSlider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            ageRangeSlider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            ageRangeSlider.heightAnchor.constraint(equalToConstant: 18)
+        ])
+        
+        // Skill constraints
+        NSLayoutConstraint.activate([
+            skillLabel.topAnchor.constraint(equalTo: ageRangeSlider.bottomAnchor, constant: 20),
+            skillLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            
+            skillSlider.topAnchor.constraint(equalTo: skillLabel.bottomAnchor, constant: 12),
+            skillSlider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            skillSlider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            skillSlider.heightAnchor.constraint(equalToConstant: 31)
+        ])
+        
+        // Introduction constraints
+        NSLayoutConstraint.activate([
+            introductionLabel.topAnchor.constraint(equalTo: skillSlider.bottomAnchor, constant: 20),
+            introductionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            
+            introductionTableView.topAnchor.constraint(equalTo: introductionLabel.bottomAnchor, constant: 10),
+            introductionTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            introductionTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            introductionTableView.heightAnchor.constraint(equalToConstant: 128),
+            
+            addIntroductionButton.topAnchor.constraint(equalTo: introductionTableView.bottomAnchor, constant: 10),
+            addIntroductionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            addIntroductionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            addIntroductionButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+        
+        // Contact constraints
+        NSLayoutConstraint.activate([
+            contactLabel.topAnchor.constraint(equalTo: addIntroductionButton.bottomAnchor, constant: 20),
+            contactLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            
+            contactView.topAnchor.constraint(equalTo: contactLabel.bottomAnchor, constant: 12),
+            contactView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            contactView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            contactView.heightAnchor.constraint(equalToConstant: 50),
+            
+            contactImageView.leadingAnchor.constraint(equalTo: contactView.leadingAnchor, constant: 16),
+            contactImageView.centerYAnchor.constraint(equalTo: contactView.centerYAnchor),
+            contactImageView.widthAnchor.constraint(equalToConstant: 18),
+            contactImageView.heightAnchor.constraint(equalToConstant: 18),
+            
+            contactTextField.leadingAnchor.constraint(equalTo: contactImageView.trailingAnchor, constant: 10),
+            contactTextField.trailingAnchor.constraint(equalTo: contactView.trailingAnchor, constant: -16),
+            contactTextField.centerYAnchor.constraint(equalTo: contactView.centerYAnchor),
+            
+            informationCheckButton.topAnchor.constraint(equalTo: contactView.bottomAnchor, constant: 30),
+            informationCheckButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            informationCheckButton.widthAnchor.constraint(equalToConstant: 22),
+            informationCheckButton.heightAnchor.constraint(equalToConstant: 22),
+            
+            rememberLabel.leadingAnchor.constraint(equalTo: informationCheckButton.trailingAnchor, constant: 10),
+            rememberLabel.centerYAnchor.constraint(equalTo: informationCheckButton.centerYAnchor)
+        ])
+        
+        // Bottom button constraints
+        NSLayoutConstraint.activate([
+            registerButton.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            registerButton.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            registerButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            registerButton.heightAnchor.constraint(equalToConstant: 62)
+        ])
+        
+        // Content view bottom constraint
+        NSLayoutConstraint.activate([
+            contentView.bottomAnchor.constraint(equalTo: informationCheckButton.bottomAnchor, constant: 20)
+        ])
+    }
+    
+    private func setupActions() {
+        addIntroductionButton.addTarget(self, action: #selector(addIntroductionButtonTouchUp), for: .touchUpInside)
+        informationCheckButton.addTarget(self, action: #selector(informationCheckButtonTouchUp), for: .touchUpInside)
+        callTeamInformationButton.addTarget(self, action: #selector(callTeamInformationButtonTouchUp), for: .touchUpInside)
+        registerButton.addTarget(self, action: #selector(registerTeamInformationTouchUp), for: .touchUpInside)
+    }
+    
+    private func setupSliders() {
+        skillSlider.addTarget(self, action: #selector(skillSliderValueChanged), for: .valueChanged)
+    }
+    
+    private func setupIntroductionTableView() {
+        introductionTableView.delegate = self
+        introductionTableView.dataSource = self
+        introductionTableView.register(TeamIntroductionTableViewCell.self, forCellReuseIdentifier: "IntroductionTableViewCell")
+    }
+
+    // MARK: - Actions
+    @objc private func addIntroductionButtonTouchUp(_ sender: RoundButton) {
         let introductionDetailView = IntroductionDetailView()
         introductionDetailView.delegate = self
         self.subviewConstraints(view: introductionDetailView)
     }
 
-    @IBAction private func informationCheckButtonTouchUp(_ sender: IBSelectTableButton) {
-
-        sender.isSelected = sender.isSelected ? false : true
+    @objc private func informationCheckButtonTouchUp(_ sender: IBSelectTableButton) {
+        sender.isSelected = !sender.isSelected
     }
 
-    @IBAction private func callTeamInformationButtonTouchUp(_ sender: UIButton) {
-
+    @objc private func callTeamInformationButtonTouchUp(_ sender: UIButton) {
         let callTeamInformationView = CallTeamInformationView()
         callTeamInformationView.delegate = self
         subviewConstraints(view: callTeamInformationView)
     }
 
-    @IBAction func registerTeamInformationTouchUp(_ sender: UIButton) {
-
+    @objc func registerTeamInformationTouchUp(_ sender: UIButton) {
         let deleteTeamInformationView = DeleteTeamInformationView()
         deleteTeamInformationView.delegate = self
         subviewConstraints(view: deleteTeamInformationView)
     }
 
-    // MARK: - view life cycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        setSkillSlider()
-        setIntroductionTableView()
+    @objc func skillSliderValueChanged(_ sender: OneThumbSlider) {
+        let values = "(\(sender.value)"
+        print("Range slider value changed: \(values)")
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        setAgeLabelsLayout()
-        setSkillLabelsLayout()
-    }
-
-
-    private func setSkillSlider() {
-        self.skillSlider.addTarget(self, action: #selector(skillSliderValueChanged), for: .valueChanged)
-    }
-
-    private func setIntroductionTableView() {
-
-        self.introductionTableView.delegate = self
-        self.introductionTableView.dataSource = self
+    private func subviewConstraints(view: UIView) {
+        guard let navigationController = self.navigationController else { return }
+        navigationController.view.addsubviews(view)
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
+            view.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
+            view.trailingAnchor.constraint(equalTo: navigationController.view.trailingAnchor, constant: 0),
+            view.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
+        ])
     }
 
     private func setAgeLabelsLayout() {
-        let labelPositions =  createLabelXPositions(rangeSlider: self.ageRangeSlider, customSlider: nil)
+        let labelPositions = createLabelXPositions(rangeSlider: self.ageRangeSlider, customSlider: nil)
         setLabelsConstraint(slider: self.ageRangeSlider, labelXPositons: labelPositions, labels: self.ageSliderLabels)
     }
 
     private func setSkillLabelsLayout() {
-        let labelPositions =  createLabelXPositions(rangeSlider: nil, customSlider: self.skillSlider)
+        let labelPositions = createLabelXPositions(rangeSlider: nil, customSlider: self.skillSlider)
         setLabelsConstraint(slider: self.skillSlider, labelXPositons: labelPositions, labels: self.skillSliderLabels)
     }
 
@@ -86,7 +449,6 @@ class SecondTeamRecruitmentViewController: UIViewController {
     }
 
     private func createLabelXPositions(rangeSlider: UIControl?, customSlider: UISlider?) -> [CGFloat] {
-
         var labelsXPosition: [CGFloat] = []
 
         if let rangeSlider = rangeSlider {
@@ -124,37 +486,19 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
         return labelsXPosition
     }
-
-    private func subviewConstraints(view: UIView) {
-        guard let navigationController = self.navigationController else { return }
-        navigationController.view.addsubviews(view)
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
-            view.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
-            view.trailingAnchor.constraint(equalTo: navigationController.view.trailingAnchor, constant: 0),
-            view.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
-        ])
-    }
-
-    @objc func skillSliderValueChanged(_ sender: OneThumbSlider) {
-        let values = "(\(sender.value)"
-        print("Range slider value changed: \(values)")
-    }
 }
 
+// MARK: - Extensions
 extension SecondTeamRecruitmentViewController: UITableViewDelegate {
-
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         true
     }
 
     func tableView(tableView: UITableView, shouldIndentWhileEditingRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // 왼쪽 편집 버튼 안보이게 하고싶을때 false
         return false
     }
 
     func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell.EditingStyle {
-        // 왼쪽 편집 버튼 안보이게 하고싶을때 .None
         return .none
     }
 
@@ -173,7 +517,6 @@ extension SecondTeamRecruitmentViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "IntroductionTableViewCell", for: indexPath) as? TeamIntroductionTableViewCell else {
             return UITableViewCell()
         }
@@ -200,12 +543,10 @@ extension SecondTeamRecruitmentViewController: TeamIntroductionTableViewCellDele
 
 extension SecondTeamRecruitmentViewController: IntroductionDetailViewDelegate {
     func cancelButtonDidSelected(_ view: IntroductionDetailView) {
-
         view.removeFromSuperview()
     }
 
     func OKButtonDidSelected(_ view: IntroductionDetailView, _ model: [Comment]) {
-
         DispatchQueue.main.async {
             self.tableViewModel = model
             self.introductionTableView.reloadData()
