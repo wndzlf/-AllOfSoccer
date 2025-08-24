@@ -100,9 +100,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
             view.layoutIfNeeded()
         }
     }
-    
 
-    
     // MARK: - Setup Methods
     private func setupNavigationBar() {
         title = "팀 모집 글쓰기"
@@ -213,7 +211,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
             layout.minimumInteritemSpacing = 8
             layout.minimumLineSpacing = 12
             layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-            layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+            // estimatedItemSize 제거하여 정확한 크기 계산 사용
         }
     }
     
@@ -477,15 +475,17 @@ extension FirstTeamRecruitmentViewController: UICollectionViewDataSource, UIColl
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height: CGFloat = 40
-        let cellPadding: CGFloat = 32 // Cell 내부 좌우 여백을 더 늘려서 여유롭게
-        
+        let height: CGFloat = 48 // 상하 여백 8씩 추가로 높이 증가
+        let cellPadding: CGFloat = 20 // Cell 내부 좌우 여백 (16 + 16)
+
         let option = gameOptions[indexPath.item]
         let font = UIFont.systemFont(ofSize: 14, weight: .medium)
         let textSize = option.title.size(withAttributes: [.font: font])
-        let width = textSize.width + (cellPadding * 2)
         
-        return CGSize(width: width, height: height)
+        // 텍스트 길이에 따라 적절한 너비 계산
+        let calculatedWidth = textSize.width + (cellPadding * 2)
+
+        return CGSize(width: calculatedWidth, height: height)
     }
 }
 

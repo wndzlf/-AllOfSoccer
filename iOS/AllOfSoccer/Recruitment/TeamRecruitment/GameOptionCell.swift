@@ -27,26 +27,14 @@ class GameOptionCell: UICollectionViewCell {
         setupUI()
     }
 
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
-        let height: CGFloat = 40
-        let cellPadding: CGFloat = 24 // Cell 내부 좌우 여백을 늘려서 더 예쁘게
-
-//        let option = gameOptions[indexPath.item]
-        let font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        let textSize = (titleLabel.text ?? "").size(withAttributes: [.font: font])
-        let width = textSize.width + (cellPadding * 2)
-
-        return CGSize(width: width, height: height)
-    }
-
     private func setupUI() {
         contentView.addSubview(titleLabel)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
 
         updateAppearance(isSelected: false)
