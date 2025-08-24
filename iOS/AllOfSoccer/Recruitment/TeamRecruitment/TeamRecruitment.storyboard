@@ -544,53 +544,6 @@
                                     <constraint firstAttribute="height" constant="36" id="N5N-uc-OMJ"/>
                                 </constraints>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vbz-xP-9Ys" customClass="IBSelectTableButton" customModule="AllOfSoccer" customModuleProvider="target">
-                                <rect key="frame" x="16" y="572.5" width="22" height="22"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="0Rb-hM-0qK"/>
-                                    <constraint firstAttribute="width" constant="22" id="xdS-wL-fLY"/>
-                                </constraints>
-                                <color key="tintColor" red="0.80392156862745101" green="0.80392156862745101" blue="0.80392156862745101" alpha="0.0" colorSpace="calibratedRGB"/>
-                                <state key="normal" image="checkmark.circle.fill" catalog="system"/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="normalBackgroundColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="selectBackgroundColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="normalTitleColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="selectTitleColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="normalBorderColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="selectBorderColor">
-                                        <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="normalTintColor">
-                                        <color key="value" red="0.80392156862745101" green="0.80392156862745101" blue="0.80392156862745101" alpha="1" colorSpace="calibratedRGB"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="color" keyPath="selectTintColor">
-                                        <color key="value" red="0.92549019607843142" green="0.37254901960784315" blue="0.37254901960784315" alpha="1" colorSpace="calibratedRGB"/>
-                                    </userDefinedRuntimeAttribute>
-                                    <userDefinedRuntimeAttribute type="image" keyPath="normalImage" value="checkmark.circle" catalog="system"/>
-                                    <userDefinedRuntimeAttribute type="image" keyPath="selectImage" value="checkmark.circle.fill" catalog="system"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="informationRecordButton:" destination="Hwf-9T-Tbs" eventType="touchUpInside" id="Nap-zz-gYu"/>
-                                </connections>
-                            </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="이 정보 다음에 기억하기" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R7z-hj-HNU">
-                                <rect key="frame" x="48" y="574" width="151" height="19.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="LS4-WA-fmZ"/>
                         <color key="backgroundColor" red="0.96470588235294119" green="0.96862745098039216" blue="0.98039215686274506" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -602,9 +555,7 @@
                             <constraint firstItem="tvJ-FR-vaT" firstAttribute="top" secondItem="rDJ-xb-ghb" secondAttribute="bottom" constant="10" id="3M4-ji-75b"/>
                             <constraint firstItem="LS4-WA-fmZ" firstAttribute="trailing" secondItem="1H4-yB-HRf" secondAttribute="trailing" id="7tV-QY-ws0"/>
                             <constraint firstItem="x5W-D8-aEE" firstAttribute="top" secondItem="1H4-yB-HRf" secondAttribute="bottom" constant="20" id="9w1-dO-m7r"/>
-                            <constraint firstItem="Vbz-xP-9Ys" firstAttribute="top" secondItem="OEd-1S-EdA" secondAttribute="bottom" constant="30" id="Aza-4k-H56"/>
                             <constraint firstItem="9fV-3l-RrG" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" constant="16" id="FzQ-4e-6Ay"/>
-                            <constraint firstItem="R7z-hj-HNU" firstAttribute="leading" secondItem="Vbz-xP-9Ys" secondAttribute="trailing" constant="10" id="GdC-1V-giM"/>
                             <constraint firstItem="KMh-qk-rR3" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" constant="16" id="Ghd-up-PBd"/>
                             <constraint firstItem="YpY-BR-mDh" firstAttribute="top" secondItem="9fV-3l-RrG" secondAttribute="bottom" constant="10" id="Gym-uN-uzw"/>
                             <constraint firstItem="LS4-WA-fmZ" firstAttribute="trailing" secondItem="rDJ-xb-ghb" secondAttribute="trailing" constant="16" id="KYf-6F-NUY"/>
@@ -622,13 +573,11 @@
                             <constraint firstItem="OEd-1S-EdA" firstAttribute="top" secondItem="AZJ-Hr-2FM" secondAttribute="bottom" constant="12" id="c4l-zk-8Lp"/>
                             <constraint firstItem="x5W-D8-aEE" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" constant="16" id="cW4-hq-e3S"/>
                             <constraint firstItem="AZJ-Hr-2FM" firstAttribute="top" secondItem="tvJ-FR-vaT" secondAttribute="bottom" constant="20" id="fi8-Kc-fKQ"/>
-                            <constraint firstItem="Vbz-xP-9Ys" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" constant="16" id="iBB-Db-HYt"/>
                             <constraint firstItem="LS4-WA-fmZ" firstAttribute="trailing" secondItem="OEd-1S-EdA" secondAttribute="trailing" constant="16" id="jcr-Cc-yhe"/>
                             <constraint firstItem="1H4-yB-HRf" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" id="lYT-Zq-17L"/>
                             <constraint firstItem="LjB-1K-A7l" firstAttribute="leading" secondItem="LS4-WA-fmZ" secondAttribute="leading" id="mi3-V4-Ywa"/>
                             <constraint firstItem="OHi-4g-ZvZ" firstAttribute="top" secondItem="KMh-qk-rR3" secondAttribute="bottom" constant="12" id="qd3-l6-77N"/>
                             <constraint firstItem="LS4-WA-fmZ" firstAttribute="trailing" secondItem="9fV-3l-RrG" secondAttribute="trailing" constant="16" id="t3m-OJ-BbP"/>
-                            <constraint firstItem="R7z-hj-HNU" firstAttribute="centerY" secondItem="Vbz-xP-9Ys" secondAttribute="centerY" id="y9L-tW-JQ9"/>
                             <constraint firstItem="LS4-WA-fmZ" firstAttribute="trailing" secondItem="YpY-BR-mDh" secondAttribute="trailing" constant="16" id="yln-F1-hIY"/>
                         </constraints>
                     </view>
@@ -654,7 +603,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oNV-SE-8BN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1065" y="11"/>
+            <point key="canvasLocation" x="696" y="11"/>
         </scene>
         <!--팀 모집 글쓰기-->
         <scene sceneID="n4a-29-lDy">
@@ -1203,7 +1152,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kH1-S7-WqU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1982.608695652174" y="10.714285714285714"/>
+            <point key="canvasLocation" x="1439" y="11"/>
         </scene>
     </scenes>
     <resources>
