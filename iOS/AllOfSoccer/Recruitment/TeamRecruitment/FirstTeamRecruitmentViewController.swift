@@ -7,6 +7,19 @@
 
 import UIKit
 
+// MARK: - GameOption Model
+struct GameOption {
+    let title: String
+    let type: GameOptionType
+}
+
+enum GameOptionType {
+    case gameType
+    case gender
+    case shoes
+    case selection
+}
+
 class FirstTeamRecruitmentViewController: UIViewController {
 
     // MARK: - UI Components
@@ -28,64 +41,33 @@ class FirstTeamRecruitmentViewController: UIViewController {
     
     // Game Style Section
     private let gameStyleLabel = UILabel()
-    private let gameTypeCollectionView: UICollectionView = {
+    private let gameOptionsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
+        layout.scrollDirection = .vertical
+        layout.minimumInteritemSpacing = 8
+        layout.minimumLineSpacing = 12
+
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
-        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.isScrollEnabled = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
     
-    private let genderCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        return collectionView
-    }()
+    // Data for CollectionView
+    private var gameOptions = [
+        GameOption(title: "6 vs 6", type: .gameType),
+        GameOption(title: "11 vs 11", type: .gameType),
+        GameOption(title: "남성 매치", type: .gender),
+        GameOption(title: "여성 매치", type: .gender),
+        GameOption(title: "혼성 매치", type: .gender),
+        GameOption(title: "풋살화 필수", type: .shoes),
+        GameOption(title: "축구화 필수", type: .shoes),
+        GameOption(title: "선출 포함", type: .selection)
+    ]
     
-    private let shoesCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        return collectionView
-    }()
-    
-    private let selectionCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        return collectionView
-    }()
-    
-    // Data for CollectionViews
-    private var gameTypeOptions = ["6 vs 6", "11 vs 11"]
-    private var genderOptions = ["남성 매치", "여성 매치", "혼성 매치"]
-    private var shoesOptions = ["풋살화 필수", "축구화 필수"]
-    private var selectionOptions = ["선출 포함"]
-    
-    private var selectedGameType: Int?
-    private var selectedGender: Int?
-    private var selectedShoes: Int?
-    private var selectedSelection: Int?
+    private var selectedOptions: Set<Int> = []
+    private var collectionViewHeightConstraint: NSLayoutConstraint?
     
     // Fee Section
     private let feeLabel = UILabel()
@@ -104,6 +86,22 @@ class FirstTeamRecruitmentViewController: UIViewController {
         setupConstraints()
         setupActions()
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateCollectionViewHeight()
+    }
+    
+    private func updateCollectionViewHeight() {
+        // CollectionView의 contentSize에 맞게 높이 업데이트
+        let contentHeight = gameOptionsCollectionView.collectionViewLayout.collectionViewContentSize.height
+        if contentHeight > 0 {
+            collectionViewHeightConstraint?.constant = contentHeight
+            view.layoutIfNeeded()
+        }
+    }
+    
+
     
     // MARK: - Setup Methods
     private func setupNavigationBar() {
@@ -200,20 +198,23 @@ class FirstTeamRecruitmentViewController: UIViewController {
     
     private func setupCollectionViews() {
         // Register cells
-        gameTypeCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
-        genderCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
-        shoesCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
-        selectionCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
+        gameOptionsCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
         
         // Set delegates
-        gameTypeCollectionView.delegate = self
-        gameTypeCollectionView.dataSource = self
-        genderCollectionView.delegate = self
-        genderCollectionView.dataSource = self
-        shoesCollectionView.delegate = self
-        shoesCollectionView.dataSource = self
-        selectionCollectionView.delegate = self
-        selectionCollectionView.dataSource = self
+        gameOptionsCollectionView.delegate = self
+        gameOptionsCollectionView.dataSource = self
+        
+        // Configure layout
+        configureCollectionViewLayout(gameOptionsCollectionView)
+    }
+    
+    private func configureCollectionViewLayout(_ collectionView: UICollectionView) {
+        if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.minimumInteritemSpacing = 8
+            layout.minimumLineSpacing = 12
+            layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+            layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+        }
     }
     
     private func setupConstraints() {
@@ -233,10 +234,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
         placeView.addSubview(placeTextField)
         
         contentView.addSubview(gameStyleLabel)
-        contentView.addSubview(gameTypeCollectionView)
-        contentView.addSubview(genderCollectionView)
-        contentView.addSubview(shoesCollectionView)
-        contentView.addSubview(selectionCollectionView)
+        contentView.addSubview(gameOptionsCollectionView)
         
         contentView.addSubview(feeLabel)
         contentView.addSubview(feeView)
@@ -308,30 +306,18 @@ class FirstTeamRecruitmentViewController: UIViewController {
             gameStyleLabel.topAnchor.constraint(equalTo: placeView.bottomAnchor, constant: 20),
             gameStyleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            gameTypeCollectionView.topAnchor.constraint(equalTo: gameStyleLabel.bottomAnchor, constant: 12),
-            gameTypeCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            gameTypeCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            gameTypeCollectionView.heightAnchor.constraint(equalToConstant: 36),
-            
-            genderCollectionView.topAnchor.constraint(equalTo: gameTypeCollectionView.bottomAnchor, constant: 10),
-            genderCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            genderCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            genderCollectionView.heightAnchor.constraint(equalToConstant: 36),
-            
-            shoesCollectionView.topAnchor.constraint(equalTo: genderCollectionView.bottomAnchor, constant: 10),
-            shoesCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            shoesCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            shoesCollectionView.heightAnchor.constraint(equalToConstant: 36),
-            
-            selectionCollectionView.topAnchor.constraint(equalTo: shoesCollectionView.bottomAnchor, constant: 10),
-            selectionCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            selectionCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            selectionCollectionView.heightAnchor.constraint(equalToConstant: 36)
+            gameOptionsCollectionView.topAnchor.constraint(equalTo: gameStyleLabel.bottomAnchor, constant: 12),
+            gameOptionsCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            gameOptionsCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
         ])
+        
+        // 높이 제약 조건 추가 및 저장
+        collectionViewHeightConstraint = gameOptionsCollectionView.heightAnchor.constraint(equalToConstant: 100)
+        collectionViewHeightConstraint?.isActive = true
         
         // Fee constraints
         NSLayoutConstraint.activate([
-            feeLabel.topAnchor.constraint(equalTo: selectionCollectionView.bottomAnchor, constant: 20),
+            feeLabel.topAnchor.constraint(equalTo: gameOptionsCollectionView.bottomAnchor, constant: 20),
             feeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
             feeView.topAnchor.constraint(equalTo: feeLabel.bottomAnchor, constant: 12),
@@ -454,140 +440,52 @@ extension FirstTeamRecruitmentViewController: CallPreviusMatchingInformationView
     }
 }
 
-// MARK: - GameOptionCell
-class GameOptionCell: UICollectionViewCell {
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupUI()
-    }
-    
-    private func setupUI() {
-        contentView.addSubview(titleLabel)
-        
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
-        
-        updateAppearance(isSelected: false)
-    }
-    
-    func configure(with title: String, isSelected: Bool) {
-        titleLabel.text = title
-        updateAppearance(isSelected: isSelected)
-    }
-    
-    private func updateAppearance(isSelected: Bool) {
-        if isSelected {
-            contentView.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
-            titleLabel.textColor = .white
-            contentView.layer.borderColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0).cgColor
-        } else {
-            contentView.backgroundColor = .white
-            titleLabel.textColor = UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0)
-            contentView.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
-        }
-        
-        contentView.layer.cornerRadius = 8
-        contentView.layer.borderWidth = 1.5
-    }
-}
-
 // MARK: - UICollectionViewDataSource & Delegate
 extension FirstTeamRecruitmentViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        switch collectionView {
-        case gameTypeCollectionView:
-            return gameTypeOptions.count
-        case genderCollectionView:
-            return genderOptions.count
-        case shoesCollectionView:
-            return shoesOptions.count
-        case selectionCollectionView:
-            return selectionOptions.count
-        default:
-            return 0
-        }
+        return gameOptions.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GameOptionCell", for: indexPath) as! GameOptionCell
         
-        var title = ""
-        var isSelected = false
+        let option = gameOptions[indexPath.item]
+        let isSelected = selectedOptions.contains(indexPath.item)
         
-        switch collectionView {
-        case gameTypeCollectionView:
-            title = gameTypeOptions[indexPath.item]
-            isSelected = selectedGameType == indexPath.item
-        case genderCollectionView:
-            title = genderOptions[indexPath.item]
-            isSelected = selectedGender == indexPath.item
-        case shoesCollectionView:
-            title = shoesOptions[indexPath.item]
-            isSelected = selectedShoes == indexPath.item
-        case selectionCollectionView:
-            title = selectionOptions[indexPath.item]
-            isSelected = selectedSelection == indexPath.item
-        default:
-            break
-        }
-        
-        cell.configure(with: title, isSelected: isSelected)
+        cell.configure(with: option.title, isSelected: isSelected)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        switch collectionView {
-        case gameTypeCollectionView:
-            selectedGameType = selectedGameType == indexPath.item ? nil : indexPath.item
-        case genderCollectionView:
-            selectedGender = selectedGender == indexPath.item ? nil : indexPath.item
-        case shoesCollectionView:
-            selectedShoes = selectedShoes == indexPath.item ? nil : indexPath.item
-        case selectionCollectionView:
-            selectedSelection = selectedSelection == indexPath.item ? nil : indexPath.item
-        default:
-            break
+        let option = gameOptions[indexPath.item]
+        
+        // 같은 타입의 다른 옵션들 선택 해제
+        for (index, gameOption) in gameOptions.enumerated() {
+            if gameOption.type == option.type && index != indexPath.item {
+                selectedOptions.remove(index)
+            }
+        }
+        
+        // 현재 옵션 토글
+        if selectedOptions.contains(indexPath.item) {
+            selectedOptions.remove(indexPath.item)
+        } else {
+            selectedOptions.insert(indexPath.item)
         }
         
         collectionView.reloadData()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height: CGFloat = 36
+        let height: CGFloat = 40
+        let cellPadding: CGFloat = 32 // Cell 내부 좌우 여백을 더 늘려서 여유롭게
         
-        switch collectionView {
-        case gameTypeCollectionView:
-            let width = (collectionView.frame.width - 10) / 2 // 2개 항목
-            return CGSize(width: width, height: height)
-        case genderCollectionView:
-            let width = (collectionView.frame.width - 20) / 3 // 3개 항목
-            return CGSize(width: width, height: height)
-        case shoesCollectionView:
-            let width = (collectionView.frame.width - 10) / 2 // 2개 항목
-            return CGSize(width: width, height: height)
-        case selectionCollectionView:
-            let width = collectionView.frame.width // 1개 항목
-            return CGSize(width: width, height: height)
-        default:
-            return CGSize(width: 100, height: height)
-        }
+        let option = gameOptions[indexPath.item]
+        let font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        let textSize = option.title.size(withAttributes: [.font: font])
+        let width = textSize.width + (cellPadding * 2)
+        
+        return CGSize(width: width, height: height)
     }
 }
 
