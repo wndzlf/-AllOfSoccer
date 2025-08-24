@@ -24,20 +24,68 @@ class FirstTeamRecruitmentViewController: UIViewController {
     private let dateTimeLabel = UILabel()
     private let placeView = RoundView()
     private let placeImageView = UIImageView()
-    private let placeLabel = UILabel()
+    private let placeTextField = UITextField()
     
     // Game Style Section
     private let gameStyleLabel = UILabel()
-    private let gameTypeStackView = UIStackView()
-    private let sixMatchButton = IBSelectTableButton()
-    private let elevenMatchButton = IBSelectTableButton()
-    private let genderStackView = UIStackView()
-    private let manMatchButton = IBSelectTableButton()
-    private let womanMatchButton = IBSelectTableButton()
-    private let mixMatchButton = IBSelectTableButton()
-    private let shoesStackView = UIStackView()
-    private let futsalShoesButton = IBSelectTableButton()
-    private let soccerShoesButton = IBSelectTableButton()
+    private let gameTypeCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+    
+    private let genderCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+    
+    private let shoesCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+    
+    private let selectionCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+    
+    // Data for CollectionViews
+    private var gameTypeOptions = ["6 vs 6", "11 vs 11"]
+    private var genderOptions = ["남성 매치", "여성 매치", "혼성 매치"]
+    private var shoesOptions = ["풋살화 필수", "축구화 필수"]
+    private var selectionOptions = ["선출 포함"]
+    
+    private var selectedGameType: Int?
+    private var selectedGender: Int?
+    private var selectedShoes: Int?
+    private var selectedSelection: Int?
     
     // Fee Section
     private let feeLabel = UILabel()
@@ -109,19 +157,18 @@ class FirstTeamRecruitmentViewController: UIViewController {
         placeImageView.contentMode = .scaleAspectFit
         placeImageView.translatesAutoresizingMaskIntoConstraints = false
         
-        placeLabel.text = "장소를 선택해주세요."
-        placeLabel.font = UIFont.systemFont(ofSize: 14)
-        placeLabel.textColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
-        placeLabel.translatesAutoresizingMaskIntoConstraints = false
+        placeTextField.placeholder = "장소를 입력해주세요."
+        placeTextField.font = UIFont.systemFont(ofSize: 14)
+        placeTextField.textColor = .black
+        placeTextField.delegate = self
+        placeTextField.translatesAutoresizingMaskIntoConstraints = false
         
         // Game Style Section
         gameStyleLabel.text = "경기방식"
         gameStyleLabel.font = UIFont.systemFont(ofSize: 16)
         gameStyleLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        setupGameTypeButtons()
-        setupGenderButtons()
-        setupShoesButtons()
+        setupCollectionViews()
         
         // Fee Section
         feeLabel.text = "참가비"
@@ -151,65 +198,22 @@ class FirstTeamRecruitmentViewController: UIViewController {
         nextButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    private func setupGameTypeButtons() {
-        gameTypeStackView.axis = .horizontal
-        gameTypeStackView.distribution = .fillEqually
-        gameTypeStackView.spacing = 10
-        gameTypeStackView.translatesAutoresizingMaskIntoConstraints = false
+    private func setupCollectionViews() {
+        // Register cells
+        gameTypeCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
+        genderCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
+        shoesCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
+        selectionCollectionView.register(GameOptionCell.self, forCellWithReuseIdentifier: "GameOptionCell")
         
-        sixMatchButton.setTitle("6 vs 6", for: .normal)
-        elevenMatchButton.setTitle("11 vs 11", for: .normal)
-        
-        [sixMatchButton, elevenMatchButton].forEach { button in
-            button.backgroundColor = .white
-            button.layer.cornerRadius = 6
-            button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-            button.setTitleColor(UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0), for: .normal)
-            button.translatesAutoresizingMaskIntoConstraints = false
-        }
-    }
-    
-    private func setupGenderButtons() {
-        genderStackView.axis = .horizontal
-        genderStackView.distribution = .fillEqually
-        genderStackView.spacing = 10
-        genderStackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        manMatchButton.setTitle("남성 매치", for: .normal)
-        womanMatchButton.setTitle("여성 매치", for: .normal)
-        mixMatchButton.setTitle("혼성 매치", for: .normal)
-        
-        [manMatchButton, womanMatchButton, mixMatchButton].forEach { button in
-            button.backgroundColor = .white
-            button.layer.cornerRadius = 6
-            button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-            button.setTitleColor(UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0), for: .normal)
-            button.translatesAutoresizingMaskIntoConstraints = false
-        }
-    }
-    
-    private func setupShoesButtons() {
-        shoesStackView.axis = .horizontal
-        shoesStackView.distribution = .fillEqually
-        shoesStackView.spacing = 10
-        shoesStackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        futsalShoesButton.setTitle("풋살화 필수", for: .normal)
-        soccerShoesButton.setTitle("축구화 필수", for: .normal)
-        
-        [futsalShoesButton, soccerShoesButton].forEach { button in
-            button.backgroundColor = .white
-            button.layer.cornerRadius = 6
-            button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-            button.setTitleColor(UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0), for: .normal)
-            button.translatesAutoresizingMaskIntoConstraints = false
-        }
+        // Set delegates
+        gameTypeCollectionView.delegate = self
+        gameTypeCollectionView.dataSource = self
+        genderCollectionView.delegate = self
+        genderCollectionView.dataSource = self
+        shoesCollectionView.delegate = self
+        shoesCollectionView.dataSource = self
+        selectionCollectionView.delegate = self
+        selectionCollectionView.dataSource = self
     }
     
     private func setupConstraints() {
@@ -226,19 +230,13 @@ class FirstTeamRecruitmentViewController: UIViewController {
         dateTimeView.addSubview(dateTimeLabel)
         contentView.addSubview(placeView)
         placeView.addSubview(placeImageView)
-        placeView.addSubview(placeLabel)
+        placeView.addSubview(placeTextField)
         
         contentView.addSubview(gameStyleLabel)
-        contentView.addSubview(gameTypeStackView)
-        gameTypeStackView.addArrangedSubview(sixMatchButton)
-        gameTypeStackView.addArrangedSubview(elevenMatchButton)
-        contentView.addSubview(genderStackView)
-        genderStackView.addArrangedSubview(manMatchButton)
-        genderStackView.addArrangedSubview(womanMatchButton)
-        genderStackView.addArrangedSubview(mixMatchButton)
-        contentView.addSubview(shoesStackView)
-        shoesStackView.addArrangedSubview(futsalShoesButton)
-        shoesStackView.addArrangedSubview(soccerShoesButton)
+        contentView.addSubview(gameTypeCollectionView)
+        contentView.addSubview(genderCollectionView)
+        contentView.addSubview(shoesCollectionView)
+        contentView.addSubview(selectionCollectionView)
         
         contentView.addSubview(feeLabel)
         contentView.addSubview(feeView)
@@ -300,8 +298,9 @@ class FirstTeamRecruitmentViewController: UIViewController {
             placeImageView.widthAnchor.constraint(equalToConstant: 18),
             placeImageView.heightAnchor.constraint(equalToConstant: 18),
             
-            placeLabel.leadingAnchor.constraint(equalTo: placeImageView.trailingAnchor, constant: 10),
-            placeLabel.centerYAnchor.constraint(equalTo: placeView.centerYAnchor)
+            placeTextField.leadingAnchor.constraint(equalTo: placeImageView.trailingAnchor, constant: 10),
+            placeTextField.trailingAnchor.constraint(equalTo: placeView.trailingAnchor, constant: -16),
+            placeTextField.centerYAnchor.constraint(equalTo: placeView.centerYAnchor)
         ])
         
         // Game Style constraints
@@ -309,23 +308,30 @@ class FirstTeamRecruitmentViewController: UIViewController {
             gameStyleLabel.topAnchor.constraint(equalTo: placeView.bottomAnchor, constant: 20),
             gameStyleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
-            gameTypeStackView.topAnchor.constraint(equalTo: gameStyleLabel.bottomAnchor, constant: 12),
-            gameTypeStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            gameTypeStackView.heightAnchor.constraint(equalToConstant: 36),
+            gameTypeCollectionView.topAnchor.constraint(equalTo: gameStyleLabel.bottomAnchor, constant: 12),
+            gameTypeCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            gameTypeCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            gameTypeCollectionView.heightAnchor.constraint(equalToConstant: 36),
             
-            genderStackView.topAnchor.constraint(equalTo: gameTypeStackView.bottomAnchor, constant: 10),
-            genderStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            genderStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            genderStackView.heightAnchor.constraint(equalToConstant: 36),
+            genderCollectionView.topAnchor.constraint(equalTo: gameTypeCollectionView.bottomAnchor, constant: 10),
+            genderCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            genderCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            genderCollectionView.heightAnchor.constraint(equalToConstant: 36),
             
-            shoesStackView.topAnchor.constraint(equalTo: genderStackView.bottomAnchor, constant: 10),
-            shoesStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            shoesStackView.heightAnchor.constraint(equalToConstant: 36)
+            shoesCollectionView.topAnchor.constraint(equalTo: genderCollectionView.bottomAnchor, constant: 10),
+            shoesCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            shoesCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            shoesCollectionView.heightAnchor.constraint(equalToConstant: 36),
+            
+            selectionCollectionView.topAnchor.constraint(equalTo: shoesCollectionView.bottomAnchor, constant: 10),
+            selectionCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            selectionCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            selectionCollectionView.heightAnchor.constraint(equalToConstant: 36)
         ])
         
         // Fee constraints
         NSLayoutConstraint.activate([
-            feeLabel.topAnchor.constraint(equalTo: shoesStackView.bottomAnchor, constant: 20),
+            feeLabel.topAnchor.constraint(equalTo: selectionCollectionView.bottomAnchor, constant: 20),
             feeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
             feeView.topAnchor.constraint(equalTo: feeLabel.bottomAnchor, constant: 12),
@@ -358,19 +364,12 @@ class FirstTeamRecruitmentViewController: UIViewController {
     }
     
     private func setupActions() {
-        [sixMatchButton, elevenMatchButton, manMatchButton, womanMatchButton, mixMatchButton, futsalShoesButton, soccerShoesButton].forEach { button in
-            button.addTarget(self, action: #selector(matchButtonTouchUp), for: .touchUpInside)
-        }
-        
         callPreviousInformationButton.addTarget(self, action: #selector(callPreviousInformationButtonTouchUp), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextButtonTouchUp), for: .touchUpInside)
         
-        // Add tap gesture for date/time and place views
+        // Add tap gesture for date/time view
         let dateTimeTap = UITapGestureRecognizer(target: self, action: #selector(calendarButtonTouchUp))
         dateTimeView.addGestureRecognizer(dateTimeTap)
-        
-        let placeTap = UITapGestureRecognizer(target: self, action: #selector(placeButtonTouchUp))
-        placeView.addGestureRecognizer(placeTap)
     }
 
     // MARK: - Actions
@@ -384,11 +383,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
         subviewConstraints(view: recruitmentCalendarView)
     }
 
-    @objc private func placeButtonTouchUp(_ sender: UITapGestureRecognizer) {
-        let searchPlaceView = SearchPlaceView()
-        searchPlaceView.delegate = self
-        subviewConstraints(view: searchPlaceView)
-    }
+
 
     @objc private func callPreviousInformationButtonTouchUp(_ sender: UIButton) {
         let callPreviousInformationView = CallPreviusMatchingInformationView()
@@ -406,13 +401,20 @@ class FirstTeamRecruitmentViewController: UIViewController {
             return
         }
         
+        // 장소가 입력되었는지 확인
+        guard let placeText = placeTextField.text, !placeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            // 알림 표시
+            let alert = UIAlertController(title: "알림", message: "장소를 입력해주세요.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
         let secondViewController = SecondTeamRecruitmentViewController()
         navigationController?.pushViewController(secondViewController, animated: true)
     }
 
-    @objc func matchButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = !sender.isSelected
-    }
+
 
     private func subviewConstraints(view: UIView) {
         guard let navigationController = self.navigationController else { return }
@@ -440,15 +442,7 @@ extension FirstTeamRecruitmentViewController: RecruitmentCalendarViewDelegate {
     }
 }
 
-extension FirstTeamRecruitmentViewController: SearchPlaceViewDelegate {
-    func cancelButtonDidSelected(_ view: SearchPlaceView) {
-        view.removeFromSuperview()
-    }
 
-    func okButtonDidSelected(_ view: SearchPlaceView) {
-        view.removeFromSuperview()
-    }
-}
 
 extension FirstTeamRecruitmentViewController: CallPreviusMatchingInformationViewDelegate {
     func cancelButtonDidSelected(_ view: CallPreviusMatchingInformationView) {
@@ -457,6 +451,143 @@ extension FirstTeamRecruitmentViewController: CallPreviusMatchingInformationView
     
     func OKButtonDidSelected(_ view: CallPreviusMatchingInformationView) {
         view.removeFromSuperview()
+    }
+}
+
+// MARK: - GameOptionCell
+class GameOptionCell: UICollectionViewCell {
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(titleLabel)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        
+        updateAppearance(isSelected: false)
+    }
+    
+    func configure(with title: String, isSelected: Bool) {
+        titleLabel.text = title
+        updateAppearance(isSelected: isSelected)
+    }
+    
+    private func updateAppearance(isSelected: Bool) {
+        if isSelected {
+            contentView.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+            titleLabel.textColor = .white
+            contentView.layer.borderColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0).cgColor
+        } else {
+            contentView.backgroundColor = .white
+            titleLabel.textColor = UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0)
+            contentView.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
+        }
+        
+        contentView.layer.cornerRadius = 8
+        contentView.layer.borderWidth = 1.5
+    }
+}
+
+// MARK: - UICollectionViewDataSource & Delegate
+extension FirstTeamRecruitmentViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        switch collectionView {
+        case gameTypeCollectionView:
+            return gameTypeOptions.count
+        case genderCollectionView:
+            return genderOptions.count
+        case shoesCollectionView:
+            return shoesOptions.count
+        case selectionCollectionView:
+            return selectionOptions.count
+        default:
+            return 0
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GameOptionCell", for: indexPath) as! GameOptionCell
+        
+        var title = ""
+        var isSelected = false
+        
+        switch collectionView {
+        case gameTypeCollectionView:
+            title = gameTypeOptions[indexPath.item]
+            isSelected = selectedGameType == indexPath.item
+        case genderCollectionView:
+            title = genderOptions[indexPath.item]
+            isSelected = selectedGender == indexPath.item
+        case shoesCollectionView:
+            title = shoesOptions[indexPath.item]
+            isSelected = selectedShoes == indexPath.item
+        case selectionCollectionView:
+            title = selectionOptions[indexPath.item]
+            isSelected = selectedSelection == indexPath.item
+        default:
+            break
+        }
+        
+        cell.configure(with: title, isSelected: isSelected)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        switch collectionView {
+        case gameTypeCollectionView:
+            selectedGameType = selectedGameType == indexPath.item ? nil : indexPath.item
+        case genderCollectionView:
+            selectedGender = selectedGender == indexPath.item ? nil : indexPath.item
+        case shoesCollectionView:
+            selectedShoes = selectedShoes == indexPath.item ? nil : indexPath.item
+        case selectionCollectionView:
+            selectedSelection = selectedSelection == indexPath.item ? nil : indexPath.item
+        default:
+            break
+        }
+        
+        collectionView.reloadData()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let height: CGFloat = 36
+        
+        switch collectionView {
+        case gameTypeCollectionView:
+            let width = (collectionView.frame.width - 10) / 2 // 2개 항목
+            return CGSize(width: width, height: height)
+        case genderCollectionView:
+            let width = (collectionView.frame.width - 20) / 3 // 3개 항목
+            return CGSize(width: width, height: height)
+        case shoesCollectionView:
+            let width = (collectionView.frame.width - 10) / 2 // 2개 항목
+            return CGSize(width: width, height: height)
+        case selectionCollectionView:
+            let width = collectionView.frame.width // 1개 항목
+            return CGSize(width: width, height: height)
+        default:
+            return CGSize(width: 100, height: height)
+        }
     }
 }
 
