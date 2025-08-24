@@ -104,8 +104,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
 
     init(viewModel: GameMatchingDetailViewModel) {
         self.viewModel = viewModel
-
-        super.init()
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -169,12 +168,12 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     
     private func setupDateAndLocationSection() {
         // Date Label
-        dateLabel.text = viewModel.currentData.date
+        dateLabel.text = viewModel.data.date
         dateLabel.font = UIFont.systemFont(ofSize: 20)
         dateLabel.textColor = .black
         
         // Location Label
-        locationLabel.text = viewModel.currentData.location
+        locationLabel.text = viewModel.data.location
         locationLabel.font = UIFont.systemFont(ofSize: 20)
         locationLabel.textColor = .black
         
@@ -184,7 +183,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         mapPinImageView.contentMode = .scaleAspectFit
         
         // Address Label
-        addressLabel.text = viewModel.currentData.address
+        addressLabel.text = viewModel.data.address
         addressLabel.font = UIFont.systemFont(ofSize: 14)
         addressLabel.textColor = Colors.lightGrayText
         
@@ -216,7 +215,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         feeTitleLabel.textColor = .black
         
         // Fee Amount
-        feeAmountLabel.text = viewModel.currentData.feeAmount
+        feeAmountLabel.text = viewModel.data.feeAmount
         feeAmountLabel.font = UIFont.boldSystemFont(ofSize: 20)
         feeAmountLabel.textColor = Colors.primaryGreen
         
@@ -241,7 +240,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         formatStackView.spacing = 8
         
         // Create format items from ViewModel
-        for formatItem in viewModel.currentData.formatItems {
+        for formatItem in viewModel.data.formatItems {
             let itemStackView = UIStackView()
             itemStackView.axis = .vertical
             itemStackView.alignment = .center
@@ -280,7 +279,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         teamIconImageView.contentMode = .scaleAspectFit
         
         // Team Title
-        teamTitleLabel.text = viewModel.currentData.teamName
+        teamTitleLabel.text = viewModel.data.teamName
         teamTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         teamTitleLabel.textColor = .black
         
@@ -290,7 +289,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         ageLabel.textColor = Colors.grayText
         
         // Age Value Label
-        ageValueLabel.text = viewModel.currentData.ageRange
+        ageValueLabel.text = viewModel.data.ageRange
         ageValueLabel.font = UIFont.systemFont(ofSize: 16)
         ageValueLabel.textColor = .black
         
@@ -300,7 +299,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         skillLabel.textColor = Colors.grayText
         
         // Skill Value Label
-        skillValueLabel.text = viewModel.currentData.skillLevel
+        skillValueLabel.text = viewModel.data.skillLevel
         skillValueLabel.font = UIFont.systemFont(ofSize: 16)
         skillValueLabel.textColor = .black
         
@@ -324,7 +323,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         topIconStack.spacing = 2
         
         // Create top uniform icons from ViewModel data
-        for uniformItem in viewModel.currentData.uniformInfo.topUniform {
+        for uniformItem in viewModel.data.uniformInfo.topUniform {
             let topIcon = UIImageView()
             topIcon.contentMode = .scaleAspectFit
             topIcon.frame = CGRect(x: 0, y: 0, width: Layout.iconSize, height: Layout.iconSize)
@@ -342,7 +341,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         contactLabel.textColor = Colors.grayText
         
         // Contact Value Label
-        contactValueLabel.text = viewModel.currentData.contactNumber
+        contactValueLabel.text = viewModel.data.contactNumber
         contactValueLabel.font = UIFont.systemFont(ofSize: 16)
         contactValueLabel.textColor = .black
         
@@ -369,7 +368,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         noteContainerView.borderWidth = 0
         
         // Note Label
-        noteLabel.text = viewModel.currentData.noteText
+        noteLabel.text = viewModel.data.noteText
         noteLabel.font = UIFont.systemFont(ofSize: 14)
         noteLabel.textColor = .black
         noteLabel.numberOfLines = 0
@@ -459,7 +458,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // Note 텍스트의 실제 높이 계산
         let noteTextWidth = screenWidth - 85 - 50 // noteContainerView 너비 - 좌우 패딩
-        let noteTextHeight = calculateTextHeight(text: viewModel.currentData.noteText, width: noteTextWidth, font: noteLabel.font)
+        let noteTextHeight = calculateTextHeight(text: viewModel.data.noteText, width: noteTextWidth, font: noteLabel.font)
         let noteContainerHeight = max(Layout.noteContainerHeight, noteTextHeight + 36) // 상하 패딩 18씩 추가
         
         noteContainerView.frame = CGRect(x: 42, y: currentY, width: screenWidth - 85, height: noteContainerHeight)
@@ -533,14 +532,14 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         print("메세지 보내기 버튼이 탭되었습니다.")
         
         // 연락처 번호에서 하이픈 제거
-        let phoneNumber = viewModel.currentData.contactNumber.replacingOccurrences(of: "-", with: "")
+        let phoneNumber = viewModel.data.contactNumber.replacingOccurrences(of: "-", with: "")
         
         // SMS 기능이 사용 가능한지 확인
         if MFMessageComposeViewController.canSendText() {
             let messageComposer = MFMessageComposeViewController()
             messageComposer.messageComposeDelegate = self
             messageComposer.recipients = [phoneNumber]
-            messageComposer.body = "안녕하세요! \(viewModel.currentData.teamName) 팀 모집 글을 보고 연락드립니다."
+            messageComposer.body = "안녕하세요! \(viewModel.data.teamName) 팀 모집 글을 보고 연락드립니다."
             
             self.present(messageComposer, animated: true, completion: nil)
         } else {
@@ -612,7 +611,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         print("주소 복사 버튼이 탭되었습니다.")
         
         // 주소 텍스트를 클립보드에 복사
-        UIPasteboard.general.string = viewModel.currentData.address
+        UIPasteboard.general.string = viewModel.data.address
         
         // 복사 완료 피드백 제공
         showAddressCopiedAlert()

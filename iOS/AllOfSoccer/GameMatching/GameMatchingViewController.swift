@@ -530,7 +530,15 @@ extension GameMatchingViewController: UICollectionViewDelegateFlowLayout {
 extension GameMatchingViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = GameMatchingDetailViewController(viewModel: GameMatchingDetailViewModel())
+        // 원본 Match 데이터 가져오기
+        guard let originalMatch = self.gameMatchingModel.getOriginalMatch(at: indexPath) else {
+            print("원본 데이터를 찾을 수 없습니다.")
+            return
+        }
+        
+        // 원본 데이터로 DetailViewModel 생성
+        let detailViewModel = GameMatchingDetailViewModel(match: originalMatch)
+        let vc = GameMatchingDetailViewController(viewModel: detailViewModel)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 
