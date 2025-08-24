@@ -7,6 +7,27 @@
 
 import UIKit
 
+class LeftAlignedCollectionViewFlowLayout: UICollectionViewFlowLayout {
+    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        let attributes = super.layoutAttributesForElements(in: rect)
+        
+        var leftMargin: CGFloat = 0.0
+        var maxY: CGFloat = -1.0
+        
+        attributes?.forEach { layoutAttribute in
+            if layoutAttribute.frame.origin.y >= maxY {
+                leftMargin = 0.0
+            }
+            
+            layoutAttribute.frame.origin.x = leftMargin
+            leftMargin += layoutAttribute.frame.width + minimumInteritemSpacing
+            maxY = max(layoutAttribute.frame.maxY, maxY)
+        }
+        
+        return attributes
+    }
+}
+
 // MARK: - GameOption Model
 struct GameOption {
     let title: String
@@ -42,7 +63,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
     // Game Style Section
     private let gameStyleLabel = UILabel()
     private let gameOptionsCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
+        let layout = LeftAlignedCollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumInteritemSpacing = 8
         layout.minimumLineSpacing = 12
@@ -474,18 +495,22 @@ extension FirstTeamRecruitmentViewController: UICollectionViewDataSource, UIColl
         collectionView.reloadData()
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height: CGFloat = 48 // 상하 여백 8씩 추가로 높이 증가
-        let cellPadding: CGFloat = 20 // Cell 내부 좌우 여백 (16 + 16)
-
+        let cellPadding: CGFloat = 32 // Cell 내부 좌우 여백 (16 + 16)
+        
         let option = gameOptions[indexPath.item]
         let font = UIFont.systemFont(ofSize: 14, weight: .medium)
         let textSize = option.title.size(withAttributes: [.font: font])
         
         // 텍스트 길이에 따라 적절한 너비 계산
-        let calculatedWidth = textSize.width + (cellPadding * 2)
-
-        return CGSize(width: calculatedWidth, height: height)
+        let calculatedWidth = textSize.width + cellPadding
+        
+        // 최소 너비 설정
+        let minWidth: CGFloat = 90
+        let width = max(calculatedWidth, minWidth)
+        
+        return CGSize(width: width, height: height)
     }
 }
 
