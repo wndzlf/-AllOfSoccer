@@ -9,7 +9,6 @@ import UIKit
 
 protocol TeamIntroductionTableViewCellDelegate: AnyObject {
     func removeButtonDidSeleced(_ tableviewCell: TeamIntroductionTableViewCell)
-    func updownButtonDidSelected(_ tableviewCell: TeamIntroductionTableViewCell)
 }
 
 class TeamIntroductionTableViewCell: UITableViewCell {
@@ -19,7 +18,6 @@ class TeamIntroductionTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let containerView = RoundView()
     private let contentsLabel = UILabel()
-    private let updownButton = UIButton(type: .system)
     private let removeButton = UIButton(type: .system)
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -27,6 +25,7 @@ class TeamIntroductionTableViewCell: UITableViewCell {
         setupUI()
         setupConstraints()
         setupActions()
+        disableGestures()
     }
 
     required init?(coder: NSCoder) {
@@ -34,11 +33,26 @@ class TeamIntroductionTableViewCell: UITableViewCell {
         setupUI()
         setupConstraints()
         setupActions()
+        disableGestures()
+    }
+
+    private func disableGestures() {
+        // 모든 기본 제스처 비활성화
+        for gesture in gestureRecognizers ?? [] {
+            gesture.isEnabled = false
+        }
+        for gesture in contentView.gestureRecognizers ?? [] {
+            gesture.isEnabled = false
+        }
     }
 
     private func setupUI() {
-        backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        backgroundColor = .clear
         selectionStyle = .none
+        isUserInteractionEnabled = true
+        
+        // 스와이프와 드래그 비활성화
+        shouldIndentWhileEditing = false
         
         containerView.backgroundColor = .white
         containerView.layer.cornerRadius = 6
@@ -46,40 +60,34 @@ class TeamIntroductionTableViewCell: UITableViewCell {
         
         contentsLabel.text = "직접입력"
         contentsLabel.font = UIFont.systemFont(ofSize: 14)
-        contentsLabel.textColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
+        contentsLabel.textColor = .black
         contentsLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        updownButton.setImage(UIImage(named: "CaretUp"), for: .normal)
-        updownButton.tintColor = UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0)
-        updownButton.translatesAutoresizingMaskIntoConstraints = false
+        contentsLabel.numberOfLines = 0
+        contentsLabel.lineBreakMode = .byWordWrapping
         
         removeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
         removeButton.tintColor = UIColor(red: 0.615, green: 0.623, blue: 0.627, alpha: 1.0)
         removeButton.translatesAutoresizingMaskIntoConstraints = false
+        removeButton.isUserInteractionEnabled = true
     }
     
     private func setupConstraints() {
         contentView.addSubview(containerView)
         containerView.addSubview(contentsLabel)
-        containerView.addSubview(updownButton)
         containerView.addSubview(removeButton)
         
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 11),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -11),
-            containerView.heightAnchor.constraint(equalToConstant: 50),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             
+            contentsLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
             contentsLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            contentsLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            contentsLabel.trailingAnchor.constraint(equalTo: removeButton.leadingAnchor, constant: -12),
+            contentsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             
-            updownButton.trailingAnchor.constraint(equalTo: removeButton.leadingAnchor, constant: -10),
-            updownButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            updownButton.widthAnchor.constraint(equalToConstant: 20),
-            updownButton.heightAnchor.constraint(equalToConstant: 20),
-            
-            removeButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            removeButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -40.0),
             removeButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             removeButton.widthAnchor.constraint(equalToConstant: 18),
             removeButton.heightAnchor.constraint(equalToConstant: 18)
@@ -88,15 +96,10 @@ class TeamIntroductionTableViewCell: UITableViewCell {
     
     private func setupActions() {
         removeButton.addTarget(self, action: #selector(removeButtonDidSelected), for: .touchUpInside)
-        updownButton.addTarget(self, action: #selector(updownButtonDidSelected), for: .touchUpInside)
     }
 
     @objc func removeButtonDidSelected(_ sender: UIButton) {
         self.delegate?.removeButtonDidSeleced(self)
-    }
-
-    @objc func updownButtonDidSelected(_ sender: Any) {
-        self.delegate?.updownButtonDidSelected(self)
     }
 
     func configure(_ model: Comment) {

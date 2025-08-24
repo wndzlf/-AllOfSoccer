@@ -34,6 +34,22 @@ class IntroductionDetailView: UIView {
 
     weak var delegate: IntroductionDetailViewDelegate?
     private var commentsModel: [Comment] = []
+    
+    // 선택된 항목들을 저장하는 프로퍼티 추가
+    var selectedComments: [Comment] = [] {
+        didSet {
+            updateButtonStates()
+        }
+    }
+    
+    private func updateButtonStates() {
+        let buttons = commentButtonStackView.arrangedSubviews.compactMap { $0 as? SeletableButton }
+        buttons.forEach { button in
+            if let comment = Comment(rawValue: button.tag) {
+                button.isSelected = selectedComments.contains(comment)
+            }
+        }
+    }
 
     private var baseView: UIView = {
         let view = UIView()
@@ -203,37 +219,55 @@ class IntroductionDetailView: UIView {
         return stackView
     }()
 
+    @objc private func fifthSelectableButtonTouchUp(_ sender: UIButton) {
+        if !sender.isSelected {
+            // 직접입력 버튼이 선택될 때 다른 모든 버튼 선택 해제
+            let buttons = commentButtonStackView.arrangedSubviews.compactMap { $0 as? SeletableButton }
+            buttons.forEach { button in
+                if button != sender {
+                    button.isSelected = false
+                }
+            }
+        }
+        sender.isSelected = !sender.isSelected
+    }
+
     @objc private func firstSelectableButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = sender.isSelected ? false : true
+        if !sender.isSelected {
+            // 일반 버튼이 선택될 때 직접입력 버튼 선택 해제
+            fifthCommentButton.isSelected = false
+        }
+        sender.isSelected = !sender.isSelected
     }
 
     @objc private func secondSelectableButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = sender.isSelected ? false : true
+        if !sender.isSelected {
+            fifthCommentButton.isSelected = false
+        }
+        sender.isSelected = !sender.isSelected
     }
 
     @objc private func thirdSelectableButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = sender.isSelected ? false : true
+        if !sender.isSelected {
+            fifthCommentButton.isSelected = false
+        }
+        sender.isSelected = !sender.isSelected
     }
 
     @objc private func fourthSelectableButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = sender.isSelected ? false : true
-    }
-
-    @objc private func fifthSelectableButtonTouchUp(_ sender: UIButton) {
-        sender.isSelected = sender.isSelected ? false : true
+        if !sender.isSelected {
+            fifthCommentButton.isSelected = false
+        }
+        sender.isSelected = !sender.isSelected
     }
 
     @objc func cancelButtonDidSelected(sender: UIButton) {
-        print("cancelButton이 클릭되었습니다")
         self.delegate?.cancelButtonDidSelected(self)
     }
 
     @objc func OKButtonDidSelected(sender: UIButton) {
-        print("OKButton이 클릭되었습니다")
-
         let buttons = self.commentButtonStackView.arrangedSubviews.compactMap { $0 as? UIButton }.filter { $0.isSelected }.compactMap { Comment(rawValue: $0.tag) }
         self.commentsModel = buttons
-
         self.delegate?.OKButtonDidSelected(self, self.commentsModel)
     }
 
@@ -277,5 +311,9 @@ class IntroductionDetailView: UIView {
             self.OKCancelButtonStackView.bottomAnchor.constraint(equalTo: self.baseView.bottomAnchor, constant: -24),
             self.OKCancelButtonStackView.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+
+    func configure(with selectedComments: [Comment]) {
+        self.selectedComments = selectedComments
     }
 }

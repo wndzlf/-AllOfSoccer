@@ -4,7 +4,21 @@ import RangeSeekSlider
 class SecondTeamRecruitmentViewController: UIViewController {
 
     private var tableViewModel: [Comment] = []
-
+    private var isDirectInputMode = false
+    private let directInputTextView: UITextView = {
+        let textView = UITextView()
+        textView.backgroundColor = .white
+        textView.layer.cornerRadius = 6
+        textView.layer.borderWidth = 1
+        textView.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
+        textView.font = UIFont.systemFont(ofSize: 14)
+        textView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        textView.isScrollEnabled = true
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.isHidden = true
+        return textView
+    }()
+    
     // MARK: - UI Components
     private let scrollView = UIScrollView()
     private let contentView = UIView()
@@ -40,7 +54,6 @@ class SecondTeamRecruitmentViewController: UIViewController {
     private let contactImageView = UIImageView()
     private let contactTextField = UITextField()
     private let informationCheckButton = IBSelectTableButton()
-    private let rememberLabel = UILabel()
     
     // Bottom Button
     private let registerButton = UIButton(type: .system)
@@ -146,13 +159,15 @@ class SecondTeamRecruitmentViewController: UIViewController {
         skillLabel.translatesAutoresizingMaskIntoConstraints = false
         
         skillSlider.translatesAutoresizingMaskIntoConstraints = false
-        skillSlider.minimumValue = 10
-        skillSlider.maximumValue = 70
-        skillSlider.value = 40
+        skillSlider.minimumValue = 0
+        skillSlider.maximumValue = 6
+        skillSlider.value = 3 // 중간값으로 초기 설정
         skillSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
         skillSlider.maximumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
-        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
         skillSlider.setThumbImage(UIImage(systemName: "circle.fill")?.withTintColor(UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0), renderingMode: .alwaysOriginal), for: .normal)
+        
+        // 슬라이더 값을 정수로만 설정되도록
+        skillSlider.addTarget(self, action: #selector(skillSliderValueChanged), for: .valueChanged)
         
         // Create skill labels
         let skillValues = ["최하", "하", "중하", "중", "중상", "상", "최상"]
@@ -172,8 +187,12 @@ class SecondTeamRecruitmentViewController: UIViewController {
         introductionLabel.textColor = .black
         introductionLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        introductionTableView.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        introductionTableView.backgroundColor = .clear
         introductionTableView.translatesAutoresizingMaskIntoConstraints = false
+        introductionTableView.layer.cornerRadius = 8
+        introductionTableView.layer.borderWidth = 1
+        introductionTableView.layer.borderColor = UIColor(red: 0.866, green: 0.870, blue: 0.882, alpha: 1.0).cgColor
+        introductionTableView.backgroundColor = .white
         
         addIntroductionButton.setTitle("글 추가", for: .normal)
         addIntroductionButton.setImage(UIImage(systemName: "plus"), for: .normal)
@@ -206,16 +225,17 @@ class SecondTeamRecruitmentViewController: UIViewController {
         informationCheckButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
         informationCheckButton.tintColor = UIColor(red: 0.803, green: 0.803, blue: 0.803, alpha: 1.0)
         
-        rememberLabel.text = "이 정보 다음에 기억하기"
-        rememberLabel.font = UIFont.systemFont(ofSize: 16)
-        rememberLabel.translatesAutoresizingMaskIntoConstraints = false
-        
         // Bottom Button
         registerButton.setTitle("등록하기", for: .normal)
         registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         registerButton.setTitleColor(.white, for: .normal)
         registerButton.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
         registerButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // TextView placeholder 설정
+        directInputTextView.text = "소개글을 직접 입력해주세요"
+        directInputTextView.textColor = UIColor.lightGray
+        directInputTextView.delegate = self
     }
     
     private func setupConstraints() {
@@ -242,13 +262,13 @@ class SecondTeamRecruitmentViewController: UIViewController {
         contentView.addSubview(introductionLabel)
         contentView.addSubview(introductionTableView)
         contentView.addSubview(addIntroductionButton)
+        contentView.addSubview(directInputTextView)
         
         contentView.addSubview(contactLabel)
         contentView.addSubview(contactView)
         contactView.addSubview(contactImageView)
         contactView.addSubview(contactTextField)
         contentView.addSubview(informationCheckButton)
-        contentView.addSubview(rememberLabel)
         
         view.addSubview(registerButton)
         
@@ -325,9 +345,8 @@ class SecondTeamRecruitmentViewController: UIViewController {
             introductionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
             introductionTableView.topAnchor.constraint(equalTo: introductionLabel.bottomAnchor, constant: 16),
-            introductionTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            introductionTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            introductionTableView.heightAnchor.constraint(equalToConstant: 128),
+            introductionTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            introductionTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
             
             addIntroductionButton.topAnchor.constraint(equalTo: introductionTableView.bottomAnchor, constant: 16),
             addIntroductionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -358,9 +377,7 @@ class SecondTeamRecruitmentViewController: UIViewController {
             informationCheckButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             informationCheckButton.widthAnchor.constraint(equalToConstant: 22),
             informationCheckButton.heightAnchor.constraint(equalToConstant: 22),
-            
-            rememberLabel.leadingAnchor.constraint(equalTo: informationCheckButton.trailingAnchor, constant: 10),
-            rememberLabel.centerYAnchor.constraint(equalTo: informationCheckButton.centerYAnchor)
+
         ])
         
         // Bottom button constraints
@@ -374,6 +391,13 @@ class SecondTeamRecruitmentViewController: UIViewController {
         // Content view bottom constraint
         NSLayoutConstraint.activate([
             contentView.bottomAnchor.constraint(equalTo: informationCheckButton.bottomAnchor, constant: 20)
+        ])
+        
+        NSLayoutConstraint.activate([
+            directInputTextView.topAnchor.constraint(equalTo: introductionLabel.bottomAnchor, constant: 16),
+            directInputTextView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            directInputTextView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            directInputTextView.heightAnchor.constraint(equalToConstant: 128)
         ])
     }
     
@@ -395,12 +419,45 @@ class SecondTeamRecruitmentViewController: UIViewController {
         introductionTableView.delegate = self
         introductionTableView.dataSource = self
         introductionTableView.register(TeamIntroductionTableViewCell.self, forCellReuseIdentifier: "IntroductionTableViewCell")
+        introductionTableView.separatorStyle = .none
+        introductionTableView.contentInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        introductionTableView.showsVerticalScrollIndicator = false
+        introductionTableView.showsHorizontalScrollIndicator = false
+        introductionTableView.estimatedRowHeight = 50
+        introductionTableView.rowHeight = UITableView.automaticDimension
+        introductionTableView.isScrollEnabled = false
+    }
+
+    private func toggleInputMode(isDirectInput: Bool) {
+        isDirectInputMode = isDirectInput
+        introductionTableView.isHidden = isDirectInput
+        directInputTextView.isHidden = !isDirectInput
+        
+        if isDirectInput {
+            directInputTextView.becomeFirstResponder()
+            if directInputTextView.text == "소개글을 직접 입력해주세요" {
+                directInputTextView.text = ""
+                directInputTextView.textColor = .black
+            }
+            // 기존 선택된 항목들 초기화
+            tableViewModel.removeAll()
+            introductionTableView.reloadData()
+        } else {
+            directInputTextView.resignFirstResponder()
+            directInputTextView.text = "소개글을 직접 입력해주세요"
+            directInputTextView.textColor = .lightGray
+        }
     }
 
     // MARK: - Actions
     @objc private func addIntroductionButtonTouchUp(_ sender: RoundButton) {
         let introductionDetailView = IntroductionDetailView()
         introductionDetailView.delegate = self
+        
+        // 기존 선택된 항목들 전달
+        let selectedComments = tableViewModel
+        introductionDetailView.configure(with: selectedComments)
+        
         self.subviewConstraints(view: introductionDetailView)
     }
 
@@ -420,9 +477,10 @@ class SecondTeamRecruitmentViewController: UIViewController {
         subviewConstraints(view: deleteTeamInformationView)
     }
 
-    @objc func skillSliderValueChanged(_ sender: OneThumbSlider) {
-        let values = "(\(sender.value)"
-        print("Range slider value changed: \(values)")
+    @objc func skillSliderValueChanged(_ sender: UISlider) {
+        // 가장 가까운 정수값으로 반올림
+        let roundedValue = round(sender.value)
+        sender.value = roundedValue
     }
 
     private func subviewConstraints(view: UIView) {
@@ -443,6 +501,11 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
     private func setSkillLabelsLayout() {
         let labelPositions = createLabelXPositions(rangeSlider: nil, customSlider: self.skillSlider)
+        
+        // 슬라이더의 값 범위를 라벨 위치에 맞게 조정
+        skillSlider.minimumValue = 0
+        skillSlider.maximumValue = 6
+        
         setLabelsConstraint(slider: self.skillSlider, labelXPositons: labelPositions, labels: self.skillSliderLabels)
     }
 
@@ -502,24 +565,17 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
 // MARK: - Extensions
 extension SecondTeamRecruitmentViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        true
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
     }
 
-    func tableView(tableView: UITableView, shouldIndentWhileEditingRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 50
+    }
+    
+    // 스와이프 액션 비활성화
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
-    }
-
-    func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell.EditingStyle {
-        return .none
-    }
-
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let movedObject = self.tableViewModel[sourceIndexPath.row]
-        self.tableViewModel.remove(at: sourceIndexPath.row)
-        self.tableViewModel.insert(movedObject, at: destinationIndexPath.row)
-        self.introductionTableView.isEditing = false
-        self.introductionTableView.reloadData()
     }
 }
 
@@ -537,6 +593,8 @@ extension SecondTeamRecruitmentViewController: UITableViewDataSource {
 
         cell.configure(model)
         cell.delegate = self
+        cell.backgroundColor = .white
+        cell.contentView.backgroundColor = .white
 
         return cell
     }
@@ -544,12 +602,40 @@ extension SecondTeamRecruitmentViewController: UITableViewDataSource {
 
 extension SecondTeamRecruitmentViewController: TeamIntroductionTableViewCellDelegate {
     func updownButtonDidSelected(_ tableviewCell: TeamIntroductionTableViewCell) {
-        self.introductionTableView.isEditing = true
+        // 위아래 방향키 기능 비활성화
     }
 
     func removeButtonDidSeleced(_ tableviewCell: TeamIntroductionTableViewCell) {
-        self.tableViewModel.removeLast()
-        self.introductionTableView.reloadData()
+        if let indexPath = introductionTableView.indexPath(for: tableviewCell) {
+            self.tableViewModel.remove(at: indexPath.row)
+            self.introductionTableView.reloadData()
+            
+            // 셀이 삭제된 후 테이블뷰 높이 업데이트
+            self.updateTableViewHeight()
+        }
+    }
+    
+    private func updateTableViewHeight() {
+        // 모든 셀의 예상 높이 합산
+        var totalHeight: CGFloat = 0
+        for i in 0..<tableViewModel.count {
+            let indexPath = IndexPath(row: i, section: 0)
+            totalHeight += self.tableView(introductionTableView, heightForRowAt: indexPath)
+        }
+        
+        // 최소 높이 설정
+        let minHeight: CGFloat = 50
+        let finalHeight = max(minHeight, totalHeight)
+        
+        // 애니메이션과 함께 높이 업데이트
+        UIView.animate(withDuration: 0.3) {
+            self.introductionTableView.constraints.forEach { constraint in
+                if constraint.firstAttribute == .height {
+                    constraint.constant = finalHeight
+                }
+            }
+            self.view.layoutIfNeeded()
+        }
     }
 }
 
@@ -558,10 +644,18 @@ extension SecondTeamRecruitmentViewController: IntroductionDetailViewDelegate {
         view.removeFromSuperview()
     }
 
-    func OKButtonDidSelected(_ view: IntroductionDetailView, _ model: [Comment]) {
+    func OKButtonDidSelected(_ view: IntroductionDetailView, _ selectedComments: [Comment]) {
         DispatchQueue.main.async {
-            self.tableViewModel = model
-            self.introductionTableView.reloadData()
+            if selectedComments.contains(where: { $0.content == "직접입력" }) {
+                self.toggleInputMode(isDirectInput: true)
+            } else {
+                self.toggleInputMode(isDirectInput: false)
+                self.tableViewModel = selectedComments
+                self.introductionTableView.reloadData()
+                
+                // 테이블뷰 높이 업데이트
+                self.updateTableViewHeight()
+            }
             view.removeFromSuperview()
         }
     }
@@ -592,5 +686,32 @@ extension SecondTeamRecruitmentViewController: RangeSeekSliderDelegate {
     func rangeSeekSlider(_ slider: RangeSeekSlider, didChange minValue: CGFloat, maxValue: CGFloat) {
         // 슬라이더 값이 변경될 때마다 레이블 위치 업데이트
         setAgeLabelsLayout()
+    }
+}
+
+// MARK: - UITextViewDelegate
+extension SecondTeamRecruitmentViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.textColor == .lightGray {
+            textView.text = ""
+            textView.textColor = .black
+        }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty {
+            textView.text = "소개글을 직접 입력해주세요"
+            textView.textColor = .lightGray
+        }
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        // 현재 텍스트의 길이 계산
+        let currentText = textView.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: text)
+        
+        // 최대 길이 제한 (예: 500자)
+        return updatedText.count <= 500
     }
 }
