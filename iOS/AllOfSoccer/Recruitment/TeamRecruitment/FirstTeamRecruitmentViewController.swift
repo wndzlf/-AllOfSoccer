@@ -206,6 +206,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
         priceTextField.keyboardType = .numberPad
         priceTextField.delegate = self
         priceTextField.translatesAutoresizingMaskIntoConstraints = false
+        priceTextField.addTarget(self, action: #selector(priceTextFieldDidChange(_:)), for: .editingChanged)
         
         // Bottom Button
         nextButton.setTitle("다음 (1/2)", for: .normal)
@@ -497,18 +498,21 @@ extension FirstTeamRecruitmentViewController: UICollectionViewDataSource, UIColl
     
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height: CGFloat = 48 // 상하 여백 8씩 추가로 높이 증가
-        let cellPadding: CGFloat = 32 // Cell 내부 좌우 여백 (16 + 16)
+        let horizontalPadding: CGFloat = 32 // Cell 내부 좌우 여백 (16 + 16)
         
         let option = gameOptions[indexPath.item]
         let font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        let textSize = option.title.size(withAttributes: [.font: font])
         
-        // 텍스트 길이에 따라 적절한 너비 계산
-        let calculatedWidth = textSize.width + cellPadding
+        // 텍스트의 실제 크기 계산
+        let textRect = option.title.boundingRect(
+            with: CGSize(width: .greatestFiniteMagnitude, height: height),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: font],
+            context: nil
+        )
         
-        // 최소 너비 설정
-        let minWidth: CGFloat = 90
-        let width = max(calculatedWidth, minWidth)
+        // 텍스트 길이에 따라 너비 계산 (좌우 여백 추가)
+        let width = ceil(textRect.width) + horizontalPadding
         
         return CGSize(width: width, height: height)
     }
@@ -522,6 +526,22 @@ extension FirstTeamRecruitmentViewController: UITextFieldDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // 참가비 입력 필드인 경우에만 처리
+        if textField == priceTextField {
+            // 백스페이스 허용
+            if string.isEmpty {
+                return true
+            }
+            
+            // 숫자만 허용
+            let allowedCharacters = CharacterSet.decimalDigits
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+        }
         return true
     }
 }
@@ -545,5 +565,36 @@ extension FirstTeamRecruitmentViewController {
 
     private func keyboardWillDisapper() {
         // 키보드 처리 로직
+    }
+}
+
+// MARK: - Price Formatting
+extension FirstTeamRecruitmentViewController {
+    @objc private func priceTextFieldDidChange(_ textField: UITextField) {
+        // 현재 커서 위치 저장
+        let currentPosition = textField.selectedTextRange
+        
+        // 숫자만 추출
+        let numericString = textField.text?.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+        
+        if let number = Int(numericString ?? "0") {
+            // 천 단위 구분 기호와 '원' 추가
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            if let formattedString = formatter.string(from: NSNumber(value: number)) {
+                textField.text = formattedString + "원"
+            }
+        } else {
+            textField.text = ""
+        }
+        
+        // 커서 위치 복원
+        textField.selectedTextRange = currentPosition
+    }
+    
+    // 숫자 값만 추출하는 메서드
+    private func extractNumber(from string: String) -> Int {
+        let numericString = string.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+        return Int(numericString) ?? 0
     }
 }
