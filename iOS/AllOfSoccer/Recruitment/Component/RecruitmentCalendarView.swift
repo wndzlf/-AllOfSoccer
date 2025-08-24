@@ -19,6 +19,12 @@ class RecruitmentCalendarView: UIView {
 
     private var selectedDate: String?
     private var currentPage: Date?
+    
+    // 시간 선택을 위한 데이터
+    private let hours = Array(0...23)
+    private let minutes = [0, 30]
+    private var selectedHour = 0
+    private var selectedMinute = 0
 
     private var baseView: UIView = {
         let view = UIView()
@@ -50,19 +56,18 @@ class RecruitmentCalendarView: UIView {
         calendar.calendarWeekdayView.weekdayLabels[6].text = "토"
 
         calendar.allowsMultipleSelection = false
+        
+        // 이전/다음 달 날짜 숨기기
+        calendar.placeholderType = .none
 
         return calendar
     }()
 
-    private var timeDatePicker: UIDatePicker = {
-        let datePicker = UIDatePicker()
-        datePicker.preferredDatePickerStyle = .automatic
-        datePicker.datePickerMode = .time
-        datePicker.locale = Locale(identifier: "ko-KR")
-        datePicker.timeZone = .autoupdatingCurrent
-        datePicker.addTarget(self, action: #selector(handleDatePicker), for: .valueChanged)
-
-        return datePicker
+    private var timePickerView: UIPickerView = {
+        let pickerView = UIPickerView()
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
+        pickerView.backgroundColor = .clear
+        return pickerView
     }()
 
     private var timeTitleLabel: UILabel = {
@@ -161,12 +166,37 @@ class RecruitmentCalendarView: UIView {
         let today = Date()
         calendar.select(today)
         appendDate(date: today)
+        
+        // 현재 시간을 30분 단위로 맞춤
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
+        
+        // 분을 30분 단위로 반올림
+        if let minute = components.minute {
+            if minute < 30 {
+                components.minute = 0
+            } else {
+                components.minute = 30
+            }
+        }
+        
+        // 초기 시간 설정
+        selectedHour = components.hour ?? 0
+        selectedMinute = components.minute ?? 0
+        
+        // UIPickerView 설정
+        timePickerView.delegate = self
+        timePickerView.dataSource = self
+        
+        // 초기 선택 위치 설정
+        timePickerView.selectRow(selectedHour, inComponent: 0, animated: false)
+        timePickerView.selectRow(selectedMinute == 30 ? 1 : 0, inComponent: 1, animated: false)
     }
 
     private func setViewConstraint() {
 
         self.addsubviews(self.baseView)
-        self.baseView.addsubviews(self.okAndCancelStackView, self.calendar, self.timeTitleLabel, self.timeDatePicker)
+        self.baseView.addsubviews(self.okAndCancelStackView, self.calendar, self.timeTitleLabel, self.timePickerView)
         self.calendar.addsubviews(self.monthPrevButton, self.monthNextButton)
 
         NSLayoutConstraint.activate([
@@ -181,16 +211,18 @@ class RecruitmentCalendarView: UIView {
             self.okAndCancelStackView.bottomAnchor.constraint(equalTo: self.baseView.bottomAnchor, constant: -24),
             self.okAndCancelStackView.heightAnchor.constraint(equalToConstant: 40),
 
-            self.timeDatePicker.bottomAnchor.constraint(equalTo: self.okAndCancelStackView.topAnchor, constant: -24),
-            self.timeDatePicker.trailingAnchor.constraint(equalTo: self.baseView.trailingAnchor, constant: -28),
+            self.timePickerView.bottomAnchor.constraint(equalTo: self.okAndCancelStackView.topAnchor, constant: -24),
+            self.timePickerView.trailingAnchor.constraint(equalTo: self.baseView.trailingAnchor, constant: -28),
+            self.timePickerView.widthAnchor.constraint(equalToConstant: 120),
+            self.timePickerView.heightAnchor.constraint(equalToConstant: 100),
 
-            self.timeTitleLabel.centerYAnchor.constraint(equalTo: self.timeDatePicker.centerYAnchor),
-            self.timeTitleLabel.trailingAnchor.constraint(equalTo: self.timeDatePicker.leadingAnchor, constant: -30),
+            self.timeTitleLabel.centerYAnchor.constraint(equalTo: self.timePickerView.centerYAnchor),
+            self.timeTitleLabel.trailingAnchor.constraint(equalTo: self.timePickerView.leadingAnchor, constant: -30),
 
             self.calendar.topAnchor.constraint(equalTo: self.baseView.topAnchor, constant: 20),
             self.calendar.leadingAnchor.constraint(equalTo: self.baseView.leadingAnchor, constant: 28),
             self.calendar.trailingAnchor.constraint(equalTo: self.baseView.trailingAnchor, constant: -28),
-            self.calendar.bottomAnchor.constraint(equalTo: self.timeDatePicker.topAnchor, constant: 10),
+            self.calendar.bottomAnchor.constraint(equalTo: self.timePickerView.topAnchor, constant: 10),
 
             self.monthPrevButton.topAnchor.constraint(equalTo: calendar.topAnchor, constant: 5),
             self.monthPrevButton.leadingAnchor.constraint(equalTo: calendar.leadingAnchor, constant: 2),
@@ -211,10 +243,8 @@ class RecruitmentCalendarView: UIView {
     @objc private func okButtonTouchUp(sender: UIButton) {
         guard let selectedDate = self.selectedDate else { return }
         
-        // 시간 정보도 포함하여 전달
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm"
-        let timeString = dateFormatter.string(from: timeDatePicker.date)
+        // 선택된 시간을 HH:mm 형식으로 포맷
+        let timeString = String(format: "%02d:%02d", selectedHour, selectedMinute)
         
         let fullDateString = "\(selectedDate) \(timeString)"
         self.delegate?.okButtonDidSelected(self, selectedDate: fullDateString)
@@ -228,15 +258,7 @@ class RecruitmentCalendarView: UIView {
         moveCurrentPage(moveUp: true)
     }
 
-    @objc private func handleDatePicker(_ sender: UIDatePicker) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = " hh시 mm분"
-        let time = dateFormatter.string(from: sender.date)
 
-        self.selectedDate.map {
-            self.selectedDate = $0 + time
-        }
-    }
 
     private func moveCurrentPage(moveUp: Bool) {
         let calendar = Calendar.current
@@ -289,4 +311,49 @@ extension RecruitmentCalendarView: FSCalendarDelegate {
 // MARK: - FSCollectionViewDataSource
 extension RecruitmentCalendarView: FSCalendarDataSource {
 
+}
+
+// MARK: - UIPickerViewDelegate & DataSource
+extension RecruitmentCalendarView: UIPickerViewDelegate, UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 2 // 시간, 분
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        switch component {
+        case 0: // 시간
+            return hours.count
+        case 1: // 분
+            return minutes.count
+        default:
+            return 0
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.black,
+            .font: UIFont.systemFont(ofSize: 16)
+        ]
+        
+        switch component {
+        case 0: // 시간
+            return NSAttributedString(string: "\(hours[row])", attributes: attributes)
+        case 1: // 분
+            return NSAttributedString(string: "\(minutes[row])", attributes: attributes)
+        default:
+            return nil
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        switch component {
+        case 0: // 시간
+            selectedHour = hours[row]
+        case 1: // 분
+            selectedMinute = minutes[row]
+        default:
+            break
+        }
+    }
 }
