@@ -38,7 +38,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
     }
 
     @IBAction private func backButtonItemTouchUp(_ sender: UIBarButtonItem) {
-        self.dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
 
     @IBAction private func informationCheckButtonTouchUp(_ sender: IBSelectTableButton) {
