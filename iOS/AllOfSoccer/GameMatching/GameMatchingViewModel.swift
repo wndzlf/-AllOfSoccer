@@ -66,21 +66,38 @@ class GameMatchingViewModel {
     // 필터 상태
     private var currentLocationFilters: [String] = []
     private var currentGameTypeFilters: [String] = []
+    private var isFilterApplied: Bool = false // 필터가 적용되었는지 여부
 
     internal var count: Int {
-        // 필터링된 데이터가 있으면 필터링된 데이터 개수 반환
-        return filteredViewModel.isEmpty ? matchingListViewModel.count : filteredViewModel.count
+        // 필터가 적용되었으면 필터링된 데이터 개수 반환 (0개일 수도 있음)
+        return isFilterApplied ? filteredViewModel.count : matchingListViewModel.count
     }
 
     internal func fetchViewModel(indexPath: IndexPath) -> GameMatchListViewModel {
-        // 필터링된 데이터가 있으면 필터링된 데이터 반환
-        return filteredViewModel.isEmpty ? matchingListViewModel[indexPath.row] : filteredViewModel[indexPath.row]
+        // 필터가 적용되었으면 필터링된 데이터 반환
+        if isFilterApplied {
+            guard indexPath.row < filteredViewModel.count else {
+                // 인덱스 범위를 벗어나면 빈 ViewModel 반환 (이론적으로는 발생하지 않아야 함)
+                return GameMatchListViewModel(
+                    date: "",
+                    time: "",
+                    address: "",
+                    description: "",
+                    isFavorite: false,
+                    isRecruiting: false,
+                    teamName: ""
+                )
+            }
+            return filteredViewModel[indexPath.row]
+        } else {
+            return matchingListViewModel[indexPath.row]
+        }
     }
     
     // 원본 Match 데이터 반환
     internal func getOriginalMatch(at indexPath: IndexPath) -> Match? {
-        // 필터링된 데이터가 있으면 필터링된 데이터에서 가져오기
-        let matches = filteredMatches.isEmpty ? originalMatches : filteredMatches
+        // 필터가 적용되었으면 필터링된 데이터에서 가져오기
+        let matches = isFilterApplied ? filteredMatches : originalMatches
         guard indexPath.row < matches.count else { return nil }
         return matches[indexPath.row]
     }
@@ -721,9 +738,13 @@ class GameMatchingViewModel {
     private func applyAllFilters() {
         // 날짜 필터가 없고 다른 필터도 없으면 필터 초기화
         if selectedDate.isEmpty && currentLocationFilters.isEmpty && currentGameTypeFilters.isEmpty {
+            self.isFilterApplied = false
             self.clearFilters()
             return
         }
+        
+        // 필터가 적용됨을 표시
+        self.isFilterApplied = true
         
         // 원본 데이터에서 필터링
         var filtered = originalMatches
@@ -840,6 +861,7 @@ class GameMatchingViewModel {
         if !selectedDate.isEmpty {
             self.applyAllFilters()
         } else {
+            self.isFilterApplied = false
             self.filteredMatches.removeAll()
             self.filteredViewModel.removeAll()
             // UI 업데이트
