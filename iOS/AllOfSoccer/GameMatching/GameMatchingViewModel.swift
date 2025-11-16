@@ -31,48 +31,11 @@ enum FilterType: CaseIterable {
     var filterList: [String] {
         switch self {
         case .location: return [
-            // 수도권
-            "서울-강남/서초", "서울-강동/송파", "서울-강북/도봉", "서울-강서/양천", 
-            "서울-관악/동작", "서울-광진/성동", "서울-노원/중랑", "서울-마포/서대문",
-            "서울-영등포/구로", "서울-용산/중구", "서울-은평/강북",
-            
-            // 경기도
-            "경기-수원/화성", "경기-성남/분당", "경기-용인", "경기-안산/시흥",
-            "경기-부천/광명", "경기-안양/의왕", "경기-평택/오산", "경기-하남/구리",
-            "경기-남양주/가평", "경기-양평/여주", "경기-이천/안성", "경기-포천/동두천",
-            "경기-고양/파주", "경기-김포/강화",
-            
-            // 인천
-            "인천-미추홀/연수", "인천-남동/부평", "인천-계양/서구", "인천-강화/옹진",
-            
-            // 강원도
-            "강원-춘천/화천", "강원-원주/횡성", "강원-강릉/동해", "강원-삼척/태백",
-            "강원-속초/고성", "강원-양양/인제", "강원-평창/정선", "강원-영월/정선",
-            
-            // 충청도
-            "충북-청주/보은", "충북-충주/제천", "충북-진천/음성", "충북-옥천/영동",
-            "충남-천안/아산", "충남-공주/부여", "충남-보령/서천", "충남-논산/계룡",
-            "충남-당진/홍성", "충남-서산/태안",
-            
-            // 전라도
-            "전북-전주/완주", "전북-군산/익산", "전북-정읍/남원", "전북-김제/부안",
-            "전북-진안/무주", "전북-장수/임실", "전북-순창/고창",
-            "전남-목포/무안", "전남-여수/순천", "전남-나주/화순", "전남-광양/구례",
-            "전남-담양/곡성", "전남-장성/영광", "전남-진도/완도", "전남-해남/강진",
-            "전남-고흥/보성", "전남-신안",
-            
-            // 경상도
-            "경북-포항/영천", "경북-경주/울진", "경북-안동/예천", "경북-구미/김천",
-            "경북-상주/문경", "경북-영주/봉화", "경북-의성/청송", "경북-영양/영덕",
-            "경북-청도/성주", "경북-고령/합천", "경북-칠곡/군위",
-            "경남-창원/마산", "경남-진주/사천", "경남-통영/거제", "경남-김해/양산",
-            "경남-밀양/의령", "경남-함안/창녕", "경남-거창/합천", "경남-산청/하동",
-            "경남-남해/고성",
-            
-            // 제주도
-            "제주-제주시", "제주-서귀포시",
-            
-            // 기타
+            "서울북부",
+            "서울남부",
+            "경기북부",
+            "경기남부",
+            "인천/부천",
             "기타지역"
         ]
         case .game: return ["11 vs 11", "풋살"]
@@ -205,13 +168,13 @@ class GameMatchingViewModel {
     private func setupMockData() {
         // 목 Match 데이터 생성 - 더 다양한 데이터
         let mockMatches = [
-            // 서울-강남/서초 지역 - 11 vs 11
+            // 서울남부 지역 - 11 vs 11
             Match(
                 id: 1,
                 title: "FC 강남 모집",
                 description: "11 vs 11 실력 중상 구장비 10만원",
                 date: "2024-11-20",
-                location: "서울-강남/서초",
+                location: "서울남부",
                 address: "서울시 강남구 역삼동 테헤란로 축구장",
                 latitude: 37.4979,
                 longitude: 127.0276,
@@ -237,13 +200,13 @@ class GameMatchingViewModel {
                     captain: User(id: 1, name: "김강남", profileImage: nil)
                 )
             ),
-            // 서울-강동/송파 지역 - 풋살
+            // 서울남부 지역 - 풋살
             Match(
                 id: 2,
                 title: "송파 풋살 모집",
                 description: "풋살 실력 하상 구장비 5만원",
                 date: "2024-11-21",
-                location: "서울-강동/송파",
+                location: "서울남부",
                 address: "서울시 송파구 석촌호수 풋살장",
                 latitude: 37.5109,
                 longitude: 127.1012,
@@ -269,13 +232,13 @@ class GameMatchingViewModel {
                     captain: User(id: 2, name: "박송파", profileImage: nil)
                 )
             ),
-            // 서울-강북/도봉 지역 - 11 vs 11
+            // 서울북부 지역 - 11 vs 11
             Match(
                 id: 3,
                 title: "강북 FC 팀원 모집",
                 description: "11 vs 11 실력 하하 구장비 7만원",
                 date: "2024-11-22",
-                location: "서울-강북/도봉",
+                location: "서울북부",
                 address: "서울시 강북구 수유동 축구장",
                 latitude: 37.6396,
                 longitude: 127.0254,
@@ -301,13 +264,13 @@ class GameMatchingViewModel {
                     captain: User(id: 3, name: "최강북", profileImage: nil)
                 )
             ),
-            // 서울-마포/서대문 지역 - 풋살
+            // 서울북부 지역 - 풋살
             Match(
                 id: 4,
                 title: "마포 풋살 친구들",
                 description: "풋살 실력 중하 구장비 6만원",
                 date: "2024-11-23",
-                location: "서울-마포/서대문",
+                location: "서울북부",
                 address: "서울시 마포구 상암동 월드컵공원 풋살장",
                 latitude: 37.5682,
                 longitude: 126.8965,
@@ -333,13 +296,13 @@ class GameMatchingViewModel {
                     captain: User(id: 4, name: "이마포", profileImage: nil)
                 )
             ),
-            // 경기-수원/화성 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11
             Match(
                 id: 5,
                 title: "수원 삼성 블루윙즈 매치",
                 description: "11 vs 11 실력 상상 구장비 15만원",
                 date: "2024-11-24",
-                location: "경기-수원/화성",
+                location: "경기남부",
                 address: "경기도 수원시 장안구 천천동 축구장",
                 latitude: 37.3014,
                 longitude: 127.0100,
@@ -365,13 +328,13 @@ class GameMatchingViewModel {
                     captain: User(id: 5, name: "정수원", profileImage: nil)
                 )
             ),
-            // 경기-성남/분당 지역 - 풋살
+            // 경기남부 지역 - 풋살
             Match(
                 id: 6,
                 title: "분당 풋살 클럽",
                 description: "풋살 실력 중중 구장비 8만원",
                 date: "2024-11-25",
-                location: "경기-성남/분당",
+                location: "경기남부",
                 address: "경기도 성남시 분당구 정자동 풋살장",
                 latitude: 37.3595,
                 longitude: 127.1052,
@@ -397,13 +360,13 @@ class GameMatchingViewModel {
                     captain: User(id: 6, name: "강분당", profileImage: nil)
                 )
             ),
-            // 인천-미추홀/연수 지역 - 11 vs 11
+            // 인천/부천 지역 - 11 vs 11
             Match(
                 id: 7,
                 title: "인천 유나이티드 매치",
                 description: "11 vs 11 실력 중상 구장비 12만원",
                 date: "2024-11-26",
-                location: "인천-미추홀/연수",
+                location: "인천/부천",
                 address: "인천시 연수구 송도동 센트럴파크 축구장",
                 latitude: 37.3895,
                 longitude: 126.6431,
@@ -429,13 +392,13 @@ class GameMatchingViewModel {
                     captain: User(id: 7, name: "한인천", profileImage: nil)
                 )
             ),
-            // 서울-용산/중구 지역 - 풋살
+            // 서울남부 지역 - 풋살
             Match(
                 id: 8,
                 title: "용산 풋살 리그",
                 description: "풋살 실력 하중 구장비 5만원",
                 date: "2024-11-27",
-                location: "서울-용산/중구",
+                location: "서울남부",
                 address: "서울시 용산구 한강대로 용산 풋살장",
                 latitude: 37.5326,
                 longitude: 126.9900,
@@ -461,13 +424,13 @@ class GameMatchingViewModel {
                     captain: User(id: 8, name: "서용산", profileImage: nil)
                 )
             ),
-            // 경기-용인 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11
             Match(
                 id: 9,
                 title: "용인 FC 리그",
                 description: "11 vs 11 실력 중하 구장비 9만원",
                 date: "2024-11-28",
-                location: "경기-용인",
+                location: "경기남부",
                 address: "경기도 용인시 수지구 풍덕천동 축구장",
                 latitude: 37.3222,
                 longitude: 127.0975,
@@ -493,13 +456,13 @@ class GameMatchingViewModel {
                     captain: User(id: 9, name: "오용인", profileImage: nil)
                 )
             ),
-            // 서울-영등포/구로 지역 - 풋살
+            // 서울남부 지역 - 풋살
             Match(
                 id: 10,
                 title: "영등포 풋살 매치",
                 description: "풋살 실력 하하 구장비 4만원",
                 date: "2024-11-29",
-                location: "서울-영등포/구로",
+                location: "서울남부",
                 address: "서울시 영등포구 여의도동 한강공원 풋살장",
                 latitude: 37.5283,
                 longitude: 126.9324,
@@ -525,13 +488,13 @@ class GameMatchingViewModel {
                     captain: User(id: 10, name: "윤영등포", profileImage: nil)
                 )
             ),
-            // 경기-안양/의왕 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11
             Match(
                 id: 11,
                 title: "안양 FC 대결",
                 description: "11 vs 11 실력 중상 구장비 11만원",
                 date: "2024-11-30",
-                location: "경기-안양/의왕",
+                location: "경기남부",
                 address: "경기도 안양시 만안구 안양천 축구장",
                 latitude: 37.3943,
                 longitude: 126.9568,
@@ -557,13 +520,13 @@ class GameMatchingViewModel {
                     captain: User(id: 11, name: "임안양", profileImage: nil)
                 )
             ),
-            // 경기-부천/광명 지역 - 풋살
+            // 인천/부천 지역 - 풋살
             Match(
                 id: 12,
                 title: "부천 풋살 경기",
                 description: "풋살 실력 중하 구장비 7만원",
                 date: "2024-12-01",
-                location: "경기-부천/광명",
+                location: "인천/부천",
                 address: "경기도 부천시 원미구 중동 풋살장",
                 latitude: 37.5034,
                 longitude: 126.7660,
@@ -589,13 +552,13 @@ class GameMatchingViewModel {
                     captain: User(id: 12, name: "신부천", profileImage: nil)
                 )
             ),
-            // 서울-노원/중랑 지역 - 11 vs 11
+            // 서울북부 지역 - 11 vs 11
             Match(
                 id: 13,
                 title: "노원 FC 모집",
                 description: "11 vs 11 실력 하상 구장비 8만원",
                 date: "2024-12-02",
-                location: "서울-노원/중랑",
+                location: "서울북부",
                 address: "서울시 노원구 상계동 축구장",
                 latitude: 37.6542,
                 longitude: 127.0652,
@@ -621,13 +584,13 @@ class GameMatchingViewModel {
                     captain: User(id: 13, name: "김노원", profileImage: nil)
                 )
             ),
-            // 경기-고양/파주 지역 - 풋살
+            // 경기북부 지역 - 풋살
             Match(
                 id: 14,
                 title: "일산 풋살 팀",
                 description: "풋살 실력 중중 구장비 6만원",
                 date: "2024-12-03",
-                location: "경기-고양/파주",
+                location: "경기북부",
                 address: "경기도 고양시 일산동구 백석동 풋살장",
                 latitude: 37.6572,
                 longitude: 126.7859,
@@ -653,13 +616,13 @@ class GameMatchingViewModel {
                     captain: User(id: 14, name: "장일산", profileImage: nil)
                 )
             ),
-            // 서울-관악/동작 지역 - 11 vs 11
+            // 서울남부 지역 - 11 vs 11
             Match(
                 id: 15,
                 title: "관악 FC 팀매치",
                 description: "11 vs 11 실력 하하 구장비 6만원",
                 date: "2024-12-04",
-                location: "서울-관악/동작",
+                location: "서울남부",
                 address: "서울시 관악구 신림동 관악산 축구장",
                 latitude: 37.4784,
                 longitude: 126.9516,

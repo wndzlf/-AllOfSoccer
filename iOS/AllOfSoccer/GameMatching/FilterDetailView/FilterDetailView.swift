@@ -16,7 +16,7 @@ class FilterDetailView: UIView {
     var didSelectedFilterList: [String: FilterType] = [:]
     var filterType: FilterType? {
         didSet {
-            let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택해주세요." : "필터적용하기 (데이터필요)"
+            let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택" : "필터적용하기 (데이터필요)"
             self.finishButton.setTitle(finishButtonTitle, for: .normal)
             self.tagCollectionView.reloadData()
             
@@ -32,6 +32,7 @@ class FilterDetailView: UIView {
     // 동적 높이 계산을 위한 프로퍼티
     private var contentViewHeightConstraint: NSLayoutConstraint?
     private var viewHeightConstraint: NSLayoutConstraint?
+    private var finishButtonBottomConstraint: NSLayoutConstraint?
 
     private var finishButton: UIButton = {
         let button = UIButton()
@@ -108,6 +109,9 @@ class FilterDetailView: UIView {
         let initialHeight: CGFloat = 244
         self.frame.size = CGSize(width: 375, height: initialHeight)
 
+        self.debugBorder()
+
+
         self.addSubview(self.contentView)
         self.contentView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -123,12 +127,22 @@ class FilterDetailView: UIView {
 
         self.addSubview(self.finishButton)
         self.finishButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // finishButton 제약조건 설정
+        // bottom 제약조건은 나중에 superview의 safeArea에 연결
+        self.finishButtonBottomConstraint = self.finishButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0)
+
         NSLayoutConstraint.activate([
             self.finishButton.topAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: 0),
             self.finishButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 0),
             self.finishButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: 0),
-            self.finishButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0),
+            self.finishButtonBottomConstraint!
         ])
+        
+        // superview가 설정된 후 SafeArea에 연결
+        DispatchQueue.main.async { [weak self] in
+            self?.updateFinishButtonConstraint()
+        }
 
         self.contentView.addSubview(self.titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -153,6 +167,25 @@ class FilterDetailView: UIView {
             self.tagCollectionView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: 0),
             self.tagCollectionView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: 0)
         ])
+    }
+    
+    private func updateFinishButtonConstraint() {
+        // finishButton의 bottom을 superview의 safeArea에 연결
+        guard let superview = self.superview else { return }
+        
+        // 기존 제약조건 제거
+        self.finishButtonBottomConstraint?.isActive = false
+        
+        // 새로운 제약조건 설정 (SafeArea까지 포함)
+        self.finishButtonBottomConstraint = self.finishButton.bottomAnchor.constraint(equalTo: superview.bottomAnchor, constant: 0)
+        self.finishButtonBottomConstraint?.isActive = true
+    }
+    
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        if self.superview != nil {
+            self.updateFinishButtonConstraint()
+        }
     }
     
     private func updateViewHeight() {
@@ -180,29 +213,26 @@ class FilterDetailView: UIView {
         // 최소 높이 보장
         let minContentViewHeight: CGFloat = 182
         
-        // finishButton 높이
-        let finishButtonHeight: CGFloat = 62
-        
-        // 최대 높이 제한 (상단 150px 딤드 영역 + 하단 safe area 보장)
+        // finishButton 높이 (SafeArea 포함)
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
         
-        let topMargin: CGFloat = 150 // 상단 딤드 영역
         let bottomSafeArea = window.safeAreaInsets.bottom
-        let maxContentHeight = window.frame.height - topMargin - finishButtonHeight - bottomSafeArea - 20 // 추가 여유 공간
+        let finishButtonBaseHeight: CGFloat = 62
+        let finishButtonHeight: CGFloat = finishButtonBaseHeight + bottomSafeArea // SafeArea 높이 포함
+        
+        // 최대 높이 제한 (화면 상단 여유 공간 + 하단 safe area 보장)
+        let topMargin: CGFloat = 100 // 상단 여유 공간
+        let maxContentHeight = window.frame.height - topMargin - finishButtonHeight - 20 // 추가 여유 공간
         
         // contentView 높이 결정 (최소, 계산된 높이, 최대 높이 중)
         let finalContentViewHeight = max(minContentViewHeight, min(totalContentViewHeight, maxContentHeight))
-        
-        // 전체 뷰 높이 계산
-        let totalViewHeight = finalContentViewHeight + finishButtonHeight
         
         // 제약조건 업데이트
         self.contentViewHeightConstraint?.constant = finalContentViewHeight
         
         // 애니메이션과 함께 높이 업데이트
         UIView.animate(withDuration: 0.3) {
-            self.frame.size.height = totalViewHeight
             self.superview?.layoutIfNeeded()
         }
         
@@ -225,7 +255,7 @@ extension FilterDetailView: UICollectionViewDelegate {
         guard let filterType = self.filterType else { return }
         guard let tagLabelTitle = filterType.filterList[safe: indexPath.item] else { return }
         self.didSelectedFilterList[tagLabelTitle] = filterType
-        let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택해주세요." : "선택 완료"
+        let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택" : "선택 완료"
         self.finishButton.setTitle(finishButtonTitle, for: .normal)
     }
 
@@ -234,7 +264,7 @@ extension FilterDetailView: UICollectionViewDelegate {
         guard let filterType = self.filterType else { return }
         guard let tagLabelTitle = filterType.filterList[safe: indexPath.item] else { return }
         self.didSelectedFilterList[tagLabelTitle] = nil
-        let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택해주세요." : "필터적용하기 (데이터필요)"
+        let finishButtonTitle = self.didSelectedFilterList.isEmpty ? "선택" : "필터적용하기 (데이터필요)"
         self.finishButton.setTitle(finishButtonTitle, for: .normal)
     }
 }
@@ -269,3 +299,10 @@ extension FilterDetailView: UICollectionViewDataSource {
     }
 }
 
+extension UIView {
+
+    func debugBorder() {
+        self.layer.borderColor = UIColor.red.cgColor
+        self.layer.borderWidth = 2
+    }
+}

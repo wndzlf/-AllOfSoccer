@@ -19,7 +19,7 @@ class GameMatchingViewController: UIViewController {
     
     // MARK: - FilterDetailView
     private let filterDetailView = FilterDetailView()
-    private var bottomConstraint: NSLayoutConstraint = NSLayoutConstraint()
+    private var filterDetailViewBottomConstraint: NSLayoutConstraint?
     private lazy var filterDetailBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
@@ -204,6 +204,11 @@ class GameMatchingViewController: UIViewController {
 
         self.filterDetailView.isHidden = true
         self.filterDetailBackgroundView.isHidden = true
+        
+        // 배경 탭 제스처 추가 (필터 콘텐츠 영역 제외)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(filterDetailBackgroundTapped))
+        tapGesture.delegate = self
+        self.filterDetailBackgroundView.addGestureRecognizer(tapGesture)
     }
 
     private func setupNoticeTableView() {
@@ -230,8 +235,10 @@ class GameMatchingViewController: UIViewController {
         
         // 초기 높이 설정 (최소 높이)
         let initialHeight: CGFloat = 244
-        let topMargin: CGFloat = 150 // 상단 딤드 영역
 
+        // bottom 제약조건을 저장하여 애니메이션에 사용
+        self.filterDetailViewBottomConstraint = self.filterDetailView.bottomAnchor.constraint(equalTo: self.filterDetailBackgroundView.bottomAnchor, constant: initialHeight)
+        
         NSLayoutConstraint.activate([
             self.filterDetailBackgroundView.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor, constant: 0),
             self.filterDetailBackgroundView.topAnchor.constraint(equalTo: tabBarController.view.topAnchor, constant: 0),
@@ -241,7 +248,7 @@ class GameMatchingViewController: UIViewController {
             self.filterDetailView.leadingAnchor.constraint(equalTo: self.filterDetailBackgroundView.leadingAnchor, constant: 0),
             self.filterDetailView.trailingAnchor.constraint(equalTo: self.filterDetailBackgroundView.trailingAnchor, constant: 0),
             self.filterDetailView.heightAnchor.constraint(greaterThanOrEqualToConstant: initialHeight),
-            self.filterDetailView.topAnchor.constraint(equalTo: self.filterDetailBackgroundView.topAnchor, constant: topMargin)
+            self.filterDetailViewBottomConstraint!
         ])
     }
 
@@ -366,7 +373,8 @@ class GameMatchingViewController: UIViewController {
     }
 
     @objc private func filterDetailBackgroundTapped() {
-
+        // 배경 탭 시 필터 닫기 (X버튼과 동일한 동작)
+        self.cancelButtonDidSelected(self.filterDetailView, selectedList: [])
     }
 }
 
@@ -406,18 +414,18 @@ extension GameMatchingViewController: UICollectionViewDelegate {
         self.manRecruitmentButton.isHidden = true
         self.teamRecruitmentButton.isHidden = true
 
+        // 초기 위치를 화면 밖(하단)으로 설정
+        guard let tabbar = self.tabBarController else { return }
+        let viewHeight = self.filterDetailView.frame.height
+        self.filterDetailViewBottomConstraint?.constant = viewHeight
+        
         self.tabBarController?.view.layoutIfNeeded()
+        
         UIView.animate(withDuration: 0.3) { [weak self] in
             guard let self = self else { return }
-            guard let tabbar = self.tabBarController else { return }
-            
-            // 상단 150px 딤드 영역 보장
-            let topMargin: CGFloat = 150
-            let viewHeight = self.filterDetailView.frame.height
-            let screenHeight = tabbar.view.frame.height
-            let yPosition = topMargin // 상단에서 150px 아래부터 시작
-            
-            self.filterDetailView.frame = CGRect(x: 0, y: yPosition, width: self.filterDetailView.frame.width, height: viewHeight)
+            // 하단에서 올라오도록 제약조건 업데이트
+            self.filterDetailViewBottomConstraint?.constant = 0
+            self.tabBarController?.view.layoutIfNeeded()
         }
     }
 
@@ -553,9 +561,13 @@ extension GameMatchingViewController: TableViewFilterViewDelegate {
 extension GameMatchingViewController: FilterDetailViewDelegate {
 
     func finishButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
+        guard let tabbar = self.tabBarController else { return }
+        let viewHeight = self.filterDetailView.frame.height
+        
         UIView.animate(withDuration: 0.3) { [weak self] in
             guard let self = self else { return }
-            self.filterDetailView.frame = CGRect(x: 0, y: self.view.frame.maxY, width: self.filterDetailView.frame.width, height: self.filterDetailView.frame.height)
+            // 하단으로 내려가도록 제약조건 업데이트
+            self.filterDetailViewBottomConstraint?.constant = viewHeight
             self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
@@ -600,9 +612,13 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
     }
 
     func cancelButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
+        guard let tabbar = self.tabBarController else { return }
+        let viewHeight = self.filterDetailView.frame.height
+        
         UIView.animate(withDuration: 0.3) { [weak self] in
             guard let self = self else { return }
-            self.filterDetailView.frame = CGRect(x: 0, y: 1000, width: self.filterDetailView.frame.width, height: self.filterDetailView.frame.height)
+            // 하단으로 내려가도록 제약조건 업데이트
+            self.filterDetailViewBottomConstraint?.constant = viewHeight
             self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
@@ -622,5 +638,14 @@ extension GameMatchingViewController: GameMatchingPresenter {
 
     internal func showErrorMessage() {
         print("네트워크 상태가 불안정 합니다.")
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension GameMatchingViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // 필터 콘텐츠 영역을 탭한 경우는 제외
+        let location = touch.location(in: self.filterDetailBackgroundView)
+        return !self.filterDetailView.frame.contains(location)
     }
 }
