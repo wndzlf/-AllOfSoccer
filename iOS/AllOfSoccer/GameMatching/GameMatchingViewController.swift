@@ -119,6 +119,8 @@ class GameMatchingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.navigationItem.title = "팀 매치"
+
         self.gameMatchingModel.presenter = self
 
         self.setupHorizontalCalendarView()
