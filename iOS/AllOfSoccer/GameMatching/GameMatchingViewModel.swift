@@ -166,14 +166,20 @@ class GameMatchingViewModel {
     
     // 목 데이터 설정
     private func setupMockData() {
+        // 현재 날짜 기준으로 날짜 생성
+        let calendar = Calendar.current
+        let today = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
         // 목 Match 데이터 생성 - 더 다양한 데이터
         let mockMatches = [
-            // 서울남부 지역 - 11 vs 11
+            // 서울남부 지역 - 11 vs 11 (오늘부터 0일 후)
             Match(
                 id: 1,
                 title: "FC 강남 모집",
                 description: "11 vs 11 실력 중상 구장비 10만원",
-                date: "2024-11-20",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 강남구 역삼동 테헤란로 축구장",
                 latitude: 37.4979,
@@ -200,12 +206,12 @@ class GameMatchingViewModel {
                     captain: User(id: 1, name: "김강남", profileImage: nil)
                 )
             ),
-            // 서울남부 지역 - 풋살
+            // 서울남부 지역 - 풋살 (오늘부터 1일 후)
             Match(
                 id: 2,
                 title: "송파 풋살 모집",
                 description: "풋살 실력 하상 구장비 5만원",
-                date: "2024-11-21",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 1, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 송파구 석촌호수 풋살장",
                 latitude: 37.5109,
@@ -232,12 +238,12 @@ class GameMatchingViewModel {
                     captain: User(id: 2, name: "박송파", profileImage: nil)
                 )
             ),
-            // 서울북부 지역 - 11 vs 11
+            // 서울북부 지역 - 11 vs 11 (오늘부터 2일 후)
             Match(
                 id: 3,
                 title: "강북 FC 팀원 모집",
                 description: "11 vs 11 실력 하하 구장비 7만원",
-                date: "2024-11-22",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 2, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 강북구 수유동 축구장",
                 latitude: 37.6396,
@@ -264,12 +270,12 @@ class GameMatchingViewModel {
                     captain: User(id: 3, name: "최강북", profileImage: nil)
                 )
             ),
-            // 서울북부 지역 - 풋살
+            // 서울북부 지역 - 풋살 (오늘부터 3일 후)
             Match(
                 id: 4,
                 title: "마포 풋살 친구들",
                 description: "풋살 실력 중하 구장비 6만원",
-                date: "2024-11-23",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 3, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 마포구 상암동 월드컵공원 풋살장",
                 latitude: 37.5682,
@@ -296,12 +302,12 @@ class GameMatchingViewModel {
                     captain: User(id: 4, name: "이마포", profileImage: nil)
                 )
             ),
-            // 경기남부 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11 (오늘부터 4일 후)
             Match(
                 id: 5,
                 title: "수원 삼성 블루윙즈 매치",
                 description: "11 vs 11 실력 상상 구장비 15만원",
-                date: "2024-11-24",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 4, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 수원시 장안구 천천동 축구장",
                 latitude: 37.3014,
@@ -328,12 +334,12 @@ class GameMatchingViewModel {
                     captain: User(id: 5, name: "정수원", profileImage: nil)
                 )
             ),
-            // 경기남부 지역 - 풋살
+            // 경기남부 지역 - 풋살 (오늘부터 5일 후)
             Match(
                 id: 6,
                 title: "분당 풋살 클럽",
                 description: "풋살 실력 중중 구장비 8만원",
-                date: "2024-11-25",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 5, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 성남시 분당구 정자동 풋살장",
                 latitude: 37.3595,
@@ -360,12 +366,12 @@ class GameMatchingViewModel {
                     captain: User(id: 6, name: "강분당", profileImage: nil)
                 )
             ),
-            // 인천/부천 지역 - 11 vs 11
+            // 인천/부천 지역 - 11 vs 11 (오늘부터 6일 후)
             Match(
                 id: 7,
                 title: "인천 유나이티드 매치",
                 description: "11 vs 11 실력 중상 구장비 12만원",
-                date: "2024-11-26",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 6, to: today) ?? today),
                 location: "인천/부천",
                 address: "인천시 연수구 송도동 센트럴파크 축구장",
                 latitude: 37.3895,
@@ -392,12 +398,12 @@ class GameMatchingViewModel {
                     captain: User(id: 7, name: "한인천", profileImage: nil)
                 )
             ),
-            // 서울남부 지역 - 풋살
+            // 서울남부 지역 - 풋살 (오늘부터 7일 후)
             Match(
                 id: 8,
                 title: "용산 풋살 리그",
                 description: "풋살 실력 하중 구장비 5만원",
-                date: "2024-11-27",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 7, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 용산구 한강대로 용산 풋살장",
                 latitude: 37.5326,
@@ -424,12 +430,12 @@ class GameMatchingViewModel {
                     captain: User(id: 8, name: "서용산", profileImage: nil)
                 )
             ),
-            // 경기남부 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11 (오늘부터 8일 후)
             Match(
                 id: 9,
                 title: "용인 FC 리그",
                 description: "11 vs 11 실력 중하 구장비 9만원",
-                date: "2024-11-28",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 8, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 용인시 수지구 풍덕천동 축구장",
                 latitude: 37.3222,
@@ -456,12 +462,12 @@ class GameMatchingViewModel {
                     captain: User(id: 9, name: "오용인", profileImage: nil)
                 )
             ),
-            // 서울남부 지역 - 풋살
+            // 서울남부 지역 - 풋살 (오늘부터 9일 후)
             Match(
                 id: 10,
                 title: "영등포 풋살 매치",
                 description: "풋살 실력 하하 구장비 4만원",
-                date: "2024-11-29",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 9, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 영등포구 여의도동 한강공원 풋살장",
                 latitude: 37.5283,
@@ -488,12 +494,12 @@ class GameMatchingViewModel {
                     captain: User(id: 10, name: "윤영등포", profileImage: nil)
                 )
             ),
-            // 경기남부 지역 - 11 vs 11
+            // 경기남부 지역 - 11 vs 11 (오늘부터 10일 후)
             Match(
                 id: 11,
                 title: "안양 FC 대결",
                 description: "11 vs 11 실력 중상 구장비 11만원",
-                date: "2024-11-30",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 10, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 안양시 만안구 안양천 축구장",
                 latitude: 37.3943,
@@ -520,12 +526,12 @@ class GameMatchingViewModel {
                     captain: User(id: 11, name: "임안양", profileImage: nil)
                 )
             ),
-            // 인천/부천 지역 - 풋살
+            // 인천/부천 지역 - 풋살 (오늘부터 11일 후)
             Match(
                 id: 12,
                 title: "부천 풋살 경기",
                 description: "풋살 실력 중하 구장비 7만원",
-                date: "2024-12-01",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 11, to: today) ?? today),
                 location: "인천/부천",
                 address: "경기도 부천시 원미구 중동 풋살장",
                 latitude: 37.5034,
@@ -552,12 +558,12 @@ class GameMatchingViewModel {
                     captain: User(id: 12, name: "신부천", profileImage: nil)
                 )
             ),
-            // 서울북부 지역 - 11 vs 11
+            // 서울북부 지역 - 11 vs 11 (오늘부터 12일 후)
             Match(
                 id: 13,
                 title: "노원 FC 모집",
                 description: "11 vs 11 실력 하상 구장비 8만원",
-                date: "2024-12-02",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 12, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 노원구 상계동 축구장",
                 latitude: 37.6542,
@@ -584,12 +590,12 @@ class GameMatchingViewModel {
                     captain: User(id: 13, name: "김노원", profileImage: nil)
                 )
             ),
-            // 경기북부 지역 - 풋살
+            // 경기북부 지역 - 풋살 (오늘부터 13일 후)
             Match(
                 id: 14,
                 title: "일산 풋살 팀",
                 description: "풋살 실력 중중 구장비 6만원",
-                date: "2024-12-03",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 13, to: today) ?? today),
                 location: "경기북부",
                 address: "경기도 고양시 일산동구 백석동 풋살장",
                 latitude: 37.6572,
@@ -616,12 +622,12 @@ class GameMatchingViewModel {
                     captain: User(id: 14, name: "장일산", profileImage: nil)
                 )
             ),
-            // 서울남부 지역 - 11 vs 11
+            // 서울남부 지역 - 11 vs 11 (오늘부터 14일 후)
             Match(
                 id: 15,
                 title: "관악 FC 팀매치",
                 description: "11 vs 11 실력 하하 구장비 6만원",
-                date: "2024-12-04",
+                date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 14, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 관악구 신림동 관악산 축구장",
                 latitude: 37.4784,
@@ -683,10 +689,18 @@ class GameMatchingViewModel {
     internal func append(_ dates: [Date], _ date: Date?) {
 
         if let date = date {
-            self.selectedDate.append(date)
+            // 중복 날짜 체크
+            let dateString = self.changeDateToString(date)
+            let existingDateStrings = self.selectedDate.map { self.changeDateToString($0) }
+            if !existingDateStrings.contains(dateString) {
+                self.selectedDate.append(date)
+            }
         } else {
             self.selectedDate = dates
         }
+        
+        // 날짜 변경 시 필터링 적용
+        self.applyAllFilters()
     }
 
     internal func delete(_ date: Date) {
@@ -696,21 +710,17 @@ class GameMatchingViewModel {
 
         guard let indexOfDate = selectedDateArry.firstIndex(of: deselectedDateStr) else { return }
         self.selectedDate.remove(at: indexOfDate)
+        
+        // 날짜 변경 시 필터링 적용
+        self.applyAllFilters()
     }
     
     // MARK: - 필터링 메서드
     
-    /// 장소와 경기 종류 필터 적용
-    /// - Parameters:
-    ///   - locationFilters: 선택된 장소 필터 리스트 (예: ["서울-강남/서초", "서울-강동/송파"])
-    ///   - gameTypeFilters: 선택된 경기 종류 필터 리스트 (예: ["11 vs 11", "풋살"])
-    internal func applyFilters(locationFilters: [String], gameTypeFilters: [String]) {
-        // 필터 상태 저장
-        self.currentLocationFilters = locationFilters
-        self.currentGameTypeFilters = gameTypeFilters
-        
-        // 필터가 모두 비어있으면 필터 초기화
-        if locationFilters.isEmpty && gameTypeFilters.isEmpty {
+    /// 모든 필터 적용 (날짜, 장소, 경기 종류)
+    private func applyAllFilters() {
+        // 날짜 필터가 없고 다른 필터도 없으면 필터 초기화
+        if selectedDate.isEmpty && currentLocationFilters.isEmpty && currentGameTypeFilters.isEmpty {
             self.clearFilters()
             return
         }
@@ -718,17 +728,61 @@ class GameMatchingViewModel {
         // 원본 데이터에서 필터링
         var filtered = originalMatches
         
-        // 장소 필터 적용
-        if !locationFilters.isEmpty {
+        // 날짜 필터 적용
+        if !selectedDate.isEmpty {
+            let calendar = Calendar.current
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.locale = Locale(identifier: "ko_KR")
+            dateFormatter.timeZone = TimeZone.current
+            
+            // 선택된 날짜들을 년-월-일만 추출하여 비교용으로 변환
+            let selectedDateComponents = selectedDate.map { date in
+                calendar.dateComponents([.year, .month, .day], from: date)
+            }
+            
+            let selectedDateStrings = selectedDate.map { dateFormatter.string(from: $0) }
+            
+            print("🔍 날짜 필터링 - 선택된 날짜: \(selectedDateStrings)")
+            print("🔍 날짜 필터링 - 원본 데이터 개수: \(originalMatches.count)")
+            
             filtered = filtered.filter { match in
-                locationFilters.contains(match.location)
+                // Match의 날짜 문자열을 Date로 변환
+                guard let matchDate = dateFormatter.date(from: match.date) else {
+                    print("❌ 날짜 파싱 실패: \(match.date)")
+                    return false
+                }
+                
+                // Match 날짜의 년-월-일 컴포넌트 추출
+                let matchDateComponents = calendar.dateComponents([.year, .month, .day], from: matchDate)
+                
+                // 선택된 날짜들과 비교
+                let isMatch = selectedDateComponents.contains { selectedComponents in
+                    selectedComponents.year == matchDateComponents.year &&
+                    selectedComponents.month == matchDateComponents.month &&
+                    selectedComponents.day == matchDateComponents.day
+                }
+                
+                if isMatch {
+                    print("✅ 매칭됨: \(match.date) - \(match.title)")
+                }
+                return isMatch
+            }
+            
+            print("🔍 날짜 필터링 - 필터링된 데이터 개수: \(filtered.count)")
+        }
+        
+        // 장소 필터 적용
+        if !currentLocationFilters.isEmpty {
+            filtered = filtered.filter { match in
+                currentLocationFilters.contains(match.location)
             }
         }
         
         // 경기 종류 필터 적용
-        if !gameTypeFilters.isEmpty {
+        if !currentGameTypeFilters.isEmpty {
             filtered = filtered.filter { match in
-                gameTypeFilters.contains(match.matchType)
+                currentGameTypeFilters.contains(match.matchType)
             }
         }
         
@@ -764,20 +818,38 @@ class GameMatchingViewModel {
         self.presenter?.reloadMatchingList()
     }
     
-    /// 필터 초기화
+    /// 장소와 경기 종류 필터 적용
+    /// - Parameters:
+    ///   - locationFilters: 선택된 장소 필터 리스트 (예: ["서울북부", "서울남부"])
+    ///   - gameTypeFilters: 선택된 경기 종류 필터 리스트 (예: ["11 vs 11", "풋살"])
+    internal func applyFilters(locationFilters: [String], gameTypeFilters: [String]) {
+        // 필터 상태 저장
+        self.currentLocationFilters = locationFilters
+        self.currentGameTypeFilters = gameTypeFilters
+        
+        // 모든 필터 적용 (날짜 포함)
+        self.applyAllFilters()
+    }
+    
+    /// 필터 초기화 (날짜 필터는 유지, 장소/경기 종류 필터만 초기화)
     internal func clearFilters() {
         self.currentLocationFilters.removeAll()
         self.currentGameTypeFilters.removeAll()
-        self.filteredMatches.removeAll()
-        self.filteredViewModel.removeAll()
         
-        // UI 업데이트
-        self.presenter?.reloadMatchingList()
+        // 날짜 필터가 있으면 날짜 필터만 적용, 없으면 모든 필터 초기화
+        if !selectedDate.isEmpty {
+            self.applyAllFilters()
+        } else {
+            self.filteredMatches.removeAll()
+            self.filteredViewModel.removeAll()
+            // UI 업데이트
+            self.presenter?.reloadMatchingList()
+        }
     }
     
     /// 현재 적용된 필터 확인
     internal func hasActiveFilters() -> Bool {
-        return !currentLocationFilters.isEmpty || !currentGameTypeFilters.isEmpty
+        return !selectedDate.isEmpty || !currentLocationFilters.isEmpty || !currentGameTypeFilters.isEmpty
     }
 }
 
