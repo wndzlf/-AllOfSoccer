@@ -87,6 +87,9 @@ class GameMatchingViewController: UIViewController {
         self.filterDetailView.didSelectedFilterList.removeAll()
         self.filterTagCollectionView.reloadData()
         self.tagCollectionViewCellIsNotSelectedViewSetting()
+        
+        // 필터 초기화
+        self.gameMatchingModel.clearFilters()
     }
 
     @IBAction func tableViewSortingButtonTouchUp(_ sender: UIButton) {
@@ -573,19 +576,26 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
     }
 
     private func refresh() {
-        guard let filterType = self.didSelectedFilterList.first?.value else {
-            return
+        // 선택된 필터들을 분류
+        var locationFilters: [String] = []
+        var gameTypeFilters: [String] = []
+        
+        for (filterKey, filterType) in self.didSelectedFilterList {
+            switch filterType {
+            case .location:
+                locationFilters.append(filterKey)
+            case .game:
+                gameTypeFilters.append(filterKey)
+            }
         }
-
-        switch filterType {
-        case .location:
-            print("중현: 선택된 location filter \(self.didSelectedFilterList.map { $0.key })")
-        case .game:
-            print("중현: 선택된 game filter \(self.didSelectedFilterList.map { $0.key })")
-        }
-
-        print("중현: 해당 filter 들로 request 요청한다.")
-
+        
+        print("중현: 선택된 location filter: \(locationFilters)")
+        print("중현: 선택된 game filter: \(gameTypeFilters)")
+        
+        // ViewModel에 필터 적용
+        self.gameMatchingModel.applyFilters(locationFilters: locationFilters, gameTypeFilters: gameTypeFilters)
+        
+        // 태그 컬렉션뷰 업데이트
         self.filterTagCollectionView.reloadData()
     }
 
