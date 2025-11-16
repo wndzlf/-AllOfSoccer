@@ -14,12 +14,6 @@ class GameMatchingViewController: UIViewController {
     private var gameMatchingModel: GameMatchingViewModel = GameMatchingViewModel()
     var horizontalCalendarViewModel = HorizonralCalendarViewModel()
 
-    // MARK: - MatchingModeButton Variable
-    @IBOutlet private weak var teamMatchButton: IBSelectTableButton!
-    @IBOutlet private weak var manMatchButton: IBSelectTableButton!
-    @IBOutlet private weak var selectedLineCenterConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var selectedLineWidthConstraint: NSLayoutConstraint!
-
     // MARK: - HorizontalCalendar Variable
     @IBOutlet private weak var horizontalCalendarView: UICollectionView!
     
@@ -81,40 +75,6 @@ class GameMatchingViewController: UIViewController {
         return view
     }()
 
-    // MARK: - MatchingModeButtonAction
-    @IBAction private func teamMatchButtonTouchUp(_ sender: Any) {
-        self.teamMatchButton.isSelected = true
-        self.manMatchButton.isSelected = false
-
-        let teamMatchingButtonWidth = self.teamMatchButton.frame.width
-
-        UIView.animate(withDuration: 0.1) { [weak self] in
-
-            guard let self = self else { return }
-
-            self.selectedLineCenterConstraint.constant = 0
-            self.selectedLineWidthConstraint.constant = teamMatchingButtonWidth
-            self.view.layoutIfNeeded()
-        }
-    }
-
-    @IBAction private func manMatchButtonTouchUp(_ sender: Any) {
-        self.teamMatchButton.isSelected = false
-        self.manMatchButton.isSelected = true
-
-        let constant = manMatchButton.center.x - teamMatchButton.center.x
-        let manMatchingButtonWidth = self.manMatchButton.frame.width
-
-        UIView.animate(withDuration: 0.1) { [weak self] in
-
-            guard let self = self else { return }
-
-            self.selectedLineCenterConstraint.constant = constant
-            self.selectedLineWidthConstraint.constant = manMatchingButtonWidth
-            self.view.layoutIfNeeded()
-        }
-    }
-
     // MARK: - CalendarMonthButtonAction
     @IBAction func monthButtonTouchUp(_ sender: UIButton) {
         //중현: 추후에 기능 추가
@@ -161,7 +121,6 @@ class GameMatchingViewController: UIViewController {
 
         self.gameMatchingModel.presenter = self
 
-        self.setupModeButtonUnderLine()
         self.setupHorizontalCalendarView()
         self.setupFilterTagCollectionView()
         self.setupFilterDetailView()
@@ -191,12 +150,6 @@ class GameMatchingViewController: UIViewController {
     }
 
     // MARK: - Setup View
-    private func setupModeButtonUnderLine() {
-        let teamMatchingButtonConstant = self.teamMatchButton.frame.width
-
-        self.selectedLineWidthConstraint.constant = teamMatchingButtonConstant
-    }
-
     private func setupHorizontalCalendarView() {
         self.horizontalCalendarView.delegate = self
         self.horizontalCalendarView.dataSource = self
