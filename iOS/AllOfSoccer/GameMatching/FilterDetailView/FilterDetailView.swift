@@ -96,6 +96,9 @@ class FilterDetailView: UIView {
         self.tagCollectionView.dataSource = self
         self.tagCollectionView.allowsMultipleSelection = true
         self.tagCollectionView.backgroundColor = .white
+        self.tagCollectionView.isScrollEnabled = true // 스크롤 활성화
+        self.tagCollectionView.showsVerticalScrollIndicator = true // 스크롤바 표시
+        self.tagCollectionView.bounces = true // 바운스 효과 활성화
 
         self.tagCollectionView.register(FilterDetailTagCollectionViewCell.self, forCellWithReuseIdentifier: FilterDetailTagCollectionViewCell.reuseId)
     }
@@ -176,28 +179,35 @@ class FilterDetailView: UIView {
         
         // 최소 높이 보장
         let minContentViewHeight: CGFloat = 182
-        let finalContentViewHeight = max(totalContentViewHeight, minContentViewHeight)
         
         // finishButton 높이
         let finishButtonHeight: CGFloat = 62
         
-        // 전체 뷰 높이 계산
-        let totalViewHeight = finalContentViewHeight + finishButtonHeight
-        
-        // 최대 높이 제한 (상단 150px 딤드 영역 보장)
+        // 최대 높이 제한 (상단 150px 딤드 영역 + 하단 safe area 보장)
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
-        let maxHeight = window.frame.height - 150 // 상단 150px 제외
-        let finalViewHeight = min(totalViewHeight, maxHeight)
+        
+        let topMargin: CGFloat = 150 // 상단 딤드 영역
+        let bottomSafeArea = window.safeAreaInsets.bottom
+        let maxContentHeight = window.frame.height - topMargin - finishButtonHeight - bottomSafeArea - 20 // 추가 여유 공간
+        
+        // contentView 높이 결정 (최소, 계산된 높이, 최대 높이 중)
+        let finalContentViewHeight = max(minContentViewHeight, min(totalContentViewHeight, maxContentHeight))
+        
+        // 전체 뷰 높이 계산
+        let totalViewHeight = finalContentViewHeight + finishButtonHeight
         
         // 제약조건 업데이트
         self.contentViewHeightConstraint?.constant = finalContentViewHeight
         
         // 애니메이션과 함께 높이 업데이트
         UIView.animate(withDuration: 0.3) {
-            self.frame.size.height = finalViewHeight
+            self.frame.size.height = totalViewHeight
             self.superview?.layoutIfNeeded()
         }
+        
+        // CollectionView가 스크롤 가능하도록 contentSize 강제 업데이트
+        self.tagCollectionView.layoutIfNeeded()
     }
 
     @objc private func finishButtonTouchUp(sender: UIButton) {
