@@ -120,21 +120,18 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        layoutUI()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+        // NavigationBar가 완전히 레이아웃된 후에만 레이아웃 업데이트
         layoutUI()
     }
     
     // MARK: - Setup Methods
     private func setupNavigationItem() {
-        self.navigationItem.title = "팀 모집"
+        self.navigationItem.title = "경기 정보"
         self.navigationController?.navigationBar.titleTextAttributes = [
             NSAttributedString.Key.foregroundColor: UIColor.black,
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18, weight: .semibold)
         ]
+
         self.navigationController?.navigationBar.topItem?.title = ""
         self.navigationItem.rightBarButtonItems = [self.likeBarButton, self.shareBarButton]
     }
@@ -159,11 +156,12 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.bounces = true
         scrollView.alwaysBounceVertical = true
-        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.contentInsetAdjustmentBehavior = .automatic // NavigationBar 자동 고려
         scrollView.backgroundColor = .white
         
         // 하단 버튼이 잘리지 않도록 contentInset 설정
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: Layout.buttonHeight, right: 0)
+        scrollView.scrollIndicatorInsets = scrollView.contentInset
     }
     
     private func setupDateAndLocationSection() {
@@ -390,13 +388,10 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     
     private func layoutUI() {
         let screenWidth = view.frame.width
-        let navigationBarHeight: CGFloat = 44 // 네비게이션 바 높이
-        let statusBarHeight: CGFloat = 44 // 상태바 높이 (iPhone 14+ 기준)
-        let topOffset = navigationBarHeight + statusBarHeight + 5 // 네비게이션 바 아래 여백 줄임
         var currentY: CGFloat = 15.0
 
-        // Scroll View - 네비게이션 바 아래부터 시작
-        scrollView.frame = CGRect(x: 0, y: topOffset, width: screenWidth, height: view.frame.height - topOffset)
+        // Scroll View - 전체 view에 맞추고, contentInsetAdjustmentBehavior가 자동으로 NavigationBar를 고려
+        scrollView.frame = CGRect(x: 0, y: 0, width: screenWidth, height: view.frame.height)
         
         // 1. Date Label
         dateLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: screenWidth - 32, height: 24)

@@ -66,7 +66,6 @@ class CallPreviusMatchingInformationTableViewCell: UITableViewCell {
     }
 
     private func setConstraints() {
-        self.debugBorder()
         self.backgroundColor = .blue
 
         self.contentView.addsubviews(favoriteButton, descriptionLabel, addressLabel)

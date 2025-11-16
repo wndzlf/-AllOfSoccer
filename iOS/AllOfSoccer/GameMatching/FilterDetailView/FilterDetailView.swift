@@ -109,9 +109,6 @@ class FilterDetailView: UIView {
         let initialHeight: CGFloat = 244
         self.frame.size = CGSize(width: 375, height: initialHeight)
 
-        self.debugBorder()
-
-
         self.addSubview(self.contentView)
         self.contentView.translatesAutoresizingMaskIntoConstraints = false
         

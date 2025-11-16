@@ -123,6 +123,10 @@ class GameMatchingViewController: UIViewController {
         super.viewDidLoad()
 
         self.navigationItem.title = "팀 매치"
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor.black,
+            NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18, weight: .semibold)
+        ]
 
         self.gameMatchingModel.presenter = self
 
@@ -159,6 +163,7 @@ class GameMatchingViewController: UIViewController {
         self.horizontalCalendarView.delegate = self
         self.horizontalCalendarView.dataSource = self
         self.horizontalCalendarView.allowsMultipleSelection = true
+        self.horizontalCalendarView.showsHorizontalScrollIndicator = false
 
         let flowlayout = UICollectionViewFlowLayout()
         flowlayout.minimumInteritemSpacing = 12 // 적절한 간격으로 조정
@@ -508,7 +513,7 @@ extension GameMatchingViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120.0
+        return 130.0 // Storyboard의 rowHeight와 일치시킴
     }
 }
 
