@@ -17,23 +17,23 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     // MARK: - Date and Location Section
     private let dateLabel = UILabel()
     private let locationLabel = UILabel()
-    private let mapPinImageView = UIImageView()
+    private let addressIconLabel = UILabel() // Replaces mapPinImageView
     private let addressLabel = UILabel()
     private let separatorView = UIView()
     private let copyAddressButton = UIButton(type: .system)
     
     // MARK: - Fee Section
-    private let feeIconImageView = UIImageView()
+    // private let feeIconImageView = UIImageView() // Removed
     private let feeTitleLabel = UILabel()
     private let feeAmountLabel = UILabel()
     
     // MARK: - Game Format Section
-    private let formatIconImageView = UIImageView()
+    // private let formatIconImageView = UIImageView() // Removed
     private let formatTitleLabel = UILabel()
     private let formatStackView = UIStackView()
     
     // MARK: - Team Info Section
-    private let teamIconImageView = UIImageView()
+    // private let teamIconImageView = UIImageView() // Removed
     private let teamTitleLabel = UILabel()
     private let ageLabel = UILabel()
     private let ageValueLabel = UILabel()
@@ -166,19 +166,19 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     
     private func setupDateAndLocationSection() {
         // Date Label
-        dateLabel.text = viewModel.data.date
+        dateLabel.text = "📅 " + viewModel.data.date
         dateLabel.font = UIFont.systemFont(ofSize: 20)
         dateLabel.textColor = .black
         
         // Location Label
-        locationLabel.text = viewModel.data.location
+        locationLabel.text = "📍 " + viewModel.data.location
         locationLabel.font = UIFont.systemFont(ofSize: 20)
         locationLabel.textColor = .black
         
-        // Map Pin Icon
-        mapPinImageView.image = UIImage(named: "MapPin")
-        mapPinImageView.tintColor = Colors.grayText
-        mapPinImageView.contentMode = .scaleAspectFit
+        // Address Icon Label
+        addressIconLabel.text = "🗺"
+        addressIconLabel.font = UIFont.systemFont(ofSize: 16)
+        addressIconLabel.textColor = .black
         
         // Address Label
         addressLabel.text = viewModel.data.address
@@ -196,19 +196,15 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         contentView.addSubview(dateLabel)
         contentView.addSubview(locationLabel)
-        contentView.addSubview(mapPinImageView)
+        contentView.addSubview(addressIconLabel)
         contentView.addSubview(addressLabel)
         contentView.addSubview(separatorView)
         contentView.addSubview(copyAddressButton)
     }
     
     private func setupFeeSection() {
-        // Fee Icon
-        feeIconImageView.image = UIImage(named: "wonmoney")
-        feeIconImageView.contentMode = .scaleAspectFit
-        
         // Fee Title
-        feeTitleLabel.text = "참가비"
+        feeTitleLabel.text = "💰 참가비"
         feeTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         feeTitleLabel.textColor = .black
         
@@ -217,18 +213,14 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         feeAmountLabel.font = UIFont.boldSystemFont(ofSize: 20)
         feeAmountLabel.textColor = Colors.primaryGreen
         
-        contentView.addSubview(feeIconImageView)
+        // contentView.addSubview(feeIconImageView) // Removed
         contentView.addSubview(feeTitleLabel)
         contentView.addSubview(feeAmountLabel)
     }
     
     private func setupGameFormatSection() {
-        // Format Icon
-        formatIconImageView.image = UIImage(named: "football-soccer-equipment")
-        formatIconImageView.contentMode = .scaleAspectFit
-        
         // Format Title
-        formatTitleLabel.text = "진행 방식"
+        formatTitleLabel.text = "⚽️ 진행 방식"
         formatTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         formatTitleLabel.textColor = .black
         
@@ -266,18 +258,14 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
             formatStackView.addArrangedSubview(itemStackView)
         }
         
-        contentView.addSubview(formatIconImageView)
+        // contentView.addSubview(formatIconImageView) // Removed
         contentView.addSubview(formatTitleLabel)
         contentView.addSubview(formatStackView)
     }
     
     private func setupTeamInfoSection() {
-        // Team Icon
-        teamIconImageView.image = UIImage(named: "cloth")
-        teamIconImageView.contentMode = .scaleAspectFit
-        
         // Team Title
-        teamTitleLabel.text = viewModel.data.teamName
+        teamTitleLabel.text = "👕 " + viewModel.data.teamName
         teamTitleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         teamTitleLabel.textColor = .black
         
@@ -343,7 +331,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         contactValueLabel.font = UIFont.systemFont(ofSize: 16)
         contactValueLabel.textColor = .black
         
-        contentView.addSubview(teamIconImageView)
+        // contentView.addSubview(teamIconImageView) // Removed
         contentView.addSubview(teamTitleLabel)
         contentView.addSubview(ageLabel)
         contentView.addSubview(ageValueLabel)
@@ -401,31 +389,31 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         locationLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: screenWidth - 32, height: 24)
         currentY += locationLabel.frame.height + 8
         
-        // 3. Map Pin Icon & Address
-        mapPinImageView.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: Layout.mediumIconSize, height: Layout.mediumIconSize)
-        addressLabel.frame = CGRect(x: mapPinImageView.frame.maxX + 4, y: currentY + 0.5, width: screenWidth - mapPinImageView.frame.maxX - 120, height: 17)
-        separatorView.frame = CGRect(x: addressLabel.frame.maxX + 10, y: currentY + 2, width: 1, height: 14)
-        copyAddressButton.frame = CGRect(x: separatorView.frame.maxX + 10, y: currentY - 5.5, width: 53, height: 29)
-        currentY += mapPinImageView.frame.height + 20
+        // 3. Map Pin Icon & Address (Replaced with Address Icon Label)
+        addressIconLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: 20, height: 20)
+        addressLabel.frame = CGRect(x: addressIconLabel.frame.maxX + 4, y: currentY + 1.5, width: screenWidth - addressIconLabel.frame.maxX - 120, height: 17)
+        separatorView.frame = CGRect(x: addressLabel.frame.maxX + 10, y: currentY + 3, width: 1, height: 14)
+        copyAddressButton.frame = CGRect(x: separatorView.frame.maxX + 10, y: currentY - 4.5, width: 53, height: 29)
+        currentY += addressIconLabel.frame.height + 20
         
         // 4. Fee Section
-        feeIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY + 2.0, width: Layout.iconSize, height: Layout.iconSize)
-        feeTitleLabel.frame = CGRect(x: feeIconImageView.frame.maxX + 9, y: currentY, width: 44.5, height: 20.5)
+        // feeIconImageView removed
+        feeTitleLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY, width: 100, height: 20.5)
 
         currentY += feeTitleLabel.frame.height + 12
         feeAmountLabel.frame = CGRect(x: feeTitleLabel.frame.minX, y: currentY, width: self.view.bounds.width - 50.0, height: 24)
         currentY += feeAmountLabel.frame.height + 25
         
         // 5. Format Section
-        formatIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.smallIconSize, height: Layout.smallIconSize)
-        formatTitleLabel.frame = CGRect(x: formatIconImageView.frame.maxX + 9, y: currentY - 3, width: 63, height: 20.5)
+        // formatIconImageView removed
+        formatTitleLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY - 3, width: 150, height: 20.5)
         currentY += formatTitleLabel.frame.height + 20
         formatStackView.frame = CGRect(x: (screenWidth - 240) / 2, y: currentY, width: 240, height: 70)
         currentY += formatStackView.frame.height + 30
         
         // 6. Team Info Section
-        teamIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.iconSize, height: Layout.smallIconSize)
-        teamTitleLabel.frame = CGRect(x: teamIconImageView.frame.maxX + 9, y: currentY - 3.5, width: screenWidth - teamIconImageView.frame.maxX - 20, height: 20.5)
+        // teamIconImageView removed
+        teamTitleLabel.frame = CGRect(x: Layout.horizontalPadding, y: currentY - 3.5, width: screenWidth - Layout.horizontalPadding - 20, height: 20.5)
         teamTitleLabel.sizeToFit()
         currentY += teamTitleLabel.frame.height + 20
         
