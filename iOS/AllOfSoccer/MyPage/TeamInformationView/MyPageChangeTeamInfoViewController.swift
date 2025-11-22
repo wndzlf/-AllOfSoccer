@@ -9,6 +9,14 @@ import UIKit
 
 class MyPageChangeTeamInfoViewController: UIViewController {
     
+    // MARK: - Mode
+    enum Mode {
+        case add
+        case edit
+    }
+    
+    var mode: Mode = .edit
+    
     // MARK: - UI Components
     private let teamNameLabel = UILabel()
     private let teamNameContainerView = UIView()
@@ -35,7 +43,9 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor(red: 0.965, green: 0.969, blue: 0.980, alpha: 1.0)
-        navigationController?.navigationBar.topItem?.title = "팀 정보 변경"
+        
+        // Set title based on mode
+        navigationController?.navigationBar.topItem?.title = mode == .add ? "팀 추가" : "팀 정보 변경"
         
         setupUI()
         setupTextFields()
@@ -143,7 +153,8 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         contactContainerView.addSubview(contactTextField)
         
         // Save Button
-        saveButton.setTitle("저장하기", for: .normal)
+        let buttonTitle = mode == .add ? "추가하기" : "저장하기"
+        saveButton.setTitle(buttonTitle, for: .normal)
         saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         saveButton.backgroundColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
@@ -282,7 +293,8 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         
         // TODO: Save team information to backend
         // For now, just show success message
-        showAlert(message: "팀 정보가 저장되었습니다.") {
+        let successMessage = mode == .add ? "팀이 추가되었습니다." : "팀 정보가 저장되었습니다."
+        showAlert(message: successMessage) {
             self.navigationController?.popViewController(animated: true)
         }
     }

@@ -37,9 +37,9 @@ class MyPageTeamInfomationViewController: UIViewController {
     }
 
     @objc private func addCellButtonDidSelected(sender: UIButton) {
-        guard let addTeamInfoViewController = UIStoryboard.init(name: "MyPage", bundle: nil).instantiateViewController(withIdentifier: "MyPageAddTeamInfoViewController") as? MyPageAddTeamInfoViewController else { return }
+        let vc = MyPageChangeTeamInfoViewController()
 
-        navigationController?.pushViewController(addTeamInfoViewController, animated: true)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
