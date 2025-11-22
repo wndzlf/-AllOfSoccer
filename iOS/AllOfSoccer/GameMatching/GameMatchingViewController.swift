@@ -198,8 +198,8 @@ class GameMatchingViewController: UIViewController {
         tagCollectionViewLayout.scrollDirection = .horizontal
         self.filterTagCollectionView.collectionViewLayout = tagCollectionViewLayout
 
-        self.tagCollectionViewConstraint.constant = -(self.resetButtonView.frame.width)
-        self.resetButtonView.isHidden = true
+        self.tagCollectionViewConstraint.constant = 0
+        self.resetButtonView.isHidden = false // 항상 표시
 
         for filterType in FilterType.allCases {
             let tagCellData = FilterTagModel(filterType: filterType)
@@ -318,20 +318,11 @@ class GameMatchingViewController: UIViewController {
     }
 
     private func tagCollectionViewCellIsNotSelectedViewSetting() {
-        let resetButtonViewWidth = self.resetButtonView.frame.width
-        UIView.animate(withDuration: 0.05) { [weak self] in
-            self?.tagCollectionViewConstraint.constant = -(resetButtonViewWidth)
-            self?.resetButtonView.isHidden = true
-            self?.view.layoutIfNeeded()
-        }
+        // 리셋 버튼은 항상 표시되므로 애니메이션 제거
     }
 
     private func tagCollectionViewCellIsSelectedViewSetting() {
-        UIView.animate(withDuration: 0.05) { [weak self] in
-            self?.tagCollectionViewConstraint.constant = 0
-            self?.resetButtonView.isHidden = false
-            self?.view.layoutIfNeeded()
-        }
+        // 리셋 버튼은 항상 표시되므로 애니메이션 제거
     }
 
     private func setSubViewConstraints(view: UIView) {

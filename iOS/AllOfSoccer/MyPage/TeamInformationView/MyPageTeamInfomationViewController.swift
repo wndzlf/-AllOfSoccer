@@ -68,8 +68,8 @@ extension MyPageTeamInfomationViewController: UITableViewDataSource {
 
 extension MyPageTeamInfomationViewController: TeamInfoTableViewDelegate {
     func changeTeamInfoButtonDidSelected() {
-        guard let changeTeamInfoViewController = UIStoryboard.init(name: "MyPage", bundle: nil).instantiateViewController(withIdentifier: "MyPageChangeTeamInfoViewController") as? MyPageChangeTeamInfoViewController else { return }
+        let vc = MyPageChangeTeamInfoViewController()
 
-        navigationController?.pushViewController(changeTeamInfoViewController, animated: true)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
