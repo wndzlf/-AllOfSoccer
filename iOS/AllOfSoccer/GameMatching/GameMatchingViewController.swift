@@ -141,7 +141,9 @@ class GameMatchingViewController: UIViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(false)
+        super.viewWillAppear(animated)
+        
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
 
         self.recruitmentButton.isHidden = false
         self.manRecruitmentButton.isHidden = false
