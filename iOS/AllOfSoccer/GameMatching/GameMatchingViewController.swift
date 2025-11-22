@@ -219,6 +219,7 @@ class GameMatchingViewController: UIViewController {
     private func setupNoticeTableView() {
         self.noticeTableView.delegate = self
         self.noticeTableView.dataSource = self
+        self.noticeTableView.register(NoticeTableViewCell.self, forCellReuseIdentifier: "NoticeTableViewCell")
     }
 
     private func setupRecruitmentButton() {
