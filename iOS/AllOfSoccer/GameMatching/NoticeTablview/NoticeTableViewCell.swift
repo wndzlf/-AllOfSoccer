@@ -176,6 +176,8 @@ class NoticeTableViewCell: UITableViewCell {
     }
 
     // MARK: - Update
+    internal var didTapLikeButton: (() -> Void)?
+
     internal func update(viewModel: GameMatchListViewModel) {
         self.dateLabel.text = viewModel.date
         self.timeLabel.text = viewModel.time
@@ -198,9 +200,11 @@ class NoticeTableViewCell: UITableViewCell {
     }
 
     @objc private func checkButtonDidSelected(sender: UIButton) {
-        sender.isSelected.toggle()
+        // UI 업데이트는 ViewModel의 응답에 따라 처리되거나, 낙관적 업데이트를 할 수 있음
+        // 여기서는 버튼 액션을 ViewController로 전달
+        didTapLikeButton?()
         
-        // Animation
+        // Animation (피드백)
         UIView.animate(withDuration: 0.1, animations: {
             sender.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
         }) { _ in
@@ -212,6 +216,7 @@ class NoticeTableViewCell: UITableViewCell {
 }
 
 internal struct GameMatchListViewModel {
+    internal let id: Int // 매치 식별자 추가
     internal let date: String
     internal let time: String
     internal let address: String
@@ -220,7 +225,8 @@ internal struct GameMatchListViewModel {
     internal let isRecruiting: Bool
     internal let teamName: String
 
-    internal init(date: String, time: String, address: String, description: String, isFavorite: Bool, isRecruiting: Bool, teamName: String) {
+    internal init(id: Int, date: String, time: String, address: String, description: String, isFavorite: Bool, isRecruiting: Bool, teamName: String) {
+        self.id = id
         self.date = date
         self.time = time
         self.address = address

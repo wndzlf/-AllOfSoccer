@@ -540,6 +540,11 @@ extension GameMatchingViewController: UITableViewDataSource {
         }
 
         cell.update(viewModel: self.gameMatchingModel.fetchViewModel(indexPath: indexPath))
+        
+        // 좋아요 버튼 동작 연결
+        cell.didTapLikeButton = { [weak self] in
+            self?.gameMatchingModel.toggleLike(at: indexPath)
+        }
 
         return cell
     }

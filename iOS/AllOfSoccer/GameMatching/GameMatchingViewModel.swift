@@ -77,8 +77,8 @@ class GameMatchingViewModel {
         // 필터가 적용되었으면 필터링된 데이터 반환
         if isFilterApplied {
             guard indexPath.row < filteredViewModel.count else {
-                // 인덱스 범위를 벗어나면 빈 ViewModel 반환 (이론적으로는 발생하지 않아야 함)
                 return GameMatchListViewModel(
+                    id: -1,
                     date: "",
                     time: "",
                     address: "",
@@ -159,11 +159,12 @@ class GameMatchingViewModel {
                         let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
                         
                         return GameMatchListViewModel(
+                            id: match.id,
                             date: displayDate,
                             time: time,
                             address: match.location,
                             description: description,
-                            isFavorite: true,
+                            isFavorite: true, // 서버에서 받아온 값으로 수정 필요
                             isRecruiting: match.status == "recruiting",
                             teamName: match.team?.name ?? "알 수 없음"
                         )
@@ -690,15 +691,85 @@ class GameMatchingViewModel {
             let time = "20:00"
             let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
             
+            // 랜덤하게 좋아요 상태 설정 (Mock)
+            let isFavorite = Bool.random()
+            
             return GameMatchListViewModel(
+                id: match.id,
                 date: displayDate,
                 time: time,
                 address: match.location,
                 description: description,
-                isFavorite: true,
+                isFavorite: isFavorite,
                 isRecruiting: match.status == "recruiting",
                 teamName: match.team?.name ?? "알 수 없음"
             )
+        }
+    }
+    
+    // MARK: - Like Functionality
+    internal func toggleLike(at indexPath: IndexPath) {
+        // 1. 대상 매치 찾기
+        let targetViewModel = self.fetchViewModel(indexPath: indexPath)
+        let matchId = targetViewModel.id
+        
+        // 2. API 호출
+        APIService.shared.toggleLike(matchId: matchId) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let isSuccess):
+                if isSuccess {
+                    DispatchQueue.main.async {
+                        // 3. 로컬 데이터 업데이트 (ViewModel)
+                        self.updateLocalLikeStatus(matchId: matchId)
+                        
+                        // 4. UI 갱신 요청
+                        self.presenter?.reloadMatchingList()
+                    }
+                }
+            case .failure(let error):
+                print("좋아요 토글 실패: \(error)")
+                DispatchQueue.main.async {
+                    self.presenter?.showErrorMessage()
+                }
+            }
+        }
+    }
+    
+    private func updateLocalLikeStatus(matchId: Int) {
+        // 원본 ViewModel 리스트 업데이트
+        if let index = self.matchingListViewModel.firstIndex(where: { $0.id == matchId }) {
+            let oldModel = self.matchingListViewModel[index]
+            let newModel = GameMatchListViewModel(
+                id: oldModel.id,
+                date: oldModel.date,
+                time: oldModel.time,
+                address: oldModel.address,
+                description: oldModel.description,
+                isFavorite: !oldModel.isFavorite, // 토글
+                isRecruiting: oldModel.isRecruiting,
+                teamName: oldModel.teamName
+            )
+            self.matchingListViewModel[index] = newModel
+        }
+        
+        // 필터링된 ViewModel 리스트 업데이트 (만약 필터 적용 중이라면)
+        if isFilterApplied {
+            if let index = self.filteredViewModel.firstIndex(where: { $0.id == matchId }) {
+                let oldModel = self.filteredViewModel[index]
+                let newModel = GameMatchListViewModel(
+                    id: oldModel.id,
+                    date: oldModel.date,
+                    time: oldModel.time,
+                    address: oldModel.address,
+                    description: oldModel.description,
+                    isFavorite: !oldModel.isFavorite, // 토글
+                    isRecruiting: oldModel.isRecruiting,
+                    teamName: oldModel.teamName
+                )
+                self.filteredViewModel[index] = newModel
+            }
         }
     }
 
@@ -825,6 +896,7 @@ class GameMatchingViewModel {
             let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
             
             return GameMatchListViewModel(
+                id: match.id,
                 date: displayDate,
                 time: time,
                 address: match.location,

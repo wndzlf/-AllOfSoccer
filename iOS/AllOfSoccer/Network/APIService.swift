@@ -18,6 +18,16 @@ struct APIService {
         print("SignIn 기능은 추후 구현 예정")
     }
     
+    // 좋아요 토글 (Mock API)
+    func toggleLike(matchId: Int, completion: @escaping (Result<Bool, Error>) -> Void) {
+        // 네트워크 지연 시뮬레이션
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+            // 성공적으로 토글되었다고 가정 (실제 서버가 있다면 여기서 요청을 보냄)
+            // true: 성공
+            completion(.success(true))
+        }
+    }
+    
     // 매칭 목록 가져오기
     func getMatches(
         page: Int? = nil,
