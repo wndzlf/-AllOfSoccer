@@ -74,6 +74,16 @@ class NoticeTableViewCell: UITableViewCell {
         label.layer.cornerRadius = 8
         return label
     }()
+    
+    private let secondaryStatusLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textAlignment = .center
+        label.layer.masksToBounds = true
+        label.layer.cornerRadius = 8
+        label.isHidden = true
+        return label
+    }()
 
     // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -97,8 +107,9 @@ class NoticeTableViewCell: UITableViewCell {
         self.contentView.addSubview(placeLabel)
         self.contentView.addSubview(contentsLabel)
         self.contentView.addSubview(teamNameLabel)
-        self.contentView.addSubview(checkbutton)
-        self.contentView.addSubview(recruitmentStatusLabel)
+        contentView.addSubview(checkbutton)
+        contentView.addSubview(recruitmentStatusLabel)
+        contentView.addSubview(secondaryStatusLabel)
         
         checkbutton.addTarget(self, action: #selector(checkButtonDidSelected), for: .touchUpInside)
     }
@@ -167,12 +178,70 @@ class NoticeTableViewCell: UITableViewCell {
         teamNameLabel.sizeToFit()
         teamNameLabel.frame.origin = CGPoint(x: rightColumnX, y: contentsLabel.frame.maxY + 10)
         
-        // Recruitment Status Label (Bottom Right)
-        let statusSize = CGSize(width: 60, height: 24)
-        recruitmentStatusLabel.frame = CGRect(x: contentView.frame.width - rightPadding - statusSize.width,
-                                              y: contentView.frame.height - cardVerticalMargin - 16 - statusSize.height,
-                                              width: statusSize.width,
-                                              height: statusSize.height)
+        // Recruitment Status Labels (Below Team Name)
+        // 텍스트 길이에 따라 너비 조정
+        recruitmentStatusLabel.sizeToFit()
+        let primaryWidth = recruitmentStatusLabel.frame.width + 16
+        let statusHeight: CGFloat = 24
+        let spacing: CGFloat = 6
+        let statusY = teamNameLabel.frame.maxY + 8 // 팀 이름 아래 8pt 간격
+        
+        if !secondaryStatusLabel.isHidden {
+            secondaryStatusLabel.sizeToFit()
+            let secondaryWidth = secondaryStatusLabel.frame.width + 16
+            
+            // 두 개의 라벨을 나란히 배치 (팀 이름과 같은 X 시작 위치)
+            recruitmentStatusLabel.frame = CGRect(
+                x: rightColumnX,
+                y: statusY,
+                width: primaryWidth,
+                height: statusHeight
+            )
+            
+            secondaryStatusLabel.frame = CGRect(
+                x: recruitmentStatusLabel.frame.maxX + spacing,
+                y: statusY,
+                width: secondaryWidth,
+                height: statusHeight
+            )
+        } else {
+            // 하나의 라벨만 표시 (팀 이름과 같은 X 시작 위치)
+            recruitmentStatusLabel.frame = CGRect(
+                x: rightColumnX,
+                y: statusY,
+                width: primaryWidth,
+                height: statusHeight
+            )
+        }
+    }
+    
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        let cardVerticalMargin: CGFloat = 12
+        let rightColumnX: CGFloat = 100
+        
+        // 기본 컨텐츠 높이 계산
+        var totalHeight: CGFloat = cardVerticalMargin // 상단 여백
+        totalHeight += 20 // 날짜 라벨
+        totalHeight += 8  // 간격
+        totalHeight += 22 // 장소 라벨
+        totalHeight += 8  // 간격
+        
+        // 내용 라벨 높이 (최대 2줄)
+        contentsLabel.sizeToFit()
+        let contentsHeight = min(contentsLabel.frame.height, 40)
+        totalHeight += contentsHeight
+        totalHeight += 10 // 간격
+        
+        // 팀 이름 라벨
+        teamNameLabel.sizeToFit()
+        totalHeight += teamNameLabel.frame.height
+        totalHeight += 8  // 팀 이름과 상태 라벨 간격
+        
+        // 상태 라벨 높이
+        totalHeight += 24 // 상태 라벨 높이
+        totalHeight += cardVerticalMargin // 하단 여백
+        
+        return CGSize(width: size.width, height: totalHeight)
     }
 
     // MARK: - Update
@@ -187,13 +256,43 @@ class NoticeTableViewCell: UITableViewCell {
         self.checkbutton.isSelected = viewModel.isFavorite
         
         if viewModel.isRecruiting {
-            self.recruitmentStatusLabel.text = "모집중"
-            self.recruitmentStatusLabel.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
-            self.recruitmentStatusLabel.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.1)
+            let hasMercenary = viewModel.mercenaryRecruitmentCount ?? 0 > 0
+            let hasMatched = viewModel.isOpponentMatched ?? false
+            
+            if hasMercenary && hasMatched {
+                // 둘 다 표시
+                self.recruitmentStatusLabel.text = "용병 \(viewModel.mercenaryRecruitmentCount!)명 모집중"
+                self.recruitmentStatusLabel.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
+                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
+                
+                self.secondaryStatusLabel.text = "매칭 완료"
+                self.secondaryStatusLabel.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
+                self.secondaryStatusLabel.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
+                self.secondaryStatusLabel.isHidden = false
+            } else if hasMercenary {
+                // 용병 모집만
+                self.recruitmentStatusLabel.text = "용병 \(viewModel.mercenaryRecruitmentCount!)명 모집중"
+                self.recruitmentStatusLabel.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
+                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
+                self.secondaryStatusLabel.isHidden = true
+            } else if hasMatched {
+                // 매칭 완료만
+                self.recruitmentStatusLabel.text = "매칭 완료"
+                self.recruitmentStatusLabel.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
+                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
+                self.secondaryStatusLabel.isHidden = true
+            } else {
+                // 일반 모집 중
+                self.recruitmentStatusLabel.text = "모집중"
+                self.recruitmentStatusLabel.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
+                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.1)
+                self.secondaryStatusLabel.isHidden = true
+            }
         } else {
             self.recruitmentStatusLabel.text = "마감"
             self.recruitmentStatusLabel.textColor = .gray
             self.recruitmentStatusLabel.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+            self.secondaryStatusLabel.isHidden = true
         }
         
         self.setNeedsLayout()
@@ -224,8 +323,10 @@ internal struct GameMatchListViewModel {
     internal let isFavorite: Bool
     internal let isRecruiting: Bool
     internal let teamName: String
+    internal let mercenaryRecruitmentCount: Int?
+    internal let isOpponentMatched: Bool?
 
-    internal init(id: Int, date: String, time: String, address: String, description: String, isFavorite: Bool, isRecruiting: Bool, teamName: String) {
+    internal init(id: Int, date: String, time: String, address: String, description: String, isFavorite: Bool, isRecruiting: Bool, teamName: String, mercenaryRecruitmentCount: Int?, isOpponentMatched: Bool?) {
         self.id = id
         self.date = date
         self.time = time
@@ -234,6 +335,8 @@ internal struct GameMatchListViewModel {
         self.isFavorite = isFavorite
         self.isRecruiting = isRecruiting
         self.teamName = teamName
+        self.mercenaryRecruitmentCount = mercenaryRecruitmentCount
+        self.isOpponentMatched = isOpponentMatched
     }
 }
 

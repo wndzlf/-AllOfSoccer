@@ -224,6 +224,10 @@ class GameMatchingViewController: UIViewController {
         self.noticeTableView.dataSource = self
         self.noticeTableView.register(NoticeTableViewCell.self, forCellReuseIdentifier: "NoticeTableViewCell")
         self.noticeTableView.separatorStyle = .none
+        
+        // 동적 셀 높이 설정
+        self.noticeTableView.rowHeight = UITableView.automaticDimension
+        self.noticeTableView.estimatedRowHeight = 162
     }
 
     private func setupRecruitmentButton() {
@@ -525,9 +529,6 @@ extension GameMatchingViewController: UITableViewDelegate {
         self.navigationController?.pushViewController(vc, animated: true)
     }
 
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 130.0 // Storyboard의 rowHeight와 일치시킴
-    }
 }
 
 // MARK: - TableViewDatasource

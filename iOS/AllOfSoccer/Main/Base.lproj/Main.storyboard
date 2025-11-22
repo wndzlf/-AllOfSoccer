@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="cWg-xg-57q">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="cWg-xg-57q">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -19,7 +20,6 @@
                     </tabBar>
                     <connections>
                         <segue destination="TeamMatch-storyboard" kind="relationship" relationship="viewControllers" id="sPh-Gi-guz"/>
-                        <segue destination="MercenaryMatch-storyboard" kind="relationship" relationship="viewControllers" id="mer-cy-seg"/>
                         <segue destination="dmv-jo-hw6" kind="relationship" relationship="viewControllers" id="Ie7-yE-osn"/>
                     </connections>
                 </tabBarController>
@@ -27,7 +27,7 @@
             </objects>
             <point key="canvasLocation" x="-680" y="26"/>
         </scene>
-        <!--팀 매치-->
+        <!--GameMatching-->
         <scene sceneID="TeamMatch-scene">
             <objects>
                 <viewControllerPlaceholder storyboardName="GameMatching" id="TeamMatch-storyboard" sceneMemberID="viewController">
@@ -37,17 +37,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="M7g-CR-efN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="41" y="-70"/>
-        </scene>
-        <!--MercenaryMatch-->
-        <scene sceneID="MercenaryMatch-scene">
-            <objects>
-                <viewControllerPlaceholder storyboardName="MercenaryMatch" id="MercenaryMatch-storyboard" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="용병 모집" image="person.crop.circle.badge.plus" catalog="system" selectedImage="person.crop.circle.fill.badge.plus" id="mer-tab-item"/>
-                    <navigationItem key="navigationItem" id="mer-nav-item"/>
-                </viewControllerPlaceholder>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="mer-first-resp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="41" y="20"/>
         </scene>
         <!--MyPage-->
         <scene sceneID="fnZ-de-oDp">
@@ -62,12 +51,10 @@
         </scene>
     </scenes>
     <resources>
-        <image name="person.3" catalog="system" width="128" height="62"/>
-        <image name="person.3.fill" catalog="system" width="128" height="61"/>
-        <image name="person.crop.circle.badge.plus" catalog="system" width="128" height="113"/>
-        <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="113"/>
+        <image name="person.3" catalog="system" width="128" height="66"/>
+        <image name="person.3.fill" catalog="system" width="128" height="66"/>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
