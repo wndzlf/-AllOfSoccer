@@ -358,6 +358,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         noteLabel.font = UIFont.systemFont(ofSize: 14)
         noteLabel.textColor = .black
         noteLabel.numberOfLines = 0
+        noteLabel.lineBreakMode = .byWordWrapping
         
         noteContainerView.addSubview(noteLabel)
         contentView.addSubview(noteArrowImageView)
@@ -442,11 +443,15 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         
         // Note 텍스트의 실제 높이 계산
         let noteTextWidth = screenWidth - 85 - 50 // noteContainerView 너비 - 좌우 패딩
-        let noteTextHeight = calculateTextHeight(text: viewModel.data.noteText, width: noteTextWidth, font: noteLabel.font)
-        let noteContainerHeight = max(Layout.noteContainerHeight, noteTextHeight + 36) // 상하 패딩 18씩 추가
+        
+        // sizeThatFits를 사용하여 더 정확한 높이 계산
+        let size = noteLabel.sizeThatFits(CGSize(width: noteTextWidth, height: .greatestFiniteMagnitude))
+        let noteTextHeight = ceil(size.height)
+        
+        let noteContainerHeight = max(Layout.noteContainerHeight, noteTextHeight + 40) // 상하 패딩 20씩 추가 (여유있게)
         
         noteContainerView.frame = CGRect(x: 42, y: currentY, width: screenWidth - 85, height: noteContainerHeight)
-        noteLabel.frame = CGRect(x: 25, y: 18, width: noteTextWidth, height: noteTextHeight)
+        noteLabel.frame = CGRect(x: 25, y: 20, width: noteTextWidth, height: noteTextHeight)
         currentY += noteContainerView.frame.height + 25
         
         // 8. Message Button

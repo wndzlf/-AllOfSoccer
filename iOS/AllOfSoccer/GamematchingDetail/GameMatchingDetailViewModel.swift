@@ -140,7 +140,7 @@ class GameMatchingDetailViewModel {
         var items: [FormatItem] = []
         
         // 경기 형식
-        let matchTypeTitle = match.matchType == "11v11" ? "11 vs 11" : "6 vs 6"
+        let matchTypeTitle = match.matchType == "11 vs 11" ? "11 vs 11" : "6 vs 6"
         items.append(FormatItem(title: matchTypeTitle, iconName: "person.3.fill"))
         
         // 성별
