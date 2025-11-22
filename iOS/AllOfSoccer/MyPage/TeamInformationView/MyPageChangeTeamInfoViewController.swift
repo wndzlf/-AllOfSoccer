@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ContactsUI
 
 class MyPageChangeTeamInfoViewController: UIViewController {
     
@@ -31,8 +30,6 @@ class MyPageChangeTeamInfoViewController: UIViewController {
     
     private let saveButton = UIButton()
     
-    private var selectedContact: String?
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,7 +39,6 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         
         setupUI()
         setupTextFields()
-        setupContactPicker()
     }
     
     override func viewDidLayoutSubviews() {
@@ -83,9 +79,9 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         ageSlider.minimumValue = 10
         ageSlider.maximumValue = 70
         ageSlider.value = 70
-        ageSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        ageSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
         ageSlider.maximumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
-        ageSlider.thumbTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 0.0)
+        ageSlider.thumbTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
         view.addSubview(ageSlider)
         
         // Age Slider Labels
@@ -109,9 +105,9 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         skillSlider.minimumValue = 10
         skillSlider.maximumValue = 70
         skillSlider.value = 40
-        skillSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
+        skillSlider.minimumTrackTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
         skillSlider.maximumTrackTintColor = UIColor(red: 0.925, green: 0.925, blue: 0.925, alpha: 1.0)
-        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 0.0)
+        skillSlider.thumbTintColor = UIColor(red: 0.925, green: 0.373, blue: 0.373, alpha: 1.0)
         view.addSubview(skillSlider)
         
         // Skill Slider Labels
@@ -141,8 +137,9 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         contactContainerView.addSubview(contactIcon)
         
         // Contact TextField
-        contactTextField.placeholder = "대표 연락처를 입력해주세요."
+        contactTextField.placeholder = "010-0000-0000"
         contactTextField.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        contactTextField.keyboardType = .phonePad
         contactContainerView.addSubview(contactTextField)
         
         // Save Button
@@ -267,21 +264,8 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         contactTextField.inputAccessoryView = toolbar
     }
     
-    private func setupContactPicker() {
-        // Add tap gesture to contact field to open contact picker
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openContactPicker))
-        contactTextField.addGestureRecognizer(tapGesture)
-    }
-    
     @objc private func dismissKeyboard() {
         view.endEditing(true)
-    }
-    
-    @objc private func openContactPicker() {
-        let contactPicker = CNContactPickerViewController()
-        contactPicker.delegate = self
-        contactPicker.displayedPropertyKeys = [CNContactPhoneNumbersKey]
-        present(contactPicker, animated: true)
     }
     
     @objc private func saveButtonTapped(_ sender: UIButton) {
@@ -321,31 +305,5 @@ extension MyPageChangeTeamInfoViewController: UITextFieldDelegate {
             textField.resignFirstResponder()
         }
         return true
-    }
-    
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        // Prevent keyboard from showing for contact field, show picker instead
-        if textField == contactTextField {
-            openContactPicker()
-            return false
-        }
-        return true
-    }
-}
-
-// MARK: - CNContactPickerDelegate
-extension MyPageChangeTeamInfoViewController: CNContactPickerDelegate {
-    func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
-        // Extract phone number from selected contact
-        if let phoneNumber = contact.phoneNumbers.first {
-            let number = phoneNumber.value.stringValue
-            contactTextField.text = number
-            selectedContact = number
-        }
-    }
-    
-    func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
-        // User cancelled contact selection
-        picker.dismiss(animated: true)
     }
 }
