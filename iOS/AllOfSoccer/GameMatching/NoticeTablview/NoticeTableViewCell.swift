@@ -7,6 +7,39 @@
 
 import UIKit
 
+// MARK: - Match Status Type
+enum MatchStatusType {
+    case mercenaryRecruitment(count: Int)
+    case teamMatched
+    
+    var text: String {
+        switch self {
+        case .mercenaryRecruitment(let count):
+            return "용병 \(count)명 모집중"
+        case .teamMatched:
+            return "매칭 완료"
+        }
+    }
+    
+    var textColor: UIColor {
+        switch self {
+        case .mercenaryRecruitment:
+            return UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
+        case .teamMatched:
+            return UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
+        }
+    }
+    
+    var backgroundColor: UIColor {
+        switch self {
+        case .mercenaryRecruitment:
+            return UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
+        case .teamMatched:
+            return UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
+        }
+    }
+}
+
 class NoticeTableViewCell: UITableViewCell {
 
     // MARK: - UI Components
@@ -255,43 +288,23 @@ class NoticeTableViewCell: UITableViewCell {
         self.teamNameLabel.text = viewModel.teamName
         self.checkbutton.isSelected = viewModel.isFavorite
         
-        if viewModel.isRecruiting {
-            let hasMercenary = viewModel.mercenaryRecruitmentCount ?? 0 > 0
-            let hasMatched = viewModel.isOpponentMatched ?? false
+        // 상태 라벨 업데이트
+        if let primaryStatus = viewModel.primaryStatus {
+            self.recruitmentStatusLabel.text = primaryStatus.text
+            self.recruitmentStatusLabel.textColor = primaryStatus.textColor
+            self.recruitmentStatusLabel.backgroundColor = primaryStatus.backgroundColor
             
-            if hasMercenary && hasMatched {
-                // 둘 다 표시
-                self.recruitmentStatusLabel.text = "용병 \(viewModel.mercenaryRecruitmentCount!)명 모집중"
-                self.recruitmentStatusLabel.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
-                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
-                
-                self.secondaryStatusLabel.text = "매칭 완료"
-                self.secondaryStatusLabel.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
-                self.secondaryStatusLabel.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
+            if let secondaryStatus = viewModel.secondaryStatus {
+                self.secondaryStatusLabel.text = secondaryStatus.text
+                self.secondaryStatusLabel.textColor = secondaryStatus.textColor
+                self.secondaryStatusLabel.backgroundColor = secondaryStatus.backgroundColor
                 self.secondaryStatusLabel.isHidden = false
-            } else if hasMercenary {
-                // 용병 모집만
-                self.recruitmentStatusLabel.text = "용병 \(viewModel.mercenaryRecruitmentCount!)명 모집중"
-                self.recruitmentStatusLabel.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
-                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
-                self.secondaryStatusLabel.isHidden = true
-            } else if hasMatched {
-                // 매칭 완료만
-                self.recruitmentStatusLabel.text = "매칭 완료"
-                self.recruitmentStatusLabel.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
-                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
-                self.secondaryStatusLabel.isHidden = true
             } else {
-                // 일반 모집 중
-                self.recruitmentStatusLabel.text = "모집중"
-                self.recruitmentStatusLabel.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
-                self.recruitmentStatusLabel.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.1)
                 self.secondaryStatusLabel.isHidden = true
             }
         } else {
-            self.recruitmentStatusLabel.text = "마감"
-            self.recruitmentStatusLabel.textColor = .gray
-            self.recruitmentStatusLabel.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
+            // 상태가 없으면 숨김
+            self.recruitmentStatusLabel.isHidden = true
             self.secondaryStatusLabel.isHidden = true
         }
         
@@ -315,7 +328,7 @@ class NoticeTableViewCell: UITableViewCell {
 }
 
 internal struct GameMatchListViewModel {
-    internal let id: Int // 매치 식별자 추가
+    internal let id: Int
     internal let date: String
     internal let time: String
     internal let address: String
@@ -323,10 +336,21 @@ internal struct GameMatchListViewModel {
     internal let isFavorite: Bool
     internal let isRecruiting: Bool
     internal let teamName: String
-    internal let mercenaryRecruitmentCount: Int?
-    internal let isOpponentMatched: Bool?
+    internal let primaryStatus: MatchStatusType?
+    internal let secondaryStatus: MatchStatusType?
 
-    internal init(id: Int, date: String, time: String, address: String, description: String, isFavorite: Bool, isRecruiting: Bool, teamName: String, mercenaryRecruitmentCount: Int?, isOpponentMatched: Bool?) {
+    internal init(
+        id: Int,
+        date: String,
+        time: String,
+        address: String,
+        description: String,
+        isFavorite: Bool,
+        isRecruiting: Bool,
+        teamName: String,
+        primaryStatus: MatchStatusType?,
+        secondaryStatus: MatchStatusType?
+    ) {
         self.id = id
         self.date = date
         self.time = time
@@ -335,8 +359,8 @@ internal struct GameMatchListViewModel {
         self.isFavorite = isFavorite
         self.isRecruiting = isRecruiting
         self.teamName = teamName
-        self.mercenaryRecruitmentCount = mercenaryRecruitmentCount
-        self.isOpponentMatched = isOpponentMatched
+        self.primaryStatus = primaryStatus
+        self.secondaryStatus = secondaryStatus
     }
 }
 

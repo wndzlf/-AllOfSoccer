@@ -72,6 +72,26 @@ class GameMatchingViewModel {
         // 필터가 적용되었으면 필터링된 데이터 개수 반환 (0개일 수도 있음)
         return isFilterApplied ? filteredViewModel.count : matchingListViewModel.count
     }
+    
+    // Helper function to create status types from Match data
+    private func createStatusTypes(from match: Match) -> (primary: MatchStatusType?, secondary: MatchStatusType?) {
+        guard match.status == "recruiting" else {
+            return (nil, nil)
+        }
+        
+        let hasMercenary = (match.mercenaryRecruitmentCount ?? 0) > 0
+        let hasMatched = match.isOpponentMatched ?? false
+        
+        if hasMercenary && hasMatched {
+            return (.mercenaryRecruitment(count: match.mercenaryRecruitmentCount!), .teamMatched)
+        } else if hasMercenary {
+            return (.mercenaryRecruitment(count: match.mercenaryRecruitmentCount!), nil)
+        } else if hasMatched {
+            return (.teamMatched, nil)
+        } else {
+            return (.mercenaryRecruitment(count: 0), nil)
+        }
+    }
 
     internal func fetchViewModel(indexPath: IndexPath) -> GameMatchListViewModel {
         // 필터가 적용되었으면 필터링된 데이터 반환
@@ -86,8 +106,8 @@ class GameMatchingViewModel {
                     isFavorite: false,
                     isRecruiting: false,
                     teamName: "",
-                    mercenaryRecruitmentCount: nil,
-                    isOpponentMatched: nil
+                    primaryStatus: nil,
+                    secondaryStatus: nil
                 )
             }
             return filteredViewModel[indexPath.row]
@@ -160,6 +180,9 @@ class GameMatchingViewModel {
                         // 설명 생성
                         let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
                         
+                        // 상태 타입 생성
+                        let statuses = self?.createStatusTypes(from: match)
+                        
                         return GameMatchListViewModel(
                             id: match.id,
                             date: displayDate,
@@ -169,8 +192,8 @@ class GameMatchingViewModel {
                             isFavorite: true, // 서버에서 받아온 값으로 수정 필요
                             isRecruiting: match.status == "recruiting",
                             teamName: match.team?.name ?? "알 수 없음",
-                            mercenaryRecruitmentCount: match.mercenaryRecruitmentCount,
-                            isOpponentMatched: match.isOpponentMatched
+                            primaryStatus: statuses?.primary,
+                            secondaryStatus: statuses?.secondary
                         )
                     }
                     self?.presenter?.reloadMatchingList()
@@ -863,6 +886,9 @@ class GameMatchingViewModel {
             // 랜덤하게 좋아요 상태 설정 (Mock)
             let isFavorite = Bool.random()
             
+            // 상태 타입 생성
+            let statuses = createStatusTypes(from: match)
+            
             return GameMatchListViewModel(
                 id: match.id,
                 date: displayDate,
@@ -872,8 +898,8 @@ class GameMatchingViewModel {
                 isFavorite: isFavorite,
                 isRecruiting: match.status == "recruiting",
                 teamName: match.team?.name ?? "알 수 없음",
-                mercenaryRecruitmentCount: match.mercenaryRecruitmentCount,
-                isOpponentMatched: match.isOpponentMatched
+                primaryStatus: statuses.primary,
+                secondaryStatus: statuses.secondary
             )
         }
     }
@@ -921,8 +947,8 @@ class GameMatchingViewModel {
                 isFavorite: !oldModel.isFavorite, // 토글
                 isRecruiting: oldModel.isRecruiting,
                 teamName: oldModel.teamName,
-                mercenaryRecruitmentCount: oldModel.mercenaryRecruitmentCount,
-                isOpponentMatched: oldModel.isOpponentMatched
+                primaryStatus: oldModel.primaryStatus,
+                secondaryStatus: oldModel.secondaryStatus
             )
             self.matchingListViewModel[index] = newModel
         }
@@ -940,8 +966,8 @@ class GameMatchingViewModel {
                     isFavorite: !oldModel.isFavorite, // 토글
                     isRecruiting: oldModel.isRecruiting,
                     teamName: oldModel.teamName,
-                    mercenaryRecruitmentCount: oldModel.mercenaryRecruitmentCount,
-                    isOpponentMatched: oldModel.isOpponentMatched
+                    primaryStatus: oldModel.primaryStatus,
+                    secondaryStatus: oldModel.secondaryStatus
                 )
                 self.filteredViewModel[index] = newModel
             }
@@ -1070,6 +1096,9 @@ class GameMatchingViewModel {
             let time = "20:00"
             let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
             
+            // 상태 타입 생성
+            let statuses = createStatusTypes(from: match)
+            
             return GameMatchListViewModel(
                 id: match.id,
                 date: displayDate,
@@ -1079,8 +1108,8 @@ class GameMatchingViewModel {
                 isFavorite: true,
                 isRecruiting: match.status == "recruiting",
                 teamName: match.team?.name ?? "알 수 없음",
-                mercenaryRecruitmentCount: match.mercenaryRecruitmentCount,
-                isOpponentMatched: match.isOpponentMatched
+                primaryStatus: statuses.primary,
+                secondaryStatus: statuses.secondary
             )
         }
         
