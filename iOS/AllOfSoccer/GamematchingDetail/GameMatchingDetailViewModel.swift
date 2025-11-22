@@ -210,4 +210,32 @@ class GameMatchingDetailViewModel {
     func clearShareItems() {
         shareItems.removeAll()
     }
+    
+    // MARK: - Formatted Share Text
+    func getFormattedShareText() -> String {
+        let d = data
+        
+        var text = ""
+        text += "[경기 정보]\n"
+        text += "📅 일시: \(d.date)\n"
+        text += "📍 장소: \(d.location)\n"
+        text += "🗺 주소: \(d.address)\n"
+        text += "\n"
+        text += "💰 참가비: \(d.feeAmount)\n"
+        text += "\n"
+        text += "[진행 방식]\n"
+        let formatTitles = d.formatItems.map { $0.title }.joined(separator: " / ")
+        text += "⚽️ \(formatTitles)\n"
+        text += "\n"
+        text += "[팀 정보]\n"
+        text += "👕 팀명: \(d.teamName)\n"
+        text += "👥 나이대: \(d.ageRange)\n"
+        text += "📈 실력: \(d.skillLevel)\n"
+        text += "📞 연락처: \(d.contactNumber)\n"
+        text += "\n"
+        text += "[상세 내용]\n"
+        text += "\(d.noteText)\n"
+        
+        return text
+    }
 } 

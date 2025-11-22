@@ -510,15 +510,9 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     @objc private func shareBarButtonTouchup(_ sender: UIBarButtonItem) {
         print("shareBarButton이 찍혔습니다.")
         
-        // Clear previous share items
-        viewModel.clearShareItems()
+        let shareText = viewModel.getFormattedShareText()
         
-        // Add current data to share items
-        for testString in 0...3 {
-            viewModel.addShareItem(String(testString))
-        }
-        
-        let activityViewController = UIActivityViewController(activityItems: viewModel.getShareItems(), applicationActivities: nil)
+        let activityViewController = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = self.view
         self.present(activityViewController, animated: true, completion: nil)
     }

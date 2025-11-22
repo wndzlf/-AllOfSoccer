@@ -142,7 +142,8 @@ class GameMatchingViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
+        self.navigationItem.title = "팀 매치"
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
 
         self.recruitmentButton.isHidden = false
