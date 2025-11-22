@@ -15,11 +15,7 @@ class MyPageChangeTeamInfoViewController: UIViewController {
     private let teamNameContainerView = UIView()
     private let teamNameIcon = UIImageView()
     private let teamNameTextField = UITextField()
-    
-    private let profileImageContainerView = UIView()
-    private let profileImageView = UIImageView()
-    private let cameraButton = UIButton()
-    
+
     private let ageLabel = UILabel()
     private let ageSlider = OneThumbSlider()
     private var ageSliderLabels: [UILabel] = []
@@ -77,27 +73,6 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         teamNameTextField.font = UIFont.systemFont(ofSize: 17)
         teamNameTextField.textColor = .black
         teamNameContainerView.addSubview(teamNameTextField)
-        
-        // Profile Image Container
-        profileImageContainerView.backgroundColor = UIColor(red: 0.965, green: 0.969, blue: 0.980, alpha: 1.0)
-        profileImageContainerView.layer.cornerRadius = 9
-        profileImageContainerView.layer.borderWidth = 1
-        profileImageContainerView.layer.borderColor = UIColor(red: 0.820, green: 0.827, blue: 0.855, alpha: 1.0).cgColor
-        view.addSubview(profileImageContainerView)
-        
-        // Profile Image
-        profileImageView.image = UIImage(named: "User")
-        profileImageView.contentMode = .scaleAspectFit
-        profileImageContainerView.addSubview(profileImageView)
-        
-        // Camera Button
-        cameraButton.setImage(UIImage(systemName: "camera"), for: .normal)
-        cameraButton.tintColor = .black
-        cameraButton.backgroundColor = .white
-        cameraButton.layer.cornerRadius = 8
-        cameraButton.layer.borderWidth = 1
-        cameraButton.layer.borderColor = UIColor(red: 0.835, green: 0.843, blue: 0.855, alpha: 1.0).cgColor
-        profileImageContainerView.addSubview(cameraButton)
         
         // Age Label
         ageLabel.text = "나이대"
@@ -196,13 +171,10 @@ class MyPageChangeTeamInfoViewController: UIViewController {
         teamNameTextField.frame = CGRect(x: 44, y: 14, width: teamNameContainerView.frame.width - 54, height: 22)
         
         // Profile Image Container
-        profileImageContainerView.frame = CGRect(x: screenWidth - 71, y: teamNameContainerView.frame.minY - 1, width: 50, height: 50)
         
         // Profile Image
-        profileImageView.frame = CGRect(x: 14, y: 14, width: 22, height: 22)
         
         // Camera Button
-        cameraButton.frame = CGRect(x: 34, y: 34, width: 16, height: 16)
         
         // Age Label
         ageLabel.frame = CGRect(x: 16, y: teamNameContainerView.frame.maxY + 20, width: 100, height: 20)
