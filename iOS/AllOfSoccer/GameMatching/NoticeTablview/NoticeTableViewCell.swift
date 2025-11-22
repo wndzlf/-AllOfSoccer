@@ -10,16 +10,27 @@ import UIKit
 class NoticeTableViewCell: UITableViewCell {
 
     // MARK: - UI Components
+    private let cardView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 16
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 4)
+        view.layer.shadowRadius = 10
+        view.layer.shadowOpacity = 0.08
+        return view
+    }()
+
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0) // #666666
+        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        label.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0)
         return label
     }()
     
     private let timeLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.font = UIFont.boldSystemFont(ofSize: 22)
         label.textColor = .black
         label.textAlignment = .center
         return label
@@ -27,7 +38,7 @@ class NoticeTableViewCell: UITableViewCell {
     
     private let placeLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 18)
+        label.font = UIFont.boldSystemFont(ofSize: 18)
         label.textColor = .black
         return label
     }()
@@ -35,15 +46,15 @@ class NoticeTableViewCell: UITableViewCell {
     private let contentsLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0) // #666666
-        label.numberOfLines = 0
+        label.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0)
+        label.numberOfLines = 2
         return label
     }()
     
     private let teamNameLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1.0) // #999999
+        label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        label.textColor = UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1.0)
         return label
     }()
     
@@ -51,14 +62,16 @@ class NoticeTableViewCell: UITableViewCell {
         let button = UIButton()
         button.setImage(UIImage(systemName: "heart"), for: .normal)
         button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
-        button.tintColor = .black // Default tint
+        button.tintColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
         return button
     }()
     
     private let recruitmentStatusLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16)
-        label.textColor = UIColor(red: 77/255, green: 152/255, blue: 52/255, alpha: 1.0) // Green
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textAlignment = .center
+        label.layer.masksToBounds = true
+        label.layer.cornerRadius = 8
         return label
     }()
 
@@ -75,6 +88,10 @@ class NoticeTableViewCell: UITableViewCell {
     
     private func setupViews() {
         self.selectionStyle = .none
+        self.backgroundColor = .clear
+        self.contentView.backgroundColor = .clear
+        
+        self.contentView.addSubview(cardView)
         self.contentView.addSubview(dateLabel)
         self.contentView.addSubview(timeLabel)
         self.contentView.addSubview(placeLabel)
@@ -90,42 +107,72 @@ class NoticeTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        // Fixed positions based on Storyboard analysis (approximate for 414 width, but adapted)
-        // Date Label: x=38, y=48
-        dateLabel.frame = CGRect(x: 38, y: 48, width: 60, height: 17)
+        // Card View Layout
+        let cardMargin: CGFloat = 16
+        let cardVerticalMargin: CGFloat = 8
+        cardView.frame = CGRect(x: cardMargin,
+                                y: cardVerticalMargin,
+                                width: contentView.frame.width - (cardMargin * 2),
+                                height: contentView.frame.height - (cardVerticalMargin * 2))
+        
+        // Shadow Path Optimization
+        cardView.layer.shadowPath = UIBezierPath(roundedRect: cardView.bounds, cornerRadius: cardView.layer.cornerRadius).cgPath
+        
+        // Layout Constants
+        let leftPadding: CGFloat = cardMargin + 20 // Inside card
+        let rightColumnX: CGFloat = cardMargin + 100 // Start of right column
+        let rightPadding: CGFloat = cardMargin + 16
+        let contentWidth = contentView.frame.width - rightColumnX - rightPadding
+        
+        // Date Label
         dateLabel.sizeToFit()
-        dateLabel.frame.origin = CGPoint(x: 38, y: 48)
+        dateLabel.frame.origin = CGPoint(x: leftPadding, y: cardVerticalMargin + 24)
         
-        // Time Label: CenterX with DateLabel, Top = DateLabel.bottom + 2
+        // Time Label
         timeLabel.sizeToFit()
-        timeLabel.center.x = dateLabel.center.x
-        timeLabel.frame.origin.y = dateLabel.frame.maxY + 2
-        
-        // Place Label: x=123, y=25
-        placeLabel.frame = CGRect(x: 123, y: 25, width: contentView.frame.width - 123 - 50, height: 22)
-        
-        // Check Button: Right aligned with padding
-        let buttonSize: CGFloat = 22
-        checkbutton.frame = CGRect(x: contentView.frame.width - 16 - buttonSize, y: 25, width: buttonSize, height: buttonSize)
-        
-        // Contents Label: x=123, y=48.5, Width=205
-        contentsLabel.frame = CGRect(x: 123, y: 48.5, width: 205, height: 40)
-        contentsLabel.sizeToFit()
-        // Limit width if sizeToFit expands it too much
-        if contentsLabel.frame.width > 205 {
-            contentsLabel.frame.size.width = 205
-            contentsLabel.sizeToFit() // Adjust height for wrapped text
+        timeLabel.frame.origin = CGPoint(x: leftPadding, y: dateLabel.frame.maxY + 6)
+        // Align centers of date and time
+        if dateLabel.frame.width > timeLabel.frame.width {
+            timeLabel.center.x = dateLabel.center.x
+        } else {
+            dateLabel.center.x = timeLabel.center.x
         }
-        contentsLabel.frame.origin = CGPoint(x: 123, y: 48.5)
         
-        // Team Name Label: x=123, Top = ContentsLabel.bottom + 4
+        // Check Button (Top Right)
+        let buttonSize: CGFloat = 24
+        checkbutton.frame = CGRect(x: contentView.frame.width - rightPadding - buttonSize,
+                                   y: cardVerticalMargin + 20,
+                                   width: buttonSize,
+                                   height: buttonSize)
+        
+        // Place Label
+        placeLabel.frame = CGRect(x: rightColumnX,
+                                  y: cardVerticalMargin + 20,
+                                  width: contentWidth - buttonSize - 8,
+                                  height: 22)
+        
+        // Contents Label
+        contentsLabel.frame = CGRect(x: rightColumnX,
+                                     y: placeLabel.frame.maxY + 8,
+                                     width: contentWidth,
+                                     height: 40)
+        contentsLabel.sizeToFit()
+        // Limit width
+        if contentsLabel.frame.width > contentWidth {
+            contentsLabel.frame.size.width = contentWidth
+            contentsLabel.sizeToFit()
+        }
+        
+        // Team Name Label
         teamNameLabel.sizeToFit()
-        teamNameLabel.frame.origin = CGPoint(x: 123, y: contentsLabel.frame.maxY + 4)
+        teamNameLabel.frame.origin = CGPoint(x: rightColumnX, y: contentsLabel.frame.maxY + 10)
         
-        // Recruitment Status Label: Bottom Right
-        recruitmentStatusLabel.sizeToFit()
-        recruitmentStatusLabel.frame.origin.x = contentView.frame.width - 16 - recruitmentStatusLabel.frame.width
-        recruitmentStatusLabel.frame.origin.y = contentView.frame.height - 18 - recruitmentStatusLabel.frame.height
+        // Recruitment Status Label (Bottom Right)
+        let statusSize = CGSize(width: 60, height: 24)
+        recruitmentStatusLabel.frame = CGRect(x: contentView.frame.width - rightPadding - statusSize.width,
+                                              y: contentView.frame.height - cardVerticalMargin - 16 - statusSize.height,
+                                              width: statusSize.width,
+                                              height: statusSize.height)
     }
 
     // MARK: - Update
@@ -139,25 +186,19 @@ class NoticeTableViewCell: UITableViewCell {
         
         if viewModel.isRecruiting {
             self.recruitmentStatusLabel.text = "모집중"
-            self.recruitmentStatusLabel.textColor = UIColor(red: 77/255, green: 152/255, blue: 52/255, alpha: 1.0) // Green
+            self.recruitmentStatusLabel.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
+            self.recruitmentStatusLabel.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.1)
         } else {
             self.recruitmentStatusLabel.text = "마감"
             self.recruitmentStatusLabel.textColor = .gray
+            self.recruitmentStatusLabel.backgroundColor = UIColor(white: 0.95, alpha: 1.0)
         }
-        
-        // Update tint color based on selection
-        let didSelectedColor = UIColor(red: 236.0/255.0, green: 95.0/255.0, blue: 95.0/255.0, alpha: 1)
-        let didDeSelectedColor = UIColor.black
-        checkbutton.tintColor = checkbutton.isSelected ? didSelectedColor : didDeSelectedColor
         
         self.setNeedsLayout()
     }
 
     @objc private func checkButtonDidSelected(sender: UIButton) {
         sender.isSelected.toggle()
-        let didSelectedColor = UIColor(red: 236.0/255.0, green: 95.0/255.0, blue: 95.0/255.0, alpha: 1)
-        let didDeSelectedColor = UIColor.black
-        sender.tintColor = sender.isSelected ? didSelectedColor : didDeSelectedColor
         
         // Animation
         UIView.animate(withDuration: 0.1, animations: {
