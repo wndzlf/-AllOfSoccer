@@ -415,6 +415,8 @@ extension GameMatchingViewController: UICollectionViewDelegate {
     private func appearFilterDetailView() {
         self.filterDetailView.isHidden = false
         self.filterDetailBackgroundView.isHidden = false
+        self.filterDetailBackgroundView.alpha = 0 // 초기 투명도 설정
+        
         self.recruitmentButton.isHidden = true
         self.manRecruitmentButton.isHidden = true
         self.teamRecruitmentButton.isHidden = true
@@ -426,10 +428,16 @@ extension GameMatchingViewController: UICollectionViewDelegate {
         
         self.tabBarController?.view.layoutIfNeeded()
         
-        UIView.animate(withDuration: 0.3) { [weak self] in
+        // Spring Animation 적용
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseInOut) { [weak self] in
             guard let self = self else { return }
+            
             // 하단에서 올라오도록 제약조건 업데이트
             self.filterDetailViewBottomConstraint?.constant = 0
+            
+            // 배경 투명도 애니메이션
+            self.filterDetailBackgroundView.alpha = 1.0
+            
             self.tabBarController?.view.layoutIfNeeded()
         }
     }
@@ -573,10 +581,13 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
             guard let self = self else { return }
             // 하단으로 내려가도록 제약조건 업데이트
             self.filterDetailViewBottomConstraint?.constant = viewHeight
+            self.filterDetailBackgroundView.alpha = 0 // 배경 투명하게
             self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
             self.filterDetailView.isHidden = true
+            self.filterDetailBackgroundView.alpha = 1.0 // 다음 표시를 위해 초기화 (필요시)
+            
             self.recruitmentButton.isHidden = false
             self.manRecruitmentButton.isHidden = false
             self.teamRecruitmentButton.isHidden = false
@@ -624,10 +635,13 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
             guard let self = self else { return }
             // 하단으로 내려가도록 제약조건 업데이트
             self.filterDetailViewBottomConstraint?.constant = viewHeight
+            self.filterDetailBackgroundView.alpha = 0 // 배경 투명하게
             self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
             self.filterDetailView.isHidden = true
+            self.filterDetailBackgroundView.alpha = 1.0 // 다음 표시를 위해 초기화
+            
             self.recruitmentButton.isHidden = false
             self.manRecruitmentButton.isHidden = false
             self.teamRecruitmentButton.isHidden = false

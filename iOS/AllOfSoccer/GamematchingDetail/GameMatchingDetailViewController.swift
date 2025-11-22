@@ -409,10 +409,11 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         currentY += mapPinImageView.frame.height + 20
         
         // 4. Fee Section
-        feeIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY, width: Layout.iconSize, height: Layout.iconSize)
-        feeTitleLabel.frame = CGRect(x: feeIconImageView.frame.maxX + 9, y: currentY - 0.5, width: 44.5, height: 20.5)
+        feeIconImageView.frame = CGRect(x: Layout.horizontalPadding + 1, y: currentY + 2.0, width: Layout.iconSize, height: Layout.iconSize)
+        feeTitleLabel.frame = CGRect(x: feeIconImageView.frame.maxX + 9, y: currentY, width: 44.5, height: 20.5)
+
         currentY += feeTitleLabel.frame.height + 12
-        feeAmountLabel.frame = CGRect(x: feeTitleLabel.frame.minX, y: currentY, width: 74.5, height: 24)
+        feeAmountLabel.frame = CGRect(x: feeTitleLabel.frame.minX, y: currentY, width: self.view.bounds.width - 50.0, height: 24)
         currentY += feeAmountLabel.frame.height + 25
         
         // 5. Format Section
