@@ -10,4 +10,10 @@ target 'AllOfSoccer' do
   pod "RangeSeekSlider"
   # pod "NMapsMap"
 
+  target 'AllOfSoccerTests' do
+
+    pod "SearchTextField"
+    pod "RangeSeekSlider"
+  end
+
 end
