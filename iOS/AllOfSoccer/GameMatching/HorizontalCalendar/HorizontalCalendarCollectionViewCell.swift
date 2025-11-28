@@ -19,25 +19,69 @@ enum NumberOfDays: Int {
 }
 
 class HorizontalCalendarCollectionViewCell: UICollectionViewCell, UIGestureRecognizerDelegate {
-    @IBOutlet internal weak var dayLabel: UILabel!
-    @IBOutlet internal weak var dateLabel: UILabel!
-    @IBOutlet private weak var stackView: UIStackView!
+    
+    internal let dayLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    internal let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    private let stackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.distribution = .fillEqually
+        stack.alignment = .fill
+        return stack
+    }()
     
     private var currentCellData: HorizontalCalendarModel?
     private var gradientLayer: CAGradientLayer?
 
-    override func awakeFromNib() {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
         // 셀의 배경을 투명하게 설정
-        self.backgroundColor = UIColor.clear
-        self.contentView.backgroundColor = UIColor.clear
-        self.contentView.clipsToBounds = false
+        backgroundColor = UIColor.clear
+        contentView.backgroundColor = UIColor.clear
+        contentView.clipsToBounds = false
         
-        self.stackView.layer.cornerRadius = 15
-        self.stackView.layer.borderWidth = 1.5
-        self.stackView.backgroundColor = UIColor.white
-        self.stackView.clipsToBounds = false
-
-        self.stackView.layer.borderColor = UIColor(red: 240/255, green: 240/255, blue: 245/255, alpha: 1.0).cgColor
+        stackView.layer.cornerRadius = 15
+        stackView.layer.borderWidth = 1.5
+        stackView.backgroundColor = UIColor.white
+        stackView.clipsToBounds = false
+        stackView.layer.borderColor = UIColor(red: 240/255, green: 240/255, blue: 245/255, alpha: 1.0).cgColor
+        
+        contentView.addSubview(stackView)
+        stackView.addArrangedSubview(dateLabel)
+        stackView.addArrangedSubview(dayLabel)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        // StackView fills the entire content view
+        stackView.frame = contentView.bounds
+        
+        // 선택된 상태에서만 그라디언트 프레임을 갱신
+        if let gradient = gradientLayer, isSelected {
+            gradient.frame = self.stackView.bounds
+        }
     }
 
     override var isSelected: Bool {
@@ -62,14 +106,6 @@ class HorizontalCalendarCollectionViewCell: UICollectionViewCell, UIGestureRecog
                     }
                 }
             }
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        // 선택된 상태에서만 그라디언트 프레임을 갱신
-        if let gradient = gradientLayer, isSelected {
-            gradient.frame = self.stackView.bounds
         }
     }
 

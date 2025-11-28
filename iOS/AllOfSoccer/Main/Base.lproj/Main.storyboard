@@ -19,24 +19,12 @@
                         <color key="selectedImageTintColor" systemColor="systemRedColor"/>
                     </tabBar>
                     <connections>
-                        <segue destination="TeamMatch-storyboard" kind="relationship" relationship="viewControllers" id="sPh-Gi-guz"/>
                         <segue destination="dmv-jo-hw6" kind="relationship" relationship="viewControllers" id="Ie7-yE-osn"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s9w-XH-1ud" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-680" y="26"/>
-        </scene>
-        <!--GameMatching-->
-        <scene sceneID="TeamMatch-scene">
-            <objects>
-                <viewControllerPlaceholder storyboardName="GameMatching" id="TeamMatch-storyboard" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="팀 매치" image="person.3" catalog="system" selectedImage="person.3.fill" id="lCM-6U-pbV"/>
-                    <navigationItem key="navigationItem" id="d7r-MR-XLI"/>
-                </viewControllerPlaceholder>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="M7g-CR-efN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="41" y="-70"/>
         </scene>
         <!--MyPage-->
         <scene sceneID="fnZ-de-oDp">

@@ -15,11 +15,23 @@ class GameMatchingViewController: UIViewController {
     var horizontalCalendarViewModel = HorizonralCalendarViewModel()
 
     // MARK: - HorizontalCalendar Variable
-    @IBOutlet private weak var horizontalCalendarView: UICollectionView!
+    private let horizontalCalendarView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumInteritemSpacing = 12
+        layout.minimumLineSpacing = 10
+        layout.sectionInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        layout.scrollDirection = .horizontal
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .systemBackground
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.allowsMultipleSelection = true
+        collectionView.register(HorizontalCalendarCollectionViewCell.self, forCellWithReuseIdentifier: "HorizontalCalendarCollectionViewCell")
+        return collectionView
+    }()
     
     // MARK: - FilterDetailView
     private let filterDetailView = FilterDetailView()
-    private var filterDetailViewBottomConstraint: NSLayoutConstraint?
     private lazy var filterDetailBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
@@ -27,31 +39,89 @@ class GameMatchingViewController: UIViewController {
     }()
 
     // MARK: - NoticeTableView Variable
-    @IBOutlet private weak var noticeTableView: UITableView!
+    private let noticeTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .systemBackground
+        tableView.separatorStyle = .none
+        tableView.separatorInset = .zero
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 162
+        tableView.register(NoticeTableViewCell.self, forCellReuseIdentifier: "NoticeTableViewCell")
+        return tableView
+    }()
 
     // MARK: - FilterTagCollectionView Variable
     private var tagCellModel: [FilterTagModel] = []
     private var didSelectedFilterList: [String: FilterType] = [:]
 
-    @IBOutlet private weak var filterTagCollectionView: UICollectionView!
-    @IBOutlet private weak var resetButtonView: UIView!
-    @IBOutlet private weak var tagCollectionViewConstraint: NSLayoutConstraint!
+    private let filterTagCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.estimatedItemSize = CGSize(width: 500, height: 28)
+        layout.minimumInteritemSpacing = 6
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+        layout.scrollDirection = .horizontal
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .systemBackground
+        collectionView.allowsMultipleSelection = true
+        collectionView.register(FilterTagCollectionViewCell.self, forCellWithReuseIdentifier: "FilterTagCollectionViewCell")
+        return collectionView
+    }()
+    
+    private let resetButtonView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        return view
+    }()
+    
+    private let resetButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(named: "ArrowsClockwise"), for: .normal)
+        button.tintColor = .black
+        return button
+    }()
 
     // MARK: - NormalCalendarView Variable
 //    private var norMalCalendarView = GameMatchingCalendarView()
     private var norMalCalendarDidSelectedDate: [Date] = []
 
-    @IBOutlet private weak var monthButton: UIButton!
+    private let monthButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitleColor(.black, for: .normal)
+        button.semanticContentAttribute = .forceRightToLeft
+        button.tintColor = .black
+        return button
+    }()
 
     // MARK: - TableViewFilterView Variable
     private var sortMode = SortMode.distance
 
-    @IBOutlet private weak var tableViewFilterButton: UIButton!
-
     // MARK: - RecruitmentButtonAction
-    @IBOutlet private weak var recruitmentButton: RoundButton!
-    @IBOutlet private weak var manRecruitmentButton: RoundButton!
-    @IBOutlet private weak var teamRecruitmentButton: RoundButton!
+    private let recruitmentButton: RoundButton = {
+        let button = RoundButton()
+        button.cornerRadius = 30
+        return button
+    }()
+    
+    private let manRecruitmentButton: RoundButton = {
+        let button = RoundButton()
+        button.cornerRadius = 25
+        button.setImage(UIImage(named: "man"), for: .normal)
+        button.normalBackgroundColor = UIColor(named: "tagBackTouchUpColor") ?? UIColor()
+        button.normalTitleColor = .white
+        return button
+    }()
+    
+    private let teamRecruitmentButton: RoundButton = {
+        let button = RoundButton()
+        button.cornerRadius = 25
+        button.setImage(UIImage(named: "cloth.fill"), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = UIColor(named: "tagBackTouchUpColor")
+        button.normalBackgroundColor = UIColor(named: "tagBackTouchUpColor") ?? UIColor()
+        button.normalTitleColor = .white
+        return button
+    }()
     private var manRecruitmentButtonLabel: UILabel = {
         let label = UILabel()
         label.text = "용병 모집"
@@ -76,13 +146,13 @@ class GameMatchingViewController: UIViewController {
     }()
 
     // MARK: - CalendarMonthButtonAction
-    @IBAction func monthButtonTouchUp(_ sender: UIButton) {
+    @objc private func monthButtonTouchUp(_ sender: UIButton) {
         //중현: 추후에 기능 추가
 //        let norMalCalendarView = GameMatchingCalendarView.make(selectedDates: self.gameMatchingModel.selectedDate, delegate: self)
 //        self.setSubViewConstraints(view: norMalCalendarView)
     }
 
-    @IBAction private func resetTagButtonTouchUp(_ sender: UIButton) {
+    @objc private func resetTagButtonTouchUp(_ sender: UIButton) {
         self.didSelectedFilterList.removeAll()
         self.filterDetailView.didSelectedFilterList.removeAll()
         self.filterTagCollectionView.reloadData()
@@ -92,26 +162,19 @@ class GameMatchingViewController: UIViewController {
         self.gameMatchingModel.clearFilters()
     }
 
-    @IBAction func tableViewSortingButtonTouchUp(_ sender: UIButton) {
-
-        let tableViewFilterView = TableViewFilterView()
-        tableViewFilterView.delegate = self
-        setSubViewConstraints(view: tableViewFilterView)
-    }
-
     // MARK: - RecruitmentButtonAction
-    @IBAction private func recruitmentButtonTouchUp(_ sender: UIButton) {
+    @objc private func recruitmentButtonTouchUp(_ sender: UIButton) {
         self.didSelectedRecruitmentButtonSetting(sender.isSelected)
     }
 
     // 뷰 완성시 코드 추가할 예정
-    @IBAction private func teamRecruitmentButtonTouchUp(_ sender: UIButton) {
+    @objc private func teamRecruitmentButtonTouchUp(_ sender: UIButton) {
         let vc = FirstTeamRecruitmentViewController()
         self.didSelectedRecruitmentButtonSetting(true)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 
-    @IBAction private func manRecruitmentButtonTouchUp(_ sender: UIButton) {
+    @objc private func manRecruitmentButtonTouchUp(_ sender: UIButton) {
         let vc = FirstTeamRecruitmentViewController()
         self.didSelectedRecruitmentButtonSetting(true)
         self.navigationController?.pushViewController(vc, animated: true)
@@ -129,15 +192,15 @@ class GameMatchingViewController: UIViewController {
         ]
 
         self.gameMatchingModel.presenter = self
-
-        self.setupHorizontalCalendarView()
-        self.setupFilterTagCollectionView()
-        self.setupFilterDetailView()
-        self.setupNoticeTableView()
-        self.setupRecruitmentButton()
-
-        self.setupFilterDetailViewConstraint()
-        self.setupRecruitmentButtonConstraint()
+        
+        setupUI()
+        setupActions()
+        setupData()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setupLayout()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -153,7 +216,7 @@ class GameMatchingViewController: UIViewController {
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(false)
+        super.viewWillDisappear(animated)
 
         self.recruitmentButton.isHidden = true
         self.manRecruitmentButton.isHidden = true
@@ -161,50 +224,231 @@ class GameMatchingViewController: UIViewController {
         self.tabBarController?.view.insertSubview(self.recruitmentButton, at: self.tabBarController?.view.subviews.count ?? 0)
     }
 
-    // MARK: - Setup View
-    private func setupHorizontalCalendarView() {
-        self.horizontalCalendarView.delegate = self
-        self.horizontalCalendarView.dataSource = self
-        self.horizontalCalendarView.allowsMultipleSelection = true
-        self.horizontalCalendarView.showsHorizontalScrollIndicator = false
-
-        let flowlayout = UICollectionViewFlowLayout()
-        flowlayout.minimumInteritemSpacing = 12 // 적절한 간격으로 조정
-        flowlayout.minimumLineSpacing = 10
-        flowlayout.sectionInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4) // 여백 조정
-        flowlayout.scrollDirection = .horizontal
-
-        let itemWidth = (self.horizontalCalendarView.frame.width - (12*6) - 8) / 7 // 간격 조정
-        flowlayout.itemSize = CGSize(width: itemWidth, height: 70) // 높이 조정
-        self.horizontalCalendarView.collectionViewLayout = flowlayout
-
+    // MARK: - Setup UI
+    private func setupUI() {
+        view.backgroundColor = UIColor(red: 0.933, green: 0.937, blue: 0.945, alpha: 1)
+        
+        // Calendar header view (contains month button and horizontal calendar)
+        let calendarHeaderView = UIView()
+        calendarHeaderView.backgroundColor = .white
+        view.addSubview(calendarHeaderView)
+        calendarHeaderView.tag = 1001 // Tag for later reference
+        
+        // Month button
+        calendarHeaderView.addSubview(monthButton)
+        monthButton.setTitle(makeMonthButtonText(), for: .normal)
+        
+        // Horizontal calendar
+        calendarHeaderView.addSubview(horizontalCalendarView)
+        
+        // Filter tag container (contains reset button and filter collection view)
+        let filterTagContainer = UIView()
+        filterTagContainer.backgroundColor = .systemBackground
+        view.addSubview(filterTagContainer)
+        filterTagContainer.tag = 1002 // Tag for later reference
+        
+        // Reset button view
+        filterTagContainer.addSubview(resetButtonView)
+        resetButtonView.addSubview(resetButton)
+        
+        // Filter tag collection view
+        filterTagContainer.addSubview(filterTagCollectionView)
+        
+        // Notice table view
+        view.addSubview(noticeTableView)
+        
+        // Recruitment buttons (added to tabBarController view later)
+        setupRecruitmentButtons()
+        
+        // Filter detail view setup
+        setupFilterDetailView()
+        
+        // Delegates
+        horizontalCalendarView.delegate = self
+        horizontalCalendarView.dataSource = self
+        
+        filterTagCollectionView.delegate = self
+        filterTagCollectionView.dataSource = self
+        
+        noticeTableView.delegate = self
+        noticeTableView.dataSource = self
+    }
+    
+    private func setupLayout() {
+        guard view.bounds.width > 0 else { return }
+        
+        let safeArea = view.safeAreaInsets
+        let topOffset = safeArea.top
+        let width = view.bounds.width
+        
+        // Get the calendar header view and filter container
+        guard let calendarHeaderView = view.viewWithTag(1001),
+              let filterTagContainer = view.viewWithTag(1002) else { return }
+        
+        // Calendar header view (96pt height) - positioned right after safe area
+        let calendarHeaderHeight: CGFloat = 96
+        calendarHeaderView.frame = CGRect(
+            x: 0,
+            y: topOffset,
+            width: width,
+            height: calendarHeaderHeight
+        )
+        
+        // Month button (left side, vertically centered)
+        monthButton.frame = CGRect(x: 16, y: 31, width: 30, height: 34)
+        
+        // Horizontal calendar (right side)
+        horizontalCalendarView.frame = CGRect(
+            x: 58,
+            y: 0,
+            width: width - 58 - 17,
+            height: calendarHeaderHeight
+        )
+        
+        // Update collection view layout
+        if let layout = horizontalCalendarView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = (horizontalCalendarView.frame.width - (12*6) - 8) / 7
+            layout.itemSize = CGSize(width: itemWidth, height: 70)
+        }
+        
+        // Filter tag container (52pt height) - positioned right after calendar header
+        let filterTagHeight: CGFloat = 52
+        let filterTagY = topOffset + calendarHeaderHeight + 1
+        filterTagContainer.frame = CGRect(
+            x: 0,
+            y: filterTagY,
+            width: width,
+            height: filterTagHeight
+        )
+        
+        // Reset button view (left side, 38pt width)
+        resetButtonView.frame = CGRect(x: 0, y: 0, width: 38, height: filterTagHeight)
+        resetButton.frame = CGRect(x: 16, y: 15, width: 22, height: 22)
+        
+        // Filter tag collection view (right side)
+        filterTagCollectionView.frame = CGRect(
+            x: 38,
+            y: 0,
+            width: width - 38,
+            height: filterTagHeight
+        )
+        
+        // Notice table view (remaining space) - positioned after filter container
+        let tableViewY = filterTagY + filterTagHeight
+        let tableViewHeight = view.bounds.height - tableViewY - safeArea.bottom
+        noticeTableView.frame = CGRect(
+            x: 0,
+            y: tableViewY,
+            width: width,
+            height: tableViewHeight
+        )
+        
+        // Setup recruitment button layout if tabBarController is available
+        if let tabBarController = self.tabBarController {
+            setupRecruitmentButtonLayout(in: tabBarController.view)
+            setupFilterDetailViewLayout(in: tabBarController.view)
+        }
+    }
+    
+    private func setupRecruitmentButtons() {
+        // Setup button properties
+        recruitmentButton.setImage(UIImage(systemName: "plus"), for: .normal)
+        recruitmentButton.setImage(UIImage(systemName: "xmark"), for: .selected)
+        recruitmentButton.setBackgroundColor(UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1), for: .normal)
+        recruitmentButton.setBackgroundColor(.white, for: .selected)
+        recruitmentButton.clipsToBounds = true
+        recruitmentButton.tintColor = .white
+    }
+    
+    private func setupRecruitmentButtonLayout(in parentView: UIView) {
+        // Add to parent view if not already added
+        if recruitmentButton.superview == nil {
+            parentView.addSubview(recruitmentBackgroundView)
+            parentView.addSubview(recruitmentButton)
+            parentView.addSubview(manRecruitmentButton)
+            parentView.addSubview(teamRecruitmentButton)
+            parentView.addSubview(manRecruitmentButtonLabel)
+            parentView.addSubview(teamRecruitmentButtonLabel)
+        }
+        
+        recruitmentBackgroundView.frame = parentView.bounds
+        recruitmentBackgroundView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        recruitmentBackgroundView.isHidden = true
+        
+        // Main recruitment button (60x60, bottom-right)
+        let buttonSize: CGFloat = 60
+        recruitmentButton.frame = CGRect(
+            x: parentView.bounds.width - 20 - buttonSize,
+            y: parentView.bounds.height - 100 - buttonSize,
+            width: buttonSize,
+            height: buttonSize
+        )
+        
+        // Man recruitment button (50x50)
+        let smallButtonSize: CGFloat = 50
+        manRecruitmentButton.frame = CGRect(
+            x: parentView.bounds.width - 25 - smallButtonSize,
+            y: parentView.bounds.height - 105 - smallButtonSize,
+            width: smallButtonSize,
+            height: smallButtonSize
+        )
+        manRecruitmentButton.isHidden = true
+        
+        // Team recruitment button (50x50)
+        teamRecruitmentButton.frame = CGRect(
+            x: parentView.bounds.width - 25 - smallButtonSize,
+            y: parentView.bounds.height - 105 - smallButtonSize,
+            width: smallButtonSize,
+            height: smallButtonSize
+        )
+        teamRecruitmentButton.isHidden = true
+        
+        // Labels
+        manRecruitmentButtonLabel.sizeToFit()
+        manRecruitmentButtonLabel.frame.origin = CGPoint(
+            x: manRecruitmentButton.frame.minX - manRecruitmentButtonLabel.frame.width - 10,
+            y: manRecruitmentButton.frame.midY - manRecruitmentButtonLabel.frame.height / 2
+        )
+        manRecruitmentButtonLabel.isHidden = true
+        
+        teamRecruitmentButtonLabel.sizeToFit()
+        teamRecruitmentButtonLabel.frame.origin = CGPoint(
+            x: teamRecruitmentButton.frame.minX - teamRecruitmentButtonLabel.frame.width - 10,
+            y: teamRecruitmentButton.frame.midY - teamRecruitmentButtonLabel.frame.height / 2
+        )
+        teamRecruitmentButtonLabel.isHidden = true
+    }
+    
+    private func setupActions() {
+        monthButton.addTarget(self, action: #selector(monthButtonTouchUp(_:)), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetTagButtonTouchUp(_:)), for: .touchUpInside)
+        recruitmentButton.addTarget(self, action: #selector(recruitmentButtonTouchUp(_:)), for: .touchUpInside)
+        manRecruitmentButton.addTarget(self, action: #selector(manRecruitmentButtonTouchUp(_:)), for: .touchUpInside)
+        teamRecruitmentButton.addTarget(self, action: #selector(teamRecruitmentButtonTouchUp(_:)), for: .touchUpInside)
+    }
+    
+    private func setupData() {
+        // Setup horizontal calendar data
         let dateRange = 90
         for nextDay in 0...dateRange {
             let cellData = HorizontalCalendarModel(date: makeDate(nextDay))
             self.horizontalCalendarViewModel.append(cellData)
         }
-    }
-
-    private func setupFilterTagCollectionView() {
-
-        self.filterTagCollectionView.delegate = self
-        self.filterTagCollectionView.dataSource = self
-        self.filterTagCollectionView.allowsMultipleSelection = true
-
-        let tagCollectionViewLayout = UICollectionViewFlowLayout()
-        tagCollectionViewLayout.estimatedItemSize = CGSize(width: 500, height: 28)
-        tagCollectionViewLayout.minimumInteritemSpacing = 6
-        tagCollectionViewLayout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
-        tagCollectionViewLayout.scrollDirection = .horizontal
-        self.filterTagCollectionView.collectionViewLayout = tagCollectionViewLayout
-
-        self.tagCollectionViewConstraint.constant = 0
-        self.resetButtonView.isHidden = false // 항상 표시
-
+        
+        // Setup filter tag data
         for filterType in FilterType.allCases {
             let tagCellData = FilterTagModel(filterType: filterType)
             self.tagCellModel.append(tagCellData)
         }
+    }
+
+    // MARK: - Setup View (Deprecated methods - kept for compatibility)
+    private func setupHorizontalCalendarView() {
+        // This method is now handled in setupUI and setupLayout
+    }
+
+    private func setupFilterTagCollectionView() {
+        // This method is now handled in setupUI and setupLayout
     }
 
     private func setupFilterDetailView() {
@@ -218,87 +462,29 @@ class GameMatchingViewController: UIViewController {
         tapGesture.delegate = self
         self.filterDetailBackgroundView.addGestureRecognizer(tapGesture)
     }
-
-    private func setupNoticeTableView() {
-        self.noticeTableView.delegate = self
-        self.noticeTableView.dataSource = self
-        self.noticeTableView.register(NoticeTableViewCell.self, forCellReuseIdentifier: "NoticeTableViewCell")
-        self.noticeTableView.separatorStyle = .none
+    
+    private func setupFilterDetailViewLayout(in parentView: UIView) {
+        // Add to parent view if not already added
+        if filterDetailBackgroundView.superview == nil {
+            parentView.addSubview(filterDetailBackgroundView)
+            filterDetailBackgroundView.addSubview(filterDetailView)
+        }
         
-        // 동적 셀 높이 설정
-        self.noticeTableView.rowHeight = UITableView.automaticDimension
-        self.noticeTableView.estimatedRowHeight = 162
-    }
-
-    private func setupRecruitmentButton() {
-        self.recruitmentButton.setImage(UIImage(systemName: "plus"), for: .normal)
-        self.recruitmentButton.setImage(UIImage(systemName: "xmark"), for: .selected)
-        self.recruitmentButton.setBackgroundColor(UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1), for: .normal)
-        self.recruitmentButton.setBackgroundColor(.white, for: .selected)
-        self.recruitmentButton.clipsToBounds = true
-    }
-
-    private func setupFilterDetailViewConstraint() {
-
-        guard let tabBarController = self.tabBarController else { return }
-
-        tabBarController.view.addSubview(self.filterDetailBackgroundView)
-        self.filterDetailBackgroundView.addSubview(self.filterDetailView)
-        self.filterDetailBackgroundView.translatesAutoresizingMaskIntoConstraints = false
-        self.filterDetailView.translatesAutoresizingMaskIntoConstraints = false
+        // Background view fills entire parent
+        filterDetailBackgroundView.frame = parentView.bounds
+        filterDetailBackgroundView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
-        // 초기 높이 설정 (최소 높이)
+        // Filter detail view at bottom with initial height
         let initialHeight: CGFloat = 244
-
-        // bottom 제약조건을 저장하여 애니메이션에 사용
-        self.filterDetailViewBottomConstraint = self.filterDetailView.bottomAnchor.constraint(equalTo: self.filterDetailBackgroundView.bottomAnchor, constant: initialHeight)
+        let detailWidth = parentView.bounds.width
+        let detailY = parentView.bounds.height - initialHeight
         
-        NSLayoutConstraint.activate([
-            self.filterDetailBackgroundView.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor, constant: 0),
-            self.filterDetailBackgroundView.topAnchor.constraint(equalTo: tabBarController.view.topAnchor, constant: 0),
-            self.filterDetailBackgroundView.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor, constant: 0),
-            self.filterDetailBackgroundView.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor, constant: 0),
-
-            self.filterDetailView.leadingAnchor.constraint(equalTo: self.filterDetailBackgroundView.leadingAnchor, constant: 0),
-            self.filterDetailView.trailingAnchor.constraint(equalTo: self.filterDetailBackgroundView.trailingAnchor, constant: 0),
-            self.filterDetailView.heightAnchor.constraint(greaterThanOrEqualToConstant: initialHeight),
-            self.filterDetailViewBottomConstraint!
-        ])
-    }
-
-    private func setupRecruitmentButtonConstraint() {
-
-        guard let tabBarController = self.tabBarController else { return }
-
-        tabBarController.view.addsubviews(self.recruitmentButton, self.recruitmentBackgroundView, self.manRecruitmentButton, self.teamRecruitmentButton, self.manRecruitmentButtonLabel, self.teamRecruitmentButtonLabel)
-
-        self.recruitmentBackgroundView.isHidden = true
-        self.manRecruitmentButton.isHidden = true
-        self.teamRecruitmentButton.isHidden = true
-        self.manRecruitmentButtonLabel.isHidden = true
-        self.teamRecruitmentButtonLabel.isHidden = true
-
-        NSLayoutConstraint.activate([
-            self.recruitmentButton.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor, constant: -100),
-            self.recruitmentButton.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor, constant: -20),
-
-            self.recruitmentBackgroundView.topAnchor.constraint(equalTo: tabBarController.view.topAnchor, constant: 0),
-            self.recruitmentBackgroundView.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor, constant: 0),
-            self.recruitmentBackgroundView.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor, constant: 0),
-            self.recruitmentBackgroundView.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor, constant: 0),
-
-            self.manRecruitmentButton.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor, constant: -105),
-            self.manRecruitmentButton.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor, constant: -25),
-
-            self.teamRecruitmentButton.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor, constant: -105),
-            self.teamRecruitmentButton.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor, constant: -25),
-
-            self.manRecruitmentButtonLabel.centerYAnchor.constraint(equalTo: self.manRecruitmentButton.centerYAnchor),
-            self.manRecruitmentButtonLabel.trailingAnchor.constraint(equalTo: self.manRecruitmentButton.leadingAnchor, constant: -10),
-
-            self.teamRecruitmentButtonLabel.centerYAnchor.constraint(equalTo: self.teamRecruitmentButton.centerYAnchor),
-            self.teamRecruitmentButtonLabel.trailingAnchor.constraint(equalTo: self.teamRecruitmentButton.leadingAnchor, constant: -10)
-        ])
+        filterDetailView.frame = CGRect(
+            x: 0,
+            y: detailY,
+            width: detailWidth,
+            height: initialHeight
+        )
     }
 
     private func makeDate(_ nextDay: Int) -> Date {
@@ -413,6 +599,8 @@ extension GameMatchingViewController: UICollectionViewDelegate {
     }
 
     private func appearFilterDetailView() {
+        guard let tabbar = self.tabBarController else { return }
+        
         self.filterDetailView.isHidden = false
         self.filterDetailBackgroundView.isHidden = false
         self.filterDetailBackgroundView.alpha = 0 // 초기 투명도 설정
@@ -422,23 +610,29 @@ extension GameMatchingViewController: UICollectionViewDelegate {
         self.teamRecruitmentButton.isHidden = true
 
         // 초기 위치를 화면 밖(하단)으로 설정
-        guard let tabbar = self.tabBarController else { return }
-        let viewHeight = self.filterDetailView.frame.height
-        self.filterDetailViewBottomConstraint?.constant = viewHeight
-        
-        self.tabBarController?.view.layoutIfNeeded()
+        let viewHeight: CGFloat = 244
+        let viewWidth = tabbar.view.bounds.width
+        filterDetailView.frame = CGRect(
+            x: 0,
+            y: tabbar.view.bounds.height,
+            width: viewWidth,
+            height: viewHeight
+        )
         
         // Spring Animation 적용
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseInOut) { [weak self] in
             guard let self = self else { return }
             
-            // 하단에서 올라오도록 제약조건 업데이트
-            self.filterDetailViewBottomConstraint?.constant = 0
+            // 하단에서 올라오도록 frame 업데이트
+            self.filterDetailView.frame = CGRect(
+                x: 0,
+                y: tabbar.view.bounds.height - viewHeight,
+                width: viewWidth,
+                height: viewHeight
+            )
             
             // 배경 투명도 애니메이션
             self.filterDetailBackgroundView.alpha = 1.0
-            
-            self.tabBarController?.view.layoutIfNeeded()
         }
     }
 
@@ -567,7 +761,7 @@ extension GameMatchingViewController: TableViewFilterViewDelegate {
 
     func okButtonDidSelected(sender: TableViewFilterView, sortMode: SortMode) {
         self.sortMode = sortMode
-        self.tableViewFilterButton.setTitle(self.sortMode.sortModeTitle, for: .normal)
+        // tableViewFilterButton이 제거되었으므로 해당 라인 제거
         sender.removeFromSuperview()
     }
 }
@@ -577,14 +771,19 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
 
     func finishButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
         guard let tabbar = self.tabBarController else { return }
-        let viewHeight = self.filterDetailView.frame.height
+        let viewHeight: CGFloat = 244
+        let viewWidth = tabbar.view.bounds.width
         
         UIView.animate(withDuration: 0.3) { [weak self] in
             guard let self = self else { return }
-            // 하단으로 내려가도록 제약조건 업데이트
-            self.filterDetailViewBottomConstraint?.constant = viewHeight
+            // 하단으로 내려가도록 frame 업데이트
+            self.filterDetailView.frame = CGRect(
+                x: 0,
+                y: tabbar.view.bounds.height,
+                width: viewWidth,
+                height: viewHeight
+            )
             self.filterDetailBackgroundView.alpha = 0 // 배경 투명하게
-            self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
             self.filterDetailView.isHidden = true
@@ -631,14 +830,19 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
 
     func cancelButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
         guard let tabbar = self.tabBarController else { return }
-        let viewHeight = self.filterDetailView.frame.height
+        let viewHeight: CGFloat = 244
+        let viewWidth = tabbar.view.bounds.width
         
         UIView.animate(withDuration: 0.3) { [weak self] in
             guard let self = self else { return }
-            // 하단으로 내려가도록 제약조건 업데이트
-            self.filterDetailViewBottomConstraint?.constant = viewHeight
+            // 하단으로 내려가도록 frame 업데이트
+            self.filterDetailView.frame = CGRect(
+                x: 0,
+                y: tabbar.view.bounds.height,
+                width: viewWidth,
+                height: viewHeight
+            )
             self.filterDetailBackgroundView.alpha = 0 // 배경 투명하게
-            self.tabBarController?.view.layoutIfNeeded()
         } completion: { _ in
             self.filterDetailBackgroundView.isHidden = true
             self.filterDetailView.isHidden = true
