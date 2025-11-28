@@ -96,9 +96,13 @@ class GameMatchingViewController: UIViewController {
     private var sortMode = SortMode.distance
 
     // MARK: - RecruitmentButtonAction
-    private let recruitmentButton: RoundButton = {
+    private lazy var recruitmentButton: RoundButton = {
         let button = RoundButton()
+        button.setImage(UIImage(named: "cloth.fill"), for: .normal)
         button.cornerRadius = 30
+        button.normalBackgroundColor = UIColor(named: "tagBackTouchUpColor") ?? UIColor()
+        button.normalTitleColor = .white
+        button.addTarget(self, action: #selector(teamRecruitmentButtonTouchUp(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -218,8 +222,8 @@ class GameMatchingViewController: UIViewController {
         super.viewWillDisappear(animated)
 
         self.recruitmentButton.isHidden = true
-        self.manRecruitmentButton.isHidden = true
-        self.teamRecruitmentButton.isHidden = true
+//        self.manRecruitmentButton.isHidden = true
+//        self.teamRecruitmentButton.isHidden = true
         self.tabBarController?.view.insertSubview(self.recruitmentButton, at: self.tabBarController?.view.subviews.count ?? 0)
     }
 
@@ -351,10 +355,10 @@ class GameMatchingViewController: UIViewController {
     
     private func setupRecruitmentButtons() {
         // Setup button properties
-        recruitmentButton.setImage(UIImage(systemName: "plus"), for: .normal)
-        recruitmentButton.setImage(UIImage(systemName: "xmark"), for: .selected)
+//        recruitmentButton.setImage(UIImage(systemName: "plus"), for: .normal)
+//        recruitmentButton.setImage(UIImage(systemName: "xmark"), for: .selected)
         recruitmentButton.setBackgroundColor(UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1), for: .normal)
-        recruitmentButton.setBackgroundColor(.white, for: .selected)
+//        recruitmentButton.setBackgroundColor(.white, for: .selected)
         recruitmentButton.clipsToBounds = true
         recruitmentButton.tintColor = .white
     }
