@@ -7,7 +7,6 @@
 
 import UIKit
 import FSCalendar
-import SnapKit
 
 class GameMatchingViewController: UIViewController {
     // MARK: - ViewModel

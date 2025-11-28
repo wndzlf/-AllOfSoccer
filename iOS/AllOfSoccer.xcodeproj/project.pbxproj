@@ -14,7 +14,6 @@
 		9D1F225026ADA317000726CB /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D1F224F26ADA317000726CB /* Colors.xcassets */; };
 		9D6B91EB266D08E100AF182B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D6B91EA266D08E100AF182B /* Assets.xcassets */; };
 		9D6B91EE266D08E100AF182B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D6B91EC266D08E100AF182B /* LaunchScreen.storyboard */; };
-		9DBC70E826A986D0005F6BFA /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9DBC70E726A986D0005F6BFA /* SnapKit */; };
 		9DD474BA26903E95006F00F1 /* NVActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD474B926903E95006F00F1 /* NVActivityIndicatorView */; };
 		9DD474BC26903E95006F00F1 /* NVActivityIndicatorViewExtended in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD474BB26903E95006F00F1 /* NVActivityIndicatorViewExtended */; };
 		9DE4F2A426AF070000F8974A /* FSCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 9DC128AD26918E710021EDF5 /* FSCalendar */; };
@@ -73,7 +72,6 @@
 			files = (
 				9DE4F2A426AF070000F8974A /* FSCalendar in Frameworks */,
 				9DD474BC26903E95006F00F1 /* NVActivityIndicatorViewExtended in Frameworks */,
-				9DBC70E826A986D0005F6BFA /* SnapKit in Frameworks */,
 				9DE4F2A726AF076600F8974A /* FSCalendar in Frameworks */,
 				9DD474BA26903E95006F00F1 /* NVActivityIndicatorView in Frameworks */,
 				3542F8182701622A07873204 /* Pods_AllOfSoccer.framework in Frameworks */,
@@ -209,7 +207,6 @@
 				9DD474B926903E95006F00F1 /* NVActivityIndicatorView */,
 				9DD474BB26903E95006F00F1 /* NVActivityIndicatorViewExtended */,
 				9DC128AD26918E710021EDF5 /* FSCalendar */,
-				9DBC70E726A986D0005F6BFA /* SnapKit */,
 				9DE4F2A626AF076600F8974A /* FSCalendar */,
 			);
 			productName = AllOfSoccer;
@@ -268,7 +265,6 @@
 			mainGroup = 9D6B91D5266D08E000AF182B;
 			packageReferences = (
 				9DC128AC26918E710021EDF5 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */,
-				9DBC70E626A986D0005F6BFA /* XCRemoteSwiftPackageReference "SnapKit" */,
 				9DE4F2A526AF076600F8974A /* XCRemoteSwiftPackageReference "FSCalendar" */,
 			);
 			productRefGroup = 9D6B91DF266D08E000AF182B /* Products */;
@@ -698,14 +694,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9DBC70E626A986D0005F6BFA /* XCRemoteSwiftPackageReference "SnapKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.1;
-			};
-		};
 		9DC128AC26918E710021EDF5 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ninjaprox/NVActivityIndicatorView.git";
@@ -725,11 +713,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9DBC70E726A986D0005F6BFA /* SnapKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DBC70E626A986D0005F6BFA /* XCRemoteSwiftPackageReference "SnapKit" */;
-			productName = SnapKit;
-		};
 		9DC128AD26918E710021EDF5 /* FSCalendar */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9DC128AC26918E710021EDF5 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */;
