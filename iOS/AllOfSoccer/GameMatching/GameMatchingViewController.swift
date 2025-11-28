@@ -125,6 +125,7 @@ class GameMatchingViewController: UIViewController {
         button.normalTitleColor = .white
         return button
     }()
+
     private var manRecruitmentButtonLabel: UILabel = {
         let label = UILabel()
         label.text = "용병 모집"
@@ -229,7 +230,7 @@ class GameMatchingViewController: UIViewController {
 
     // MARK: - Setup UI
     private func setupUI() {
-        view.backgroundColor = UIColor(red: 0.933, green: 0.937, blue: 0.945, alpha: 1)
+        view.backgroundColor = .white
         
         // Calendar header view (contains month button and horizontal calendar)
         let calendarHeaderView = UIView()
