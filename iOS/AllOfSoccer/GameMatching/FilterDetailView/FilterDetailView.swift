@@ -30,9 +30,7 @@ class FilterDetailView: UIView {
     private var tagCollectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: UICollectionViewFlowLayout.init())
     
     // 동적 높이 계산을 위한 프로퍼티
-    private var contentViewHeightConstraint: NSLayoutConstraint?
-    private var viewHeightConstraint: NSLayoutConstraint?
-    private var finishButtonBottomConstraint: NSLayoutConstraint?
+    private var contentViewHeight: CGFloat = 182
 
     private var finishButton: UIButton = {
         let button = UIButton()
@@ -80,7 +78,7 @@ class FilterDetailView: UIView {
 
     func loadView() {
         self.setupCollectionView()
-        self.setupConstraint()
+        self.setupLayout()
 
         self.finishButton.addTarget(self, action: #selector(finishButtonTouchUp), for: .touchUpInside)
         self.cancelButton.addTarget(self, action: #selector(cancelButtonTouchUp), for: .touchUpInside)
@@ -104,85 +102,95 @@ class FilterDetailView: UIView {
         self.tagCollectionView.register(FilterDetailTagCollectionViewCell.self, forCellWithReuseIdentifier: FilterDetailTagCollectionViewCell.reuseId)
     }
 
-    private func setupConstraint() {
+    private func setupLayout() {
         // 초기 높이 설정 (최소 높이)
         let initialHeight: CGFloat = 244
         self.frame.size = CGSize(width: 375, height: initialHeight)
 
         self.addSubview(self.contentView)
-        self.contentView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // contentView 높이 제약조건을 저장
-        self.contentViewHeightConstraint = self.contentView.heightAnchor.constraint(equalToConstant: 182)
-        
-        NSLayoutConstraint.activate([
-            self.contentView.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
-            self.contentView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 0),
-            self.contentView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: 0),
-            self.contentViewHeightConstraint!
-        ])
-
         self.addSubview(self.finishButton)
-        self.finishButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        // finishButton 제약조건 설정
-        // bottom 제약조건은 나중에 superview의 safeArea에 연결
-        self.finishButtonBottomConstraint = self.finishButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0)
-
-        NSLayoutConstraint.activate([
-            self.finishButton.topAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: 0),
-            self.finishButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 0),
-            self.finishButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: 0),
-            self.finishButtonBottomConstraint!
-        ])
-        
-        // superview가 설정된 후 SafeArea에 연결
-        DispatchQueue.main.async { [weak self] in
-            self?.updateFinishButtonConstraint()
-        }
-
         self.contentView.addSubview(self.titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24)
-        ])
-
         self.contentView.addSubview(self.cancelButton)
-        self.cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            self.cancelButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            self.cancelButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
-        ])
-
         self.contentView.addSubview(self.tagCollectionView)
-        self.tagCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            self.tagCollectionView.topAnchor.constraint(equalTo: self.titleLabel.bottomAnchor, constant: 27),
-            self.tagCollectionView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 0),
-            self.tagCollectionView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: 0),
-            self.tagCollectionView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: 0)
-        ])
+        
+        // 초기 레이아웃 설정
+        self.layoutSubviews()
     }
     
-    private func updateFinishButtonConstraint() {
-        // finishButton의 bottom을 superview의 safeArea에 연결
-        guard let superview = self.superview else { return }
+    override func layoutSubviews() {
+        super.layoutSubviews()
         
-        // 기존 제약조건 제거
-        self.finishButtonBottomConstraint?.isActive = false
+        let viewWidth = self.bounds.width
+        let safeAreaBottom = self.safeAreaInsets.bottom
         
-        // 새로운 제약조건 설정 (SafeArea까지 포함)
-        self.finishButtonBottomConstraint = self.finishButton.bottomAnchor.constraint(equalTo: superview.bottomAnchor, constant: 0)
-        self.finishButtonBottomConstraint?.isActive = true
-    }
-    
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        if self.superview != nil {
-            self.updateFinishButtonConstraint()
+        // finishButton 높이 계산 (70 + SafeAreaInset.bottom)
+        let finishButtonHeight: CGFloat = 70 + safeAreaBottom
+        
+        // contentView 높이
+        let contentViewHeight = self.contentViewHeight
+        
+        // 전체 뷰 높이 업데이트
+        let totalHeight = contentViewHeight + finishButtonHeight
+        if self.bounds.height != totalHeight {
+            self.frame.size.height = totalHeight
         }
+        
+        // contentView 레이아웃
+        self.contentView.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: viewWidth,
+            height: contentViewHeight
+        )
+        
+        // finishButton 레이아웃
+        self.finishButton.frame = CGRect(
+            x: 0,
+            y: contentViewHeight,
+            width: viewWidth,
+            height: finishButtonHeight
+        )
+        
+        // finishButton 타이틀을 위로 올리기 위해 titleEdgeInsets 설정
+        self.finishButton.titleEdgeInsets = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: safeAreaBottom,
+            right: 0
+        )
+        
+        // titleLabel 레이아웃
+        let titleLabelTop: CGFloat = 24
+        let titleLabelHeight: CGFloat = 20
+        self.titleLabel.frame = CGRect(
+            x: 0,
+            y: titleLabelTop,
+            width: viewWidth,
+            height: titleLabelHeight
+        )
+        self.titleLabel.textAlignment = .center
+        
+        // cancelButton 레이아웃
+        let cancelButtonSize: CGFloat = 22
+        let cancelButtonTop: CGFloat = 24
+        let cancelButtonTrailing: CGFloat = 16
+        self.cancelButton.frame = CGRect(
+            x: viewWidth - cancelButtonSize - cancelButtonTrailing,
+            y: cancelButtonTop,
+            width: cancelButtonSize,
+            height: cancelButtonSize
+        )
+        
+        // tagCollectionView 레이아웃
+        let titleToCollectionSpacing: CGFloat = 27
+        let collectionViewTop = titleLabelTop + titleLabelHeight + titleToCollectionSpacing
+        let collectionViewHeight = contentViewHeight - collectionViewTop
+        self.tagCollectionView.frame = CGRect(
+            x: 0,
+            y: collectionViewTop,
+            width: viewWidth,
+            height: collectionViewHeight
+        )
     }
     
     private func updateViewHeight() {
@@ -210,13 +218,13 @@ class FilterDetailView: UIView {
         // 최소 높이 보장
         let minContentViewHeight: CGFloat = 182
         
-        // finishButton 높이 (SafeArea 포함)
+        // finishButton 높이 (70 + SafeArea 포함)
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
         
         let bottomSafeArea = window.safeAreaInsets.bottom
-        let finishButtonBaseHeight: CGFloat = 62
-        let finishButtonHeight: CGFloat = finishButtonBaseHeight + bottomSafeArea // SafeArea 높이 포함
+        let finishButtonBaseHeight: CGFloat = 70
+        let finishButtonHeight: CGFloat = finishButtonBaseHeight + bottomSafeArea
         
         // 최대 높이 제한 (화면 상단 여유 공간 + 하단 safe area 보장)
         let topMargin: CGFloat = 100 // 상단 여유 공간
@@ -225,12 +233,13 @@ class FilterDetailView: UIView {
         // contentView 높이 결정 (최소, 계산된 높이, 최대 높이 중)
         let finalContentViewHeight = max(minContentViewHeight, min(totalContentViewHeight, maxContentHeight))
         
-        // 제약조건 업데이트
-        self.contentViewHeightConstraint?.constant = finalContentViewHeight
+        // contentView 높이 업데이트
+        self.contentViewHeight = finalContentViewHeight
         
-        // 애니메이션과 함께 높이 업데이트
+        // 애니메이션과 함께 레이아웃 업데이트
         UIView.animate(withDuration: 0.3) {
-            self.superview?.layoutIfNeeded()
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
         }
         
         // CollectionView가 스크롤 가능하도록 contentSize 강제 업데이트
