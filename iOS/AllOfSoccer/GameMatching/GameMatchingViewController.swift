@@ -45,7 +45,7 @@ class GameMatchingViewController: UIViewController {
         tableView.separatorInset = .zero
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 162
-        tableView.register(NoticeTableViewCell.self, forCellReuseIdentifier: "NoticeTableViewCell")
+        tableView.register(GameMatchingTableViewCell.self, forCellReuseIdentifier: "GameMatchingTableViewCell")
         return tableView
     }()
 
@@ -63,7 +63,7 @@ class GameMatchingViewController: UIViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemBackground
         collectionView.allowsMultipleSelection = true
-        collectionView.register(FilterTagCollectionViewCell.self, forCellWithReuseIdentifier: "FilterTagCollectionViewCell")
+        collectionView.register(GameMatchingFilterCollectionViewCell.self, forCellWithReuseIdentifier: "GameMatchingFilterCollectionViewCell")
         return collectionView
     }()
     
@@ -231,7 +231,7 @@ class GameMatchingViewController: UIViewController {
     // MARK: - Setup UI
     private func setupUI() {
         view.backgroundColor = .white
-        
+
         // Calendar header view (contains month button and horizontal calendar)
         let calendarHeaderView = UIView()
         calendarHeaderView.backgroundColor = .white
@@ -685,7 +685,7 @@ extension GameMatchingViewController: UICollectionViewDataSource {
 
             return cell
         } else {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FilterTagCollectionViewCell", for: indexPath) as? FilterTagCollectionViewCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GameMatchingFilterCollectionViewCell", for: indexPath) as? GameMatchingFilterCollectionViewCell else {
                 return .init()
             }
             cell.configure(self.tagCellModel[indexPath.item], self.didSelectedFilterList)
@@ -728,7 +728,7 @@ extension GameMatchingViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: NoticeTableViewCell.defaultIdentifier, for: indexPath) as? NoticeTableViewCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: GameMatchingTableViewCell.defaultIdentifier, for: indexPath) as? GameMatchingTableViewCell else {
             return UITableViewCell()
         }
 

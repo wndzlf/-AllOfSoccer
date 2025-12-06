@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FilterTagCollectionViewCell: UICollectionViewCell {
+class GameMatchingFilterCollectionViewCell: UICollectionViewCell {
 
     private let tagLabel: UILabel = {
         let label = UILabel()

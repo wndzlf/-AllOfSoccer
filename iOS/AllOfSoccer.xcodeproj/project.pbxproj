@@ -51,6 +51,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		CECE24902EE45FF1009F3C4F /* GameMatchingSub */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = GameMatchingSub; sourceTree = "<group>"; };
 		CED35B172ED164BA00C028E7 /* AllOfSoccerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AllOfSoccerTests; sourceTree = "<group>"; };
 		CEF0DE642E4B7A7000300D17 /* GamematchingDetail */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = GamematchingDetail; sourceTree = "<group>"; };
 		CEF0DE812E4B7A7000300D17 /* MyPage */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = MyPage; sourceTree = "<group>"; };
@@ -146,6 +147,7 @@
 		9D6B91E0266D08E000AF182B /* AllOfSoccer */ = {
 			isa = PBXGroup;
 			children = (
+				CECE24902EE45FF1009F3C4F /* GameMatchingSub */,
 				9D034CED26903B590051FA02 /* -----Primary View----- */,
 				CEF0DF022E4B7A8000300D17 /* Login */,
 				CEF0DEF52E4B7A7B00300D17 /* Main */,
@@ -190,6 +192,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				CECE24902EE45FF1009F3C4F /* GameMatchingSub */,
 				CEF0DE642E4B7A7000300D17 /* GamematchingDetail */,
 				CEF0DE812E4B7A7000300D17 /* MyPage */,
 				CEF0DEAA2E4B7A7000300D17 /* Recruitment */,

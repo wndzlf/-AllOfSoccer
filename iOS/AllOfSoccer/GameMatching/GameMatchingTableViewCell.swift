@@ -1,5 +1,5 @@
 //
-//  NoticeTableViewCell.swift
+//  GameMatchingTableViewCell.swift
 //  AllOfSoccer
 //
 //  Created by 최원석 on 2021/08/03.
@@ -40,7 +40,7 @@ enum MatchStatusType {
     }
 }
 
-class NoticeTableViewCell: UITableViewCell {
+class GameMatchingTableViewCell: UITableViewCell {
 
     // MARK: - UI Components
     private let cardView: UIView = {
