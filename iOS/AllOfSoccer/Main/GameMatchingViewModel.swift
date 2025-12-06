@@ -107,7 +107,8 @@ class GameMatchingViewModel {
                     isRecruiting: false,
                     teamName: "",
                     primaryStatus: nil,
-                    secondaryStatus: nil
+                    secondaryStatus: nil,
+                    hasFormerPlayer: nil
                 )
             }
             return filteredViewModel[indexPath.row]
@@ -193,7 +194,8 @@ class GameMatchingViewModel {
                             isRecruiting: match.status == "recruiting",
                             teamName: match.team?.name ?? "알 수 없음",
                             primaryStatus: statuses?.primary,
-                            secondaryStatus: statuses?.secondary
+                            secondaryStatus: statuses?.secondary,
+                            hasFormerPlayer: match.hasFormerPlayer
                         )
                     }
                     self?.presenter?.reloadMatchingList()
@@ -242,6 +244,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다! 안녕하세요 FC 강남입니다. 강남 지역에서 활동하는 팀으로 실력 있는 선수들을 모집합니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false,
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -276,6 +279,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "강남에서 11대11 축구하실 분!",
                 mercenaryRecruitmentCount: 3,
                 isOpponentMatched: true, // 둘 다 표시: "용병 3명 모집중" + "매칭 완료"
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -304,6 +308,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "서초에서 즐겁게 풋살해요!",
                 mercenaryRecruitmentCount: 2, // 용병 2명 모집만
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -332,6 +337,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "송파 여성 축구팀입니다.",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: true, // 매칭 완료만
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -360,6 +366,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "운동화 신고 편하게 오세요.",
                 mercenaryRecruitmentCount: 1, // 용병 1명 모집만
                 isOpponentMatched: false,
+                hasFormerPlayer: nil, // 정보 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -388,6 +395,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "혼성으로 즐겁게 찹니다.",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false, // 일반 모집중
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -416,6 +424,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "여성 풋살 고수분들 모십니다.",
                 mercenaryRecruitmentCount: 2,
                 isOpponentMatched: true, // 둘 다 표시: "용병 2명 모집중" + "매칭 완료"
+                hasFormerPlayer: nil, // 정보 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-01T10:00:00Z",
@@ -445,6 +454,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "강북에서 활동하는 FC입니다. 즐겁게 운동해요!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-03T10:00:00Z",
@@ -479,6 +489,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "마포에서 활동하는 풋살 팀! 남녀 모두 환영합니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-04T10:00:00Z",
@@ -513,6 +524,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "수원에서 활동하는 고급 레벨 팀입니다. 실력자 환영!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-05T10:00:00Z",
@@ -547,6 +559,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "분당에서 활동하는 풋살 클럽입니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-06T10:00:00Z",
@@ -581,6 +594,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "인천에서 활동하는 팀입니다. 열정있는 분들 환영!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-07T10:00:00Z",
@@ -615,6 +629,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "용산에서 풋살 즐기실 분들 모집합니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-08T10:00:00Z",
@@ -649,6 +664,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "용인에서 활동하는 친목 팀입니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-09T10:00:00Z",
@@ -683,6 +699,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "영등포에서 가볍게 풋살 즐기실 분들 환영!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-10T10:00:00Z",
@@ -717,6 +734,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "안양에서 활동하는 열정 넘치는 팀!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-11T10:00:00Z",
@@ -751,6 +769,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "부천에서 즐기는 풋살 모임입니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-12T10:00:00Z",
@@ -785,6 +804,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "노원에서 축구를 사랑하는 팀!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-13T10:00:00Z",
@@ -819,6 +839,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "일산에서 풋살하실 분들 환영합니다!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-14T10:00:00Z",
@@ -853,6 +874,7 @@ class GameMatchingViewModel {
                 teamIntroduction: "관악에서 즐겁게 축구해요!",
                 mercenaryRecruitmentCount: 0,
                 isOpponentMatched: false,
+                hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
                 createdAt: "2024-11-15T10:00:00Z",
@@ -899,7 +921,8 @@ class GameMatchingViewModel {
                 isRecruiting: match.status == "recruiting",
                 teamName: match.team?.name ?? "알 수 없음",
                 primaryStatus: statuses.primary,
-                secondaryStatus: statuses.secondary
+                secondaryStatus: statuses.secondary,
+                hasFormerPlayer: match.hasFormerPlayer
             )
         }
     }
@@ -948,7 +971,8 @@ class GameMatchingViewModel {
                 isRecruiting: oldModel.isRecruiting,
                 teamName: oldModel.teamName,
                 primaryStatus: oldModel.primaryStatus,
-                secondaryStatus: oldModel.secondaryStatus
+                secondaryStatus: oldModel.secondaryStatus,
+                hasFormerPlayer: oldModel.hasFormerPlayer
             )
             self.matchingListViewModel[index] = newModel
         }
@@ -967,7 +991,8 @@ class GameMatchingViewModel {
                     isRecruiting: oldModel.isRecruiting,
                     teamName: oldModel.teamName,
                     primaryStatus: oldModel.primaryStatus,
-                    secondaryStatus: oldModel.secondaryStatus
+                    secondaryStatus: oldModel.secondaryStatus,
+                    hasFormerPlayer: oldModel.hasFormerPlayer
                 )
                 self.filteredViewModel[index] = newModel
             }
@@ -1109,7 +1134,8 @@ class GameMatchingViewModel {
                 isRecruiting: match.status == "recruiting",
                 teamName: match.team?.name ?? "알 수 없음",
                 primaryStatus: statuses.primary,
-                secondaryStatus: statuses.secondary
+                secondaryStatus: statuses.secondary,
+                hasFormerPlayer: match.hasFormerPlayer
             )
         }
         

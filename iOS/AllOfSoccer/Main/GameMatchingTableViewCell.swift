@@ -117,6 +117,16 @@ class GameMatchingTableViewCell: UITableViewCell {
         label.isHidden = true
         return label
     }()
+    
+    private let formerPlayerLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textAlignment = .center
+        label.layer.masksToBounds = true
+        label.layer.cornerRadius = 8
+        label.isHidden = true
+        return label
+    }()
 
     // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -143,6 +153,7 @@ class GameMatchingTableViewCell: UITableViewCell {
         contentView.addSubview(checkbutton)
         contentView.addSubview(recruitmentStatusLabel)
         contentView.addSubview(secondaryStatusLabel)
+        contentView.addSubview(formerPlayerLabel)
         
         checkbutton.addTarget(self, action: #selector(checkButtonDidSelected), for: .touchUpInside)
     }
@@ -214,37 +225,32 @@ class GameMatchingTableViewCell: UITableViewCell {
         // Recruitment Status Labels (Below Team Name)
         // 텍스트 길이에 따라 너비 조정
         recruitmentStatusLabel.sizeToFit()
-        let primaryWidth = recruitmentStatusLabel.frame.width + 16
         let statusHeight: CGFloat = 24
         let spacing: CGFloat = 6
         let statusY = teamNameLabel.frame.maxY + 8 // 팀 이름 아래 8pt 간격
         
+        var currentX = rightColumnX
+        
+        // 1. Primary Status
+        if !recruitmentStatusLabel.isHidden {
+            let width = recruitmentStatusLabel.frame.width + 16
+            recruitmentStatusLabel.frame = CGRect(x: currentX, y: statusY, width: width, height: statusHeight)
+            currentX += width + spacing
+        }
+        
+        // 2. Secondary Status
         if !secondaryStatusLabel.isHidden {
             secondaryStatusLabel.sizeToFit()
-            let secondaryWidth = secondaryStatusLabel.frame.width + 16
-            
-            // 두 개의 라벨을 나란히 배치 (팀 이름과 같은 X 시작 위치)
-            recruitmentStatusLabel.frame = CGRect(
-                x: rightColumnX,
-                y: statusY,
-                width: primaryWidth,
-                height: statusHeight
-            )
-            
-            secondaryStatusLabel.frame = CGRect(
-                x: recruitmentStatusLabel.frame.maxX + spacing,
-                y: statusY,
-                width: secondaryWidth,
-                height: statusHeight
-            )
-        } else {
-            // 하나의 라벨만 표시 (팀 이름과 같은 X 시작 위치)
-            recruitmentStatusLabel.frame = CGRect(
-                x: rightColumnX,
-                y: statusY,
-                width: primaryWidth,
-                height: statusHeight
-            )
+            let width = secondaryStatusLabel.frame.width + 16
+            secondaryStatusLabel.frame = CGRect(x: currentX, y: statusY, width: width, height: statusHeight)
+            currentX += width + spacing
+        }
+        
+        // 3. Former Player Status
+        if !formerPlayerLabel.isHidden {
+            formerPlayerLabel.sizeToFit()
+            let width = formerPlayerLabel.frame.width + 16
+            formerPlayerLabel.frame = CGRect(x: currentX, y: statusY, width: width, height: statusHeight)
         }
     }
     
@@ -289,23 +295,39 @@ class GameMatchingTableViewCell: UITableViewCell {
         self.checkbutton.isSelected = viewModel.isFavorite
         
         // 상태 라벨 업데이트
+        // 상태 라벨 업데이트
         if let primaryStatus = viewModel.primaryStatus {
             self.recruitmentStatusLabel.text = primaryStatus.text
             self.recruitmentStatusLabel.textColor = primaryStatus.textColor
             self.recruitmentStatusLabel.backgroundColor = primaryStatus.backgroundColor
-            
-            if let secondaryStatus = viewModel.secondaryStatus {
-                self.secondaryStatusLabel.text = secondaryStatus.text
-                self.secondaryStatusLabel.textColor = secondaryStatus.textColor
-                self.secondaryStatusLabel.backgroundColor = secondaryStatus.backgroundColor
-                self.secondaryStatusLabel.isHidden = false
+            self.recruitmentStatusLabel.isHidden = false
+        } else {
+            self.recruitmentStatusLabel.isHidden = true
+        }
+        
+        if let secondaryStatus = viewModel.secondaryStatus {
+            self.secondaryStatusLabel.text = secondaryStatus.text
+            self.secondaryStatusLabel.textColor = secondaryStatus.textColor
+            self.secondaryStatusLabel.backgroundColor = secondaryStatus.backgroundColor
+            self.secondaryStatusLabel.isHidden = false
+        } else {
+            self.secondaryStatusLabel.isHidden = true
+        }
+        
+        // 선출 유무 라벨 업데이트
+        if let hasFormerPlayer = viewModel.hasFormerPlayer {
+            self.formerPlayerLabel.isHidden = false
+            if hasFormerPlayer {
+                self.formerPlayerLabel.text = "선출 보유"
+                self.formerPlayerLabel.textColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1.0) // System Orange
+                self.formerPlayerLabel.backgroundColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 0.1)
             } else {
-                self.secondaryStatusLabel.isHidden = true
+                self.formerPlayerLabel.text = "선출 없음"
+                self.formerPlayerLabel.textColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0) // System Gray
+                self.formerPlayerLabel.backgroundColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.1)
             }
         } else {
-            // 상태가 없으면 숨김
-            self.recruitmentStatusLabel.isHidden = true
-            self.secondaryStatusLabel.isHidden = true
+            self.formerPlayerLabel.isHidden = true
         }
         
         self.setNeedsLayout()
@@ -338,6 +360,7 @@ internal struct GameMatchListViewModel {
     internal let teamName: String
     internal let primaryStatus: MatchStatusType?
     internal let secondaryStatus: MatchStatusType?
+    internal let hasFormerPlayer: Bool?
 
     internal init(
         id: Int,
@@ -349,7 +372,8 @@ internal struct GameMatchListViewModel {
         isRecruiting: Bool,
         teamName: String,
         primaryStatus: MatchStatusType?,
-        secondaryStatus: MatchStatusType?
+        secondaryStatus: MatchStatusType?,
+        hasFormerPlayer: Bool?
     ) {
         self.id = id
         self.date = date
@@ -361,6 +385,7 @@ internal struct GameMatchListViewModel {
         self.teamName = teamName
         self.primaryStatus = primaryStatus
         self.secondaryStatus = secondaryStatus
+        self.hasFormerPlayer = hasFormerPlayer
     }
 }
 

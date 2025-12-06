@@ -38,6 +38,7 @@ struct Match: Codable {
     let teamIntroduction: String?
     let mercenaryRecruitmentCount: Int? // 용병 모집 수
     let isOpponentMatched: Bool? // 상대팀 매칭 여부
+    let hasFormerPlayer: Bool? // 선출 유무
     let status: String
     let isActive: Bool
     let createdAt: String
@@ -58,6 +59,7 @@ struct Match: Codable {
         case teamIntroduction = "team_introduction"
         case mercenaryRecruitmentCount = "mercenary_recruitment_count"
         case isOpponentMatched = "is_opponent_matched"
+        case hasFormerPlayer = "has_former_player"
         case status, isActive = "is_active"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
