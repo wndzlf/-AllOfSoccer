@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import FSCalendar
 
 class GameMatchingViewController: UIViewController {
     // MARK: - ViewModel
@@ -740,20 +739,6 @@ extension GameMatchingViewController: UITableViewDataSource {
         }
 
         return cell
-    }
-}
-
-
-// MARK: - GameMatchingCalendarDelegate
-extension GameMatchingViewController: GameMatchingCalendarViewDelegate {
-    func okButtonDidSelected(sender: GameMatchingCalendarView, selectedDates: [Date]) {
-        self.gameMatchingModel.append(selectedDates, nil)
-        self.horizontalCalendarView.reloadData()
-        sender.removeFromSuperview()
-    }
-
-    func cancelButtonDidSelected(sender: GameMatchingCalendarView) {
-        sender.removeFromSuperview()
     }
 }
 
