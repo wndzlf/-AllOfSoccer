@@ -567,7 +567,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AllOfSoccer/SupporttingFiles/AllOfSoccer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8PBQD47VFZ;
+				DEVELOPMENT_TEAM = 6958JMS7R4;
 				INFOPLIST_FILE = AllOfSoccer/SupporttingFiles/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -575,7 +575,7 @@
 					"@executable_path/Frameworks",
 				);
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = co.kr.CWS.AllOfSoccer;
+				PRODUCT_BUNDLE_IDENTIFIER = co.AllOfSoccer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -590,7 +590,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AllOfSoccer/SupporttingFiles/AllOfSoccer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8PBQD47VFZ;
+				DEVELOPMENT_TEAM = 6958JMS7R4;
 				INFOPLIST_FILE = AllOfSoccer/SupporttingFiles/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
