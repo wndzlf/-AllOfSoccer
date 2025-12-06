@@ -797,6 +797,7 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
         // 선택된 필터들을 분류
         var locationFilters: [String] = []
         var gameTypeFilters: [String] = []
+        var statusFilters: [String] = []
         
         for (filterKey, filterType) in self.didSelectedFilterList {
             switch filterType {
@@ -804,14 +805,17 @@ extension GameMatchingViewController: FilterDetailViewDelegate {
                 locationFilters.append(filterKey)
             case .game:
                 gameTypeFilters.append(filterKey)
+            case .status:
+                statusFilters.append(filterKey)
             }
         }
         
         print("중현: 선택된 location filter: \(locationFilters)")
         print("중현: 선택된 game filter: \(gameTypeFilters)")
+        print("중현: 선택된 status filter: \(statusFilters)")
         
         // ViewModel에 필터 적용
-        self.gameMatchingModel.applyFilters(locationFilters: locationFilters, gameTypeFilters: gameTypeFilters)
+        self.gameMatchingModel.applyFilters(locationFilters: locationFilters, gameTypeFilters: gameTypeFilters, statusFilters: statusFilters)
         
         // 태그 컬렉션뷰 업데이트
         self.filterTagCollectionView.reloadData()

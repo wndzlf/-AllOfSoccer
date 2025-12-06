@@ -20,11 +20,13 @@ enum CollecionviewType: String {
 enum FilterType: CaseIterable {
     case location
     case game
+    case status
 
     var tagTitle: String {
         switch self {
         case .location: return "장소"
         case .game: return "경기 종류"
+        case .status: return "매칭 여부"
         }
     }
 
@@ -39,6 +41,7 @@ enum FilterType: CaseIterable {
             "기타지역"
         ]
         case .game: return ["11 vs 11", "풋살"]
+        case .status: return ["매칭 완료", "매칭 중"]
         }
     }
 }
@@ -66,6 +69,7 @@ class GameMatchingViewModel {
     // 필터 상태
     private var currentLocationFilters: [String] = []
     private var currentGameTypeFilters: [String] = []
+    private var currentStatusFilters: [String] = []
     private var isFilterApplied: Bool = false // 필터가 적용되었는지 여부
 
     internal var count: Int {
@@ -1034,7 +1038,7 @@ class GameMatchingViewModel {
     /// 모든 필터 적용 (날짜, 장소, 경기 종류)
     private func applyAllFilters() {
         // 날짜 필터가 없고 다른 필터도 없으면 필터 초기화
-        if selectedDate.isEmpty && currentLocationFilters.isEmpty && currentGameTypeFilters.isEmpty {
+        if selectedDate.isEmpty && currentLocationFilters.isEmpty && currentGameTypeFilters.isEmpty && currentStatusFilters.isEmpty {
             self.isFilterApplied = false
             self.clearFilters()
             return
@@ -1104,6 +1108,28 @@ class GameMatchingViewModel {
             }
         }
         
+        // 매칭 여부 필터 적용
+        if !currentStatusFilters.isEmpty {
+            filtered = filtered.filter { match in
+                // "매칭 완료" -> isOpponentMatched == true
+                // "매칭 중" -> isOpponentMatched == false
+                
+                let isMatched = match.isOpponentMatched ?? false
+                
+                var matchesFilter = false
+                
+                if currentStatusFilters.contains("매칭 완료") && isMatched {
+                    matchesFilter = true
+                }
+                
+                if currentStatusFilters.contains("매칭 중") && !isMatched {
+                    matchesFilter = true
+                }
+                
+                return matchesFilter
+            }
+        }
+        
         // 필터링된 결과 저장
         self.filteredMatches = filtered
         
@@ -1143,14 +1169,16 @@ class GameMatchingViewModel {
         self.presenter?.reloadMatchingList()
     }
     
-    /// 장소와 경기 종류 필터 적용
+    /// 장소, 경기 종류, 매칭 여부 필터 적용
     /// - Parameters:
     ///   - locationFilters: 선택된 장소 필터 리스트 (예: ["서울북부", "서울남부"])
     ///   - gameTypeFilters: 선택된 경기 종류 필터 리스트 (예: ["11 vs 11", "풋살"])
-    internal func applyFilters(locationFilters: [String], gameTypeFilters: [String]) {
+    ///   - statusFilters: 선택된 매칭 여부 필터 리스트 (예: ["매칭 완료", "매칭 중"])
+    internal func applyFilters(locationFilters: [String], gameTypeFilters: [String], statusFilters: [String]) {
         // 필터 상태 저장
         self.currentLocationFilters = locationFilters
         self.currentGameTypeFilters = gameTypeFilters
+        self.currentStatusFilters = statusFilters
         
         // 모든 필터 적용 (날짜 포함)
         self.applyAllFilters()
@@ -1160,6 +1188,7 @@ class GameMatchingViewModel {
     internal func clearFilters() {
         self.currentLocationFilters.removeAll()
         self.currentGameTypeFilters.removeAll()
+        self.currentStatusFilters.removeAll()
         
         // 날짜 필터가 있으면 날짜 필터만 적용, 없으면 모든 필터 초기화
         if !selectedDate.isEmpty {
@@ -1175,7 +1204,7 @@ class GameMatchingViewModel {
     
     /// 현재 적용된 필터 확인
     internal func hasActiveFilters() -> Bool {
-        return !selectedDate.isEmpty || !currentLocationFilters.isEmpty || !currentGameTypeFilters.isEmpty
+        return !selectedDate.isEmpty || !currentLocationFilters.isEmpty || !currentGameTypeFilters.isEmpty || !currentStatusFilters.isEmpty
     }
 }
 
