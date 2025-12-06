@@ -298,12 +298,12 @@ class GameMatchingViewController: UIViewController {
         )
         
         // Month button (left side, vertically centered)
-        monthButton.frame = CGRect(x: 16, y: 31, width: 30, height: 34)
-        
+        monthButton.frame = CGRect(x: 16, y: 15, width: 30, height: 34)
+
         // Horizontal calendar (right side)
         horizontalCalendarView.frame = CGRect(
             x: 58,
-            y: 0,
+            y: -20,
             width: width - 58 - 17,
             height: calendarHeaderHeight
         )
@@ -325,20 +325,20 @@ class GameMatchingViewController: UIViewController {
         )
         
         // Reset button view (left side, 38pt width)
-        resetButtonView.frame = CGRect(x: 0, y: 0, width: 38, height: filterTagHeight)
+        resetButtonView.frame = CGRect(x: 0, y: -20, width: 38, height: filterTagHeight)
         resetButton.frame = CGRect(x: 16, y: 15, width: 22, height: 22)
         
         // Filter tag collection view (right side)
         filterTagCollectionView.frame = CGRect(
             x: 38,
-            y: 0,
+            y: -20,
             width: width - 38,
             height: filterTagHeight
         )
         
         // Notice table view (remaining space) - positioned after filter container
-        let tableViewY = filterTagY + filterTagHeight
-        let tableViewHeight = view.bounds.height - tableViewY - safeArea.bottom
+        let tableViewY = filterTagY + filterTagHeight - 20
+        let tableViewHeight = view.bounds.height - tableViewY - safeArea.bottom + 20
         noticeTableView.frame = CGRect(
             x: 0,
             y: tableViewY,
