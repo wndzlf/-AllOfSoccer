@@ -338,7 +338,7 @@ class GameMatchingViewController: UIViewController {
         
         // Notice table view (remaining space) - positioned after filter container
         let tableViewY = filterTagY + filterTagHeight - 20
-        let tableViewHeight = view.bounds.height - tableViewY - safeArea.bottom + 20
+        let tableViewHeight = view.bounds.height - tableViewY
         noticeTableView.frame = CGRect(
             x: 0,
             y: tableViewY,

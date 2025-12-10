@@ -39,7 +39,7 @@ class GameMatchingFilterCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.layer.cornerRadius = 18
+        contentView.layer.cornerRadius = 31 / 2.0
         contentView.backgroundColor = didDeSelectedbackgroundColor
         
         contentView.addSubview(tagLabel)

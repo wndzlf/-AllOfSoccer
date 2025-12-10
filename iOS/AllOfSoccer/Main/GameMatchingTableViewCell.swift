@@ -266,14 +266,11 @@ class GameMatchingTableViewCell: UITableViewCell {
         totalHeight += 8  // 간격
         
         // 내용 라벨 높이 (최대 2줄)
-        contentsLabel.sizeToFit()
-        let contentsHeight = min(contentsLabel.frame.height, 40)
-        totalHeight += contentsHeight
+        totalHeight += contentsLabel.sizeThatFits(size).height
         totalHeight += 10 // 간격
         
         // 팀 이름 라벨
-        teamNameLabel.sizeToFit()
-        totalHeight += teamNameLabel.frame.height
+        totalHeight += teamNameLabel.sizeThatFits(size).height
         totalHeight += 8  // 팀 이름과 상태 라벨 간격
         
         // 상태 라벨 높이
