@@ -121,6 +121,7 @@ class RecruitmentCalendarView: UIView {
         button.backgroundColor = backgroundColor
         button.layer.cornerRadius = 8
         button.layer.masksToBounds = true
+        button.isUserInteractionEnabled = true
 
         button.addTarget(self, action: #selector(okButtonTouchUp), for: .touchUpInside)
 
@@ -133,6 +134,7 @@ class RecruitmentCalendarView: UIView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.distribution = .fillEqually
+        stackView.isUserInteractionEnabled = true
 
         return stackView
     }()

@@ -224,7 +224,7 @@ router.post('/seed', async (req, res) => {
         current_participants: 0,
         match_type: '11v11',
         gender_type: 'male',
-        shoes_requirement: 'cleats',
+        shoes_requirement: 'soccer',
         age_range_min: 25,
         age_range_max: 40,
         skill_level_min: 'intermediate',
