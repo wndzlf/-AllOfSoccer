@@ -102,7 +102,7 @@ class GameMatchingViewModel {
         if isFilterApplied {
             guard indexPath.row < filteredViewModel.count else {
                 return GameMatchListViewModel(
-                    id: -1,
+                    id: "",
                     date: "",
                     time: "",
                     address: "",
@@ -154,8 +154,58 @@ class GameMatchingViewModel {
         }
     }
 
+    // 날짜 문자열을 Date로 파싱 (ISO 8601 및 yyyy-MM-dd 모두 지원)
+    private func parseDate(from dateString: String) -> Date {
+        // ISO 8601 형식 시도 (서버: "2024-09-14T22:00:00.000Z")
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso8601Formatter.date(from: dateString) { return date }
+
+        // 소수점 없는 ISO 8601
+        iso8601Formatter.formatOptions = [.withInternetDateTime]
+        if let date = iso8601Formatter.date(from: dateString) { return date }
+
+        // yyyy-MM-dd 형식 (Mock 데이터)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        if let date = dateFormatter.date(from: dateString) { return date }
+
+        return Date()
+    }
+
+    // Match -> GameMatchListViewModel 변환
+    private func convertToViewModel(match: Match) -> GameMatchListViewModel {
+        let date = parseDate(from: match.date)
+
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "MM.dd.E"
+        displayFormatter.locale = Locale(identifier: "ko_KR")
+        let displayDate = displayFormatter.string(from: date)
+
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.timeZone = TimeZone.current
+        let time = timeFormatter.string(from: date)
+
+        let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
+        let statuses = createStatusTypes(from: match)
+
+        return GameMatchListViewModel(
+            id: match.id,
+            date: displayDate,
+            time: time,
+            address: match.location,
+            description: description,
+            isFavorite: false,
+            isRecruiting: match.status == "recruiting",
+            teamName: match.team?.name ?? "알 수 없음",
+            primaryStatus: statuses.primary,
+            secondaryStatus: statuses.secondary,
+            hasFormerPlayer: match.hasFormerPlayer
+        )
+    }
+
     private func fetchMatchingList() async throws {
-        // 서버에서 매칭 데이터 가져오기
         APIService.shared.getMatches(
             page: 1,
             limit: 20,
@@ -164,49 +214,18 @@ class GameMatchingViewModel {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let matchResponse):
-                    // 원본 데이터 저장
                     self?.originalMatches = matchResponse.data
-                    
-                    // 서버 데이터를 ViewModel로 변환
                     self?.matchingListViewModel = matchResponse.data.map { match in
-                        // 날짜 형식 변환 (서버: "2024-01-01" -> UI: "01.01.월")
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyy-MM-dd"
-                        let date = dateFormatter.date(from: match.date) ?? Date()
-                        
-                        let displayFormatter = DateFormatter()
-                        displayFormatter.dateFormat = "MM.dd.E"
-                        displayFormatter.locale = Locale(identifier: "ko_KR")
-                        let displayDate = displayFormatter.string(from: date)
-                        
-                        // 시간은 기본값으로 설정 (서버에서 시간 정보가 별도로 없음)
-                        let time = "20:00"
-                        
-                        // 설명 생성
-                        let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
-                        
-                        // 상태 타입 생성
-                        let statuses = self?.createStatusTypes(from: match)
-                        
-                        return GameMatchListViewModel(
-                            id: match.id,
-                            date: displayDate,
-                            time: time,
-                            address: match.location,
-                            description: description,
-                            isFavorite: true, // 서버에서 받아온 값으로 수정 필요
-                            isRecruiting: match.status == "recruiting",
-                            teamName: match.team?.name ?? "알 수 없음",
-                            primaryStatus: statuses?.primary,
-                            secondaryStatus: statuses?.secondary,
-                            hasFormerPlayer: match.hasFormerPlayer
+                        self?.convertToViewModel(match: match) ?? GameMatchListViewModel(
+                            id: "", date: "", time: "", address: "", description: "",
+                            isFavorite: false, isRecruiting: false, teamName: "",
+                            primaryStatus: nil, secondaryStatus: nil, hasFormerPlayer: nil
                         )
                     }
                     self?.presenter?.reloadMatchingList()
-                    
+
                 case .failure(let error):
                     print("매칭 데이터 가져오기 실패: \(error)")
-                    // 에러 시 목 데이터 사용
                     self?.setupMockData()
                     self?.presenter?.reloadMatchingList()
                     self?.presenter?.showErrorMessage()
@@ -227,14 +246,14 @@ class GameMatchingViewModel {
         let mockMatches = [
             // 서울남부 지역 - 11 vs 11 (오늘부터 0일 후)
             Match(
-                id: 1,
+                id: "1",
                 title: "FC 강남 모집",
                 description: "11 vs 11 실력 중상 구장비 10만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 강남구 역삼동 테헤란로 축구장",
-                latitude: 37.4979,
-                longitude: 127.0276,
+                latitude: "37.4979",
+                longitude: "127.0276",
                 fee: 100000,
                 maxParticipants: 22,
                 currentParticipants: 18,
@@ -251,25 +270,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false,
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
                 team: Team(
-                    id: 1,
+                    id: "1",
                     name: "FC 강남",
                     logo: nil,
-                    captain: User(id: 1, name: "김강남", profileImage: nil)
+                    captain: UserProfile(id: "1", name: "김강남", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울남부 지역 - 다양한 데이터 생성
             Match(
-                id: 101,
+                id: "101",
                 title: "강남 11vs11 남성 축구화",
                 description: "11 vs 11 실력 중상 구장비 10만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 강남구 대치동 유수지 체육공원",
-                latitude: 37.4979,
-                longitude: 127.0276,
+                latitude: "37.4979",
+                longitude: "127.0276",
                 fee: 100000,
                 maxParticipants: 22,
                 currentParticipants: 18,
@@ -286,19 +306,20 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 101, name: "강남 FC", logo: nil, captain: User(id: 101, name: "김강남", profileImage: nil))
+                team: Team(id: "101", name: "강남 FC", logo: nil, captain: UserProfile(id: "101", name: "김강남", profileImage: nil))
             ),
             Match(
-                id: 102,
+                id: "102",
                 title: "서초 풋살 혼성 실내화",
                 description: "풋살 실력 초급 구장비 5만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 서초구 반포동 풋살장",
-                latitude: 37.5000,
-                longitude: 127.0000,
+                latitude: "37.5000",
+                longitude: "127.0000",
                 fee: 50000,
                 maxParticipants: 12,
                 currentParticipants: 8,
@@ -315,19 +336,20 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 102, name: "서초 풋살", logo: nil, captain: User(id: 102, name: "이서초", profileImage: nil))
+                team: Team(id: "102", name: "서초 풋살", logo: nil, captain: UserProfile(id: "102", name: "이서초", profileImage: nil))
             ),
             Match(
-                id: 103,
+                id: "103",
                 title: "송파 11vs11 여성 축구화",
                 description: "11 vs 11 실력 중급 구장비 8만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 송파구 잠실동 종합운동장",
-                latitude: 37.5100,
-                longitude: 127.0700,
+                latitude: "37.5100",
+                longitude: "127.0700",
                 fee: 80000,
                 maxParticipants: 22,
                 currentParticipants: 10,
@@ -344,19 +366,20 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 103, name: "송파 WFC", logo: nil, captain: User(id: 103, name: "박송파", profileImage: nil))
+                team: Team(id: "103", name: "송파 WFC", logo: nil, captain: UserProfile(id: "103", name: "박송파", profileImage: nil))
             ),
             Match(
-                id: 104,
+                id: "104",
                 title: "관악 풋살 남성 운동화",
                 description: "풋살 실력 중상 구장비 6만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 관악구 신림동 도림천 풋살장",
-                latitude: 37.4800,
-                longitude: 126.9300,
+                latitude: "37.4800",
+                longitude: "126.9300",
                 fee: 60000,
                 maxParticipants: 10,
                 currentParticipants: 9,
@@ -373,19 +396,20 @@ class GameMatchingViewModel {
                 hasFormerPlayer: nil, // 정보 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 104, name: "관악 FS", logo: nil, captain: User(id: 104, name: "최관악", profileImage: nil))
+                team: Team(id: "104", name: "관악 FS", logo: nil, captain: UserProfile(id: "104", name: "최관악", profileImage: nil))
             ),
             Match(
-                id: 105,
+                id: "105",
                 title: "동작 11vs11 혼성 축구화",
                 description: "11 vs 11 실력 초급 구장비 9만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 동작구 사당동 종합체육관",
-                latitude: 37.4800,
-                longitude: 126.9700,
+                latitude: "37.4800",
+                longitude: "126.9700",
                 fee: 90000,
                 maxParticipants: 22,
                 currentParticipants: 20,
@@ -402,19 +426,20 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 105, name: "동작 유나이티드", logo: nil, captain: User(id: 105, name: "정동작", profileImage: nil))
+                team: Team(id: "105", name: "동작 유나이티드", logo: nil, captain: UserProfile(id: "105", name: "정동작", profileImage: nil))
             ),
             Match(
-                id: 106,
+                id: "106",
                 title: "구로 풋살 여성 실내화",
                 description: "풋살 실력 상급 구장비 7만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 0, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 구로구 구로동 안양천 풋살장",
-                latitude: 37.5000,
-                longitude: 126.8800,
+                latitude: "37.5000",
+                longitude: "126.8800",
                 fee: 70000,
                 maxParticipants: 10,
                 currentParticipants: 4,
@@ -431,20 +456,21 @@ class GameMatchingViewModel {
                 hasFormerPlayer: nil, // 정보 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-01T10:00:00Z",
                 updatedAt: "2024-11-01T10:00:00Z",
-                team: Team(id: 106, name: "구로 퀸즈", logo: nil, captain: User(id: 106, name: "한구로", profileImage: nil))
+                team: Team(id: "106", name: "구로 퀸즈", logo: nil, captain: UserProfile(id: "106", name: "한구로", profileImage: nil))
             ),
             // 서울북부 지역 - 11 vs 11 (오늘부터 2일 후)
             Match(
-                id: 3,
+                id: "3",
                 title: "강북 FC 팀원 모집",
                 description: "11 vs 11 실력 하하 구장비 7만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 2, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 강북구 수유동 축구장",
-                latitude: 37.6396,
-                longitude: 127.0254,
+                latitude: "37.6396",
+                longitude: "127.0254",
                 fee: 70000,
                 maxParticipants: 22,
                 currentParticipants: 15,
@@ -461,25 +487,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-03T10:00:00Z",
                 updatedAt: "2024-11-03T10:00:00Z",
                 team: Team(
-                    id: 3,
+                    id: "3",
                     name: "강북 FC",
                     logo: nil,
-                    captain: User(id: 3, name: "최강북", profileImage: nil)
+                    captain: UserProfile(id: "3", name: "최강북", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울북부 지역 - 풋살 (오늘부터 3일 후)
             Match(
-                id: 4,
+                id: "4",
                 title: "마포 풋살 친구들",
                 description: "풋살 실력 중하 구장비 6만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 3, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 마포구 상암동 월드컵공원 풋살장",
-                latitude: 37.5682,
-                longitude: 126.8965,
+                latitude: "37.5682",
+                longitude: "126.8965",
                 fee: 60000,
                 maxParticipants: 10,
                 currentParticipants: 8,
@@ -496,25 +523,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-04T10:00:00Z",
                 updatedAt: "2024-11-04T10:00:00Z",
                 team: Team(
-                    id: 4,
+                    id: "4",
                     name: "마포 풋살단",
                     logo: nil,
-                    captain: User(id: 4, name: "이마포", profileImage: nil)
+                    captain: UserProfile(id: "4", name: "이마포", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 경기남부 지역 - 11 vs 11 (오늘부터 4일 후)
             Match(
-                id: 5,
+                id: "5",
                 title: "수원 삼성 블루윙즈 매치",
                 description: "11 vs 11 실력 상상 구장비 15만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 4, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 수원시 장안구 천천동 축구장",
-                latitude: 37.3014,
-                longitude: 127.0100,
+                latitude: "37.3014",
+                longitude: "127.0100",
                 fee: 150000,
                 maxParticipants: 22,
                 currentParticipants: 20,
@@ -531,25 +559,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-05T10:00:00Z",
                 updatedAt: "2024-11-05T10:00:00Z",
                 team: Team(
-                    id: 5,
+                    id: "5",
                     name: "수원 FC",
                     logo: nil,
-                    captain: User(id: 5, name: "정수원", profileImage: nil)
+                    captain: UserProfile(id: "5", name: "정수원", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 경기남부 지역 - 풋살 (오늘부터 5일 후)
             Match(
-                id: 6,
+                id: "6",
                 title: "분당 풋살 클럽",
                 description: "풋살 실력 중중 구장비 8만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 5, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 성남시 분당구 정자동 풋살장",
-                latitude: 37.3595,
-                longitude: 127.1052,
+                latitude: "37.3595",
+                longitude: "127.1052",
                 fee: 80000,
                 maxParticipants: 10,
                 currentParticipants: 6,
@@ -566,25 +595,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-06T10:00:00Z",
                 updatedAt: "2024-11-06T10:00:00Z",
                 team: Team(
-                    id: 6,
+                    id: "6",
                     name: "분당 풋살클럽",
                     logo: nil,
-                    captain: User(id: 6, name: "강분당", profileImage: nil)
+                    captain: UserProfile(id: "6", name: "강분당", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 인천/부천 지역 - 11 vs 11 (오늘부터 6일 후)
             Match(
-                id: 7,
+                id: "7",
                 title: "인천 유나이티드 매치",
                 description: "11 vs 11 실력 중상 구장비 12만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 6, to: today) ?? today),
                 location: "인천/부천",
                 address: "인천시 연수구 송도동 센트럴파크 축구장",
-                latitude: 37.3895,
-                longitude: 126.6431,
+                latitude: "37.3895",
+                longitude: "126.6431",
                 fee: 120000,
                 maxParticipants: 22,
                 currentParticipants: 16,
@@ -601,25 +631,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-07T10:00:00Z",
                 updatedAt: "2024-11-07T10:00:00Z",
                 team: Team(
-                    id: 7,
+                    id: "7",
                     name: "인천 FC",
                     logo: nil,
-                    captain: User(id: 7, name: "한인천", profileImage: nil)
+                    captain: UserProfile(id: "7", name: "한인천", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울남부 지역 - 풋살 (오늘부터 7일 후)
             Match(
-                id: 8,
+                id: "8",
                 title: "용산 풋살 리그",
                 description: "풋살 실력 하중 구장비 5만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 7, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 용산구 한강대로 용산 풋살장",
-                latitude: 37.5326,
-                longitude: 126.9900,
+                latitude: "37.5326",
+                longitude: "126.9900",
                 fee: 50000,
                 maxParticipants: 10,
                 currentParticipants: 9,
@@ -636,25 +667,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-08T10:00:00Z",
                 updatedAt: "2024-11-08T10:00:00Z",
                 team: Team(
-                    id: 8,
+                    id: "8",
                     name: "용산 풋살단",
                     logo: nil,
-                    captain: User(id: 8, name: "서용산", profileImage: nil)
+                    captain: UserProfile(id: "8", name: "서용산", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 경기남부 지역 - 11 vs 11 (오늘부터 8일 후)
             Match(
-                id: 9,
+                id: "9",
                 title: "용인 FC 리그",
                 description: "11 vs 11 실력 중하 구장비 9만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 8, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 용인시 수지구 풍덕천동 축구장",
-                latitude: 37.3222,
-                longitude: 127.0975,
+                latitude: "37.3222",
+                longitude: "127.0975",
                 fee: 90000,
                 maxParticipants: 22,
                 currentParticipants: 14,
@@ -671,25 +703,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-09T10:00:00Z",
                 updatedAt: "2024-11-09T10:00:00Z",
                 team: Team(
-                    id: 9,
+                    id: "9",
                     name: "용인 FC",
                     logo: nil,
-                    captain: User(id: 9, name: "오용인", profileImage: nil)
+                    captain: UserProfile(id: "9", name: "오용인", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울남부 지역 - 풋살 (오늘부터 9일 후)
             Match(
-                id: 10,
+                id: "10",
                 title: "영등포 풋살 매치",
                 description: "풋살 실력 하하 구장비 4만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 9, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 영등포구 여의도동 한강공원 풋살장",
-                latitude: 37.5283,
-                longitude: 126.9324,
+                latitude: "37.5283",
+                longitude: "126.9324",
                 fee: 40000,
                 maxParticipants: 10,
                 currentParticipants: 5,
@@ -706,25 +739,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-10T10:00:00Z",
                 updatedAt: "2024-11-10T10:00:00Z",
                 team: Team(
-                    id: 10,
+                    id: "10",
                     name: "영등포 풋살단",
                     logo: nil,
-                    captain: User(id: 10, name: "윤영등포", profileImage: nil)
+                    captain: UserProfile(id: "10", name: "윤영등포", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 경기남부 지역 - 11 vs 11 (오늘부터 10일 후)
             Match(
-                id: 11,
+                id: "11",
                 title: "안양 FC 대결",
                 description: "11 vs 11 실력 중상 구장비 11만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 10, to: today) ?? today),
                 location: "경기남부",
                 address: "경기도 안양시 만안구 안양천 축구장",
-                latitude: 37.3943,
-                longitude: 126.9568,
+                latitude: "37.3943",
+                longitude: "126.9568",
                 fee: 110000,
                 maxParticipants: 22,
                 currentParticipants: 17,
@@ -741,25 +775,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true, // 선출 있음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-11T10:00:00Z",
                 updatedAt: "2024-11-11T10:00:00Z",
                 team: Team(
-                    id: 11,
+                    id: "11",
                     name: "안양 FC",
                     logo: nil,
-                    captain: User(id: 11, name: "임안양", profileImage: nil)
+                    captain: UserProfile(id: "11", name: "임안양", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 인천/부천 지역 - 풋살 (오늘부터 11일 후)
             Match(
-                id: 12,
+                id: "12",
                 title: "부천 풋살 경기",
                 description: "풋살 실력 중하 구장비 7만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 11, to: today) ?? today),
                 location: "인천/부천",
                 address: "경기도 부천시 원미구 중동 풋살장",
-                latitude: 37.5034,
-                longitude: 126.7660,
+                latitude: "37.5034",
+                longitude: "126.7660",
                 fee: 70000,
                 maxParticipants: 10,
                 currentParticipants: 8,
@@ -776,25 +811,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: false, // 선출 없음
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-12T10:00:00Z",
                 updatedAt: "2024-11-12T10:00:00Z",
                 team: Team(
-                    id: 12,
+                    id: "12",
                     name: "부천 풋살클럽",
                     logo: nil,
-                    captain: User(id: 12, name: "신부천", profileImage: nil)
+                    captain: UserProfile(id: "12", name: "신부천", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울북부 지역 - 11 vs 11 (오늘부터 12일 후)
             Match(
-                id: 13,
+                id: "13",
                 title: "노원 FC 모집",
                 description: "11 vs 11 실력 하상 구장비 8만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 12, to: today) ?? today),
                 location: "서울북부",
                 address: "서울시 노원구 상계동 축구장",
-                latitude: 37.6542,
-                longitude: 127.0652,
+                latitude: "37.6542",
+                longitude: "127.0652",
                 fee: 80000,
                 maxParticipants: 22,
                 currentParticipants: 19,
@@ -811,25 +847,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-13T10:00:00Z",
                 updatedAt: "2024-11-13T10:00:00Z",
                 team: Team(
-                    id: 13,
+                    id: "13",
                     name: "노원 FC",
                     logo: nil,
-                    captain: User(id: 13, name: "김노원", profileImage: nil)
+                    captain: UserProfile(id: "13", name: "김노원", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 경기북부 지역 - 풋살 (오늘부터 13일 후)
             Match(
-                id: 14,
+                id: "14",
                 title: "일산 풋살 팀",
                 description: "풋살 실력 중중 구장비 6만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 13, to: today) ?? today),
                 location: "경기북부",
                 address: "경기도 고양시 일산동구 백석동 풋살장",
-                latitude: 37.6572,
-                longitude: 126.7859,
+                latitude: "37.6572",
+                longitude: "126.7859",
                 fee: 60000,
                 maxParticipants: 10,
                 currentParticipants: 7,
@@ -846,25 +883,26 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-14T10:00:00Z",
                 updatedAt: "2024-11-14T10:00:00Z",
                 team: Team(
-                    id: 14,
+                    id: "14",
                     name: "일산 풋살단",
                     logo: nil,
-                    captain: User(id: 14, name: "장일산", profileImage: nil)
+                    captain: UserProfile(id: "14", name: "장일산", profileImage: nil, appleId: nil, isActive: nil)
                 )
             ),
             // 서울남부 지역 - 11 vs 11 (오늘부터 14일 후)
             Match(
-                id: 15,
+                id: "15",
                 title: "관악 FC 팀매치",
                 description: "11 vs 11 실력 하하 구장비 6만원",
                 date: dateFormatter.string(from: calendar.date(byAdding: .day, value: 14, to: today) ?? today),
                 location: "서울남부",
                 address: "서울시 관악구 신림동 관악산 축구장",
-                latitude: 37.4784,
-                longitude: 126.9516,
+                latitude: "37.4784",
+                longitude: "126.9516",
                 fee: 60000,
                 maxParticipants: 22,
                 currentParticipants: 12,
@@ -881,54 +919,23 @@ class GameMatchingViewModel {
                 hasFormerPlayer: true,
                 status: "recruiting",
                 isActive: true,
+                teamId: nil,
                 createdAt: "2024-11-15T10:00:00Z",
                 updatedAt: "2024-11-15T10:00:00Z",
                 team: Team(
-                    id: 15,
+                    id: "15",
                     name: "관악 FC",
                     logo: nil,
-                    captain: User(id: 15, name: "안관악", profileImage: nil)
+                    captain: UserProfile(id: "15", name: "안관악", profileImage: nil, appleId: nil, isActive: nil)
                 )
             )
         ]
         
         // 원본 데이터 저장
         self.originalMatches = mockMatches
-        
+
         // ViewModel로 변환
-        self.matchingListViewModel = mockMatches.map { match in
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            let date = dateFormatter.date(from: match.date) ?? Date()
-            
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateFormat = "MM.dd.E"
-            displayFormatter.locale = Locale(identifier: "ko_KR")
-            let displayDate = displayFormatter.string(from: date)
-            
-            let time = "20:00"
-            let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
-            
-            // 랜덤하게 좋아요 상태 설정 (Mock)
-            let isFavorite = Bool.random()
-            
-            // 상태 타입 생성
-            let statuses = createStatusTypes(from: match)
-            
-            return GameMatchListViewModel(
-                id: match.id,
-                date: displayDate,
-                time: time,
-                address: match.location,
-                description: description,
-                isFavorite: isFavorite,
-                isRecruiting: match.status == "recruiting",
-                teamName: match.team?.name ?? "알 수 없음",
-                primaryStatus: statuses.primary,
-                secondaryStatus: statuses.secondary,
-                hasFormerPlayer: match.hasFormerPlayer
-            )
-        }
+        self.matchingListViewModel = mockMatches.map { convertToViewModel(match: $0) }
     }
     
     // MARK: - Like Functionality
@@ -961,7 +968,7 @@ class GameMatchingViewModel {
         }
     }
     
-    private func updateLocalLikeStatus(matchId: Int) {
+    private func updateLocalLikeStatus(matchId: String) {
         // 원본 ViewModel 리스트 업데이트
         if let index = self.matchingListViewModel.firstIndex(where: { $0.id == matchId }) {
             let oldModel = self.matchingListViewModel[index]
@@ -1053,45 +1060,21 @@ class GameMatchingViewModel {
         // 날짜 필터 적용
         if !selectedDate.isEmpty {
             let calendar = Calendar.current
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            dateFormatter.locale = Locale(identifier: "ko_KR")
-            dateFormatter.timeZone = TimeZone.current
-            
-            // 선택된 날짜들을 년-월-일만 추출하여 비교용으로 변환
+
             let selectedDateComponents = selectedDate.map { date in
                 calendar.dateComponents([.year, .month, .day], from: date)
             }
-            
-            let selectedDateStrings = selectedDate.map { dateFormatter.string(from: $0) }
-            
-            print("🔍 날짜 필터링 - 선택된 날짜: \(selectedDateStrings)")
-            print("🔍 날짜 필터링 - 원본 데이터 개수: \(originalMatches.count)")
-            
+
             filtered = filtered.filter { match in
-                // Match의 날짜 문자열을 Date로 변환
-                guard let matchDate = dateFormatter.date(from: match.date) else {
-                    print("❌ 날짜 파싱 실패: \(match.date)")
-                    return false
-                }
-                
-                // Match 날짜의 년-월-일 컴포넌트 추출
+                let matchDate = self.parseDate(from: match.date)
                 let matchDateComponents = calendar.dateComponents([.year, .month, .day], from: matchDate)
-                
-                // 선택된 날짜들과 비교
-                let isMatch = selectedDateComponents.contains { selectedComponents in
+
+                return selectedDateComponents.contains { selectedComponents in
                     selectedComponents.year == matchDateComponents.year &&
                     selectedComponents.month == matchDateComponents.month &&
                     selectedComponents.day == matchDateComponents.day
                 }
-                
-                if isMatch {
-                    print("✅ 매칭됨: \(match.date) - \(match.title)")
-                }
-                return isMatch
             }
-            
-            print("🔍 날짜 필터링 - 필터링된 데이터 개수: \(filtered.count)")
         }
         
         // 장소 필터 적용
@@ -1132,38 +1115,9 @@ class GameMatchingViewModel {
         
         // 필터링된 결과 저장
         self.filteredMatches = filtered
-        
+
         // ViewModel로 변환
-        self.filteredViewModel = filtered.map { match in
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            let date = dateFormatter.date(from: match.date) ?? Date()
-            
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateFormat = "MM.dd.E"
-            displayFormatter.locale = Locale(identifier: "ko_KR")
-            let displayDate = displayFormatter.string(from: date)
-            
-            let time = "20:00"
-            let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
-            
-            // 상태 타입 생성
-            let statuses = createStatusTypes(from: match)
-            
-            return GameMatchListViewModel(
-                id: match.id,
-                date: displayDate,
-                time: time,
-                address: match.location,
-                description: description,
-                isFavorite: true,
-                isRecruiting: match.status == "recruiting",
-                teamName: match.team?.name ?? "알 수 없음",
-                primaryStatus: statuses.primary,
-                secondaryStatus: statuses.secondary,
-                hasFormerPlayer: match.hasFormerPlayer
-            )
-        }
+        self.filteredViewModel = filtered.map { convertToViewModel(match: $0) }
         
         // UI 업데이트
         self.presenter?.reloadMatchingList()

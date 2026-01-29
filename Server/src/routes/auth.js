@@ -23,11 +23,11 @@ router.post('/apple-signin', async (req, res) => {
     });
 
     if (!user) {
-      // 새 사용자 생성
+      // 새 사용자 생성 (Apple은 최초 로그인에만 email/name 제공)
       user = await User.create({
         apple_id,
-        email,
-        name,
+        email: email || `${apple_id.substring(0, 8)}@apple.private`,
+        name: name || '사용자',
         last_login: new Date()
       });
     } else {

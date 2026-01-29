@@ -13,17 +13,111 @@ struct APIService {
     
     private let baseURL = "http://localhost:3000"
 
-    func signIn(model: SignInModel, completion: @escaping (Result<SignInModel, Error>) -> Void) {
-        // 기존 signIn 로직은 그대로 유지
-        print("SignIn 기능은 추후 구현 예정")
+    // MARK: - Apple Sign-In
+    func appleSignIn(appleId: String, email: String?, name: String?,
+                     completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/auth/apple-signin") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        var body: [String: Any] = ["apple_id": appleId]
+        if let email = email { body["email"] = email }
+        if let name = name { body["name"] = name }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let signInResponse = try JSONDecoder().decode(AppleSignInResponse.self, from: data)
+                    completion(.success(signInResponse))
+                } catch {
+                    print("Apple Sign-In 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
     }
-    
+
+    // MARK: - Logout
+    func logout(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/auth/logout") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success(true))
+            }
+        }.resume()
+    }
+
+    // MARK: - Profile
+    func getProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/auth/profile") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let profileResponse = try JSONDecoder().decode(ProfileResponse.self, from: data)
+                    if let profile = profileResponse.data {
+                        completion(.success(profile))
+                    } else {
+                        completion(.failure(NetworkError.noData))
+                    }
+                } catch {
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
     // 좋아요 토글 (Mock API)
-    func toggleLike(matchId: Int, completion: @escaping (Result<Bool, Error>) -> Void) {
-        // 네트워크 지연 시뮬레이션
+    func toggleLike(matchId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            // 성공적으로 토글되었다고 가정 (실제 서버가 있다면 여기서 요청을 보냄)
-            // true: 성공
             completion(.success(true))
         }
     }

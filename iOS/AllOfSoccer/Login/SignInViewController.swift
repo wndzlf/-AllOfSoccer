@@ -53,39 +53,62 @@ extension SignInViewController: ASAuthorizationControllerDelegate {
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         switch authorization.credential {
         case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            // Create an account in your system.
             let userIdentifier = appleIDCredential.user
             let fullName = appleIDCredential.fullName
             let email = appleIDCredential.email
 
-            if let authorizationCode = appleIDCredential.authorizationCode,
-               let identityToken = appleIDCredential.identityToken,
-               let authString = String(data: authorizationCode, encoding: .utf8),
-               let tokenString = String(data: identityToken, encoding: .utf8) {
-                print("authorizationCode: \(authorizationCode)")
-                print("identityToken: \(identityToken)")
-                print("authString: \(authString)")
-                print("tokenString: \(tokenString)")
+            // Apple은 최초 로그인에만 이름/이메일을 제공
+            let displayName = [fullName?.familyName, fullName?.givenName]
+                .compactMap { $0 }
+                .joined()
+            let nameToSend = displayName.isEmpty ? nil : displayName
+
+            // userIdentifier 로컬 저장
+            Auth.updateUserIdentifierKey(userIdentifier: userIdentifier)
+
+            // 서버에 로그인 요청
+            APIService.shared.appleSignIn(
+                appleId: userIdentifier,
+                email: email,
+                name: nameToSend
+            ) { [weak self] result in
+                switch result {
+                case .success(let response):
+                    if response.success, let data = response.data {
+                        Auth.updateAcceessToken(token: data.accessToken)
+                        Auth.updateRefreshToken(token: data.refreshToken)
+                        self?.navigateToMainScreen()
+                    } else {
+                        self?.showAlert(message: response.message ?? "로그인에 실패했습니다.")
+                    }
+                case .failure(let error):
+                    print("로그인 실패: \(error)")
+                    self?.showAlert(message: "서버 연결에 실패했습니다.")
+                }
             }
-
-            print("useridentifier: \(userIdentifier)")
-            print("fullName: \(fullName)")
-            print("email: \(email)")
-
-            //        case let passwordCredential as ASPasswordCredential:
-            //            // Sign in using an existing iCloud Keychain credential.
-            //            let username = passwordCredential.user
-            //            let password = passwordCredential.password
-            //
-            //            print("username: \(username)")
-            //            print("password: \(password)")
         default:
             break
         }
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-        print("로그인에 실패했습니다.")
+        print("Apple 로그인 실패: \(error)")
+        showAlert(message: "로그인에 실패했습니다.")
+    }
+
+    private func navigateToMainScreen() {
+        guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+              let window = sceneDelegate.window else { return }
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let mainVC = storyboard.instantiateInitialViewController()
+        window.rootViewController = mainVC
+        window.makeKeyAndVisible()
+    }
+
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }
 

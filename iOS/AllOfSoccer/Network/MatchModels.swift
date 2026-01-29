@@ -7,6 +7,49 @@
 
 import Foundation
 
+// MARK: - Apple Sign-In Response
+struct AppleSignInResponse: Codable {
+    let success: Bool
+    let data: AppleSignInData?
+    let message: String?
+}
+
+struct AppleSignInData: Codable {
+    let user: UserProfile
+    let accessToken: String
+    let refreshToken: String
+
+    enum CodingKeys: String, CodingKey {
+        case user
+        case accessToken = "access_token"
+        case refreshToken = "refresh_token"
+    }
+}
+
+struct UserProfile: Codable {
+    let id: String
+    let email: String?
+    let name: String
+    let phone: String?
+    let profileImage: String?
+    let appleId: String?
+    let isActive: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case id, email, name, phone
+        case profileImage = "profile_image"
+        case appleId = "apple_id"
+        case isActive = "is_active"
+    }
+}
+
+// MARK: - Profile Response
+struct ProfileResponse: Codable {
+    let success: Bool
+    let data: UserProfile?
+    let message: String?
+}
+
 // MARK: - Match List Response
 struct MatchListResponse: Codable {
     let success: Bool
@@ -17,14 +60,14 @@ struct MatchListResponse: Codable {
 
 // MARK: - Match
 struct Match: Codable {
-    let id: Int
+    let id: String
     let title: String
     let description: String?
     let date: String
     let location: String
     let address: String?
-    let latitude: Double?
-    let longitude: Double?
+    let latitude: String?
+    let longitude: String?
     let fee: Int
     let maxParticipants: Int
     let currentParticipants: Int
@@ -41,10 +84,11 @@ struct Match: Codable {
     let hasFormerPlayer: Bool? // 선출 유무
     let status: String
     let isActive: Bool
+    let teamId: String?
     let createdAt: String
     let updatedAt: String
     let team: Team?
-    
+
     enum CodingKeys: String, CodingKey {
         case id, title, description, date, location, address, latitude, longitude, fee
         case maxParticipants = "max_participants"
@@ -61,26 +105,57 @@ struct Match: Codable {
         case isOpponentMatched = "is_opponent_matched"
         case hasFormerPlayer = "has_former_player"
         case status, isActive = "is_active"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case team
+        case teamId = "team_id"
+        case createdAt, updatedAt
+        case team = "Team"
     }
 }
 
 // MARK: - Team
 struct Team: Codable {
-    let id: Int
+    let id: String
     let name: String
+    let description: String?
     let logo: String?
-    let captain: User?
+    let captainId: String?
+    let ageRangeMin: Int?
+    let ageRangeMax: Int?
+    let skillLevel: String?
+    let introduction: String?
+    let isActive: Bool?
+    let captain: UserProfile?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, logo, introduction, captain
+        case captainId = "captain_id"
+        case ageRangeMin = "age_range_min"
+        case ageRangeMax = "age_range_max"
+        case skillLevel = "skill_level"
+        case isActive = "is_active"
+    }
+
+    // Mock 데이터용 간편 이니셜라이저
+    init(id: String, name: String, logo: String?, captain: UserProfile?) {
+        self.id = id
+        self.name = name
+        self.description = nil
+        self.logo = logo
+        self.captainId = nil
+        self.ageRangeMin = nil
+        self.ageRangeMax = nil
+        self.skillLevel = nil
+        self.introduction = nil
+        self.isActive = nil
+        self.captain = captain
+    }
 }
 
-// MARK: - User
+// MARK: - User (간단한 사용자 정보)
 struct User: Codable {
-    let id: Int
+    let id: String
     let name: String
     let profileImage: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case id, name
         case profileImage = "profile_image"
