@@ -19,7 +19,7 @@ TeamMember.belongsTo(Team, { foreignKey: 'team_id' });
 
 // Team - Match 관계
 Team.hasMany(Match, { foreignKey: 'team_id' });
-Match.belongsTo(Team, { foreignKey: 'team_id' });
+Match.belongsTo(Team, { as: 'team', foreignKey: 'team_id' });
 
 // User - MatchParticipant 관계
 User.hasMany(MatchParticipant, { foreignKey: 'user_id' });

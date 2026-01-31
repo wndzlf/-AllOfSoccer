@@ -93,7 +93,7 @@ class CallTeamInformationTableViewCell: UITableViewCell {
 
     @objc func checkButtonTouchUp(_ sender: SeletableButton) {
 
-        self.teamInfo?.isSelected = sender.isSelected ? false : true
+        self.teamInfo?.isSelected = !sender.isSelected
 
         if let data = self.teamInfo {
             delegate?.didSelect(teamInfo: data)

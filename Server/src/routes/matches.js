@@ -304,27 +304,52 @@ router.post('/', auth, async (req, res) => {
       skill_level_min,
       skill_level_max,
       team_introduction,
-      team_id
+      team_id,
+      team_name
     } = req.body;
 
     // 필수 필드 검증
-    if (!title || !date || !location || !team_id) {
+    if (!title || !date || !location) {
       return res.status(400).json({
         success: false,
-        message: 'Title, date, location, and team_id are required'
+        message: 'Title, date, and location are required'
       });
     }
 
-    // 팀 소유권 확인
-    const team = await Team.findOne({
-      where: { id: team_id, captain_id: req.user.id }
-    });
+    let finalTeamId = team_id;
 
-    if (!team) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only create matches for your own team'
+    // team_id가 없으면 자동으로 팀 생성
+    if (!team_id) {
+      if (!team_name) {
+        return res.status(400).json({
+          success: false,
+          message: 'team_name is required when team_id is not provided'
+        });
+      }
+
+      const newTeam = await Team.create({
+        name: team_name,
+        captain_id: req.user.id,
+        age_range_min,
+        age_range_max,
+        skill_level: skill_level_min, // 최소 실력을 팀 실력으로 설정
+        introduction: team_introduction,
+        is_active: true
       });
+
+      finalTeamId = newTeam.id;
+    } else {
+      // 팀 소유권 확인
+      const team = await Team.findOne({
+        where: { id: team_id, captain_id: req.user.id }
+      });
+
+      if (!team) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only create matches for your own team'
+        });
+      }
     }
 
     const match = await Match.create({
@@ -345,7 +370,7 @@ router.post('/', auth, async (req, res) => {
       skill_level_min,
       skill_level_max,
       team_introduction,
-      team_id,
+      team_id: finalTeamId,
       status: 'recruiting'
     });
 
@@ -354,7 +379,7 @@ router.post('/', auth, async (req, res) => {
       await Comment.create({
         content: team_introduction,
         user_id: req.user.id,
-        team_id: team_id,
+        team_id: finalTeamId,
         type: 'team_introduction',
         order_index: 1
       });
@@ -382,6 +407,7 @@ router.post('/', auth, async (req, res) => {
       message: 'Match created successfully'
     });
   } catch (error) {
+    console.error('매칭 생성 에러:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create match',
@@ -694,6 +720,66 @@ router.get('/:id/participants', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch participants',
+      error: error.message
+    });
+  }
+});
+
+// 내가 등록한 매칭 목록 조회
+router.get('/my/created', auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // 내가 캡틴인 팀들 찾기
+    const myTeams = await Team.findAll({
+      where: { captain_id: req.user.id },
+      attributes: ['id']
+    });
+
+    const teamIds = myTeams.map(team => team.id);
+
+    // 내 팀으로 등록한 매칭 조회
+    const { count, rows: matches } = await Match.findAndCountAll({
+      where: {
+        team_id: teamIds,
+        is_active: true
+      },
+      include: [
+        {
+          model: Team,
+          as: 'team',
+          include: [
+            {
+              model: User,
+              as: 'captain',
+              attributes: ['id', 'name', 'profile_image']
+            }
+          ]
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit,
+      offset
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      success: true,
+      data: matches,
+      pagination: {
+        page,
+        limit,
+        total: count,
+        total_pages: totalPages
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch my matches',
       error: error.message
     });
   }

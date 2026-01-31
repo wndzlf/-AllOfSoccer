@@ -291,11 +291,15 @@ extension RecruitmentCalendarView: FSCalendarDelegate {
 
     private func appendDate(date: Date) {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM월 dd일"
+        dateFormatter.dateFormat = "yyyy년 MM월 dd일"
         let stringDate = dateFormatter.string(from: date)
         self.selectedDate = stringDate
 
-        let buttonTitle = "\(stringDate) 선택"
+        // 버튼에는 년도 없이 표시
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "MM월 dd일"
+        let displayDate = displayFormatter.string(from: date)
+        let buttonTitle = "\(displayDate) 선택"
         self.okButton.setTitle(buttonTitle, for: .normal)
     }
 

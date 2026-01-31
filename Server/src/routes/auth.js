@@ -5,6 +5,136 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// 이메일 회원가입
+router.post('/signup', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+
+    if (!email || !password || !name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, password, and name are required'
+      });
+    }
+
+    // 이메일 중복 확인
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already exists'
+      });
+    }
+
+    // 새 사용자 생성
+    const user = await User.create({
+      email,
+      password,
+      name,
+      last_login: new Date()
+    });
+
+    // JWT 토큰 생성
+    const accessToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
+    );
+
+    // 리프레시 토큰 저장
+    await user.update({ refresh_token: refreshToken });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: user.toJSON(),
+        access_token: accessToken,
+        refresh_token: refreshToken
+      },
+      message: 'Signup successful'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Signup failed',
+      error: error.message
+    });
+  }
+});
+
+// 이메일 로그인
+router.post('/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    // 사용자 찾기
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // 비밀번호 확인
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // 로그인 시간 업데이트
+    await user.update({ last_login: new Date() });
+
+    // JWT 토큰 생성
+    const accessToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
+    );
+
+    // 리프레시 토큰 저장
+    await user.update({ refresh_token: refreshToken });
+
+    res.json({
+      success: true,
+      data: {
+        user: user.toJSON(),
+        access_token: accessToken,
+        refresh_token: refreshToken
+      },
+      message: 'Sign-in successful'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Sign-in failed',
+      error: error.message
+    });
+  }
+});
+
 // Apple Sign-In
 router.post('/apple-signin', async (req, res) => {
   try {

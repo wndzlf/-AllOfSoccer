@@ -89,7 +89,10 @@ class FirstTeamRecruitmentViewController: UIViewController {
     
     private var selectedOptions: Set<Int> = []
     private var collectionViewHeightConstraint: NSLayoutConstraint?
-    
+
+    // Selected date for match
+    private var selectedDate: Date?
+
     // Fee Section
     private let feeLabel = UILabel()
     private let feeView = RoundView()
@@ -409,24 +412,58 @@ class FirstTeamRecruitmentViewController: UIViewController {
     
     @objc private func nextButtonTouchUp(_ sender: UIButton) {
         // 날짜와 시간이 선택되었는지 확인
-        guard dateTimeLabel.text != "날짜와 시간을 선택해주세요." else {
-            // 알림 표시
+        guard let date = selectedDate else {
             let alert = UIAlertController(title: "알림", message: "날짜와 시간을 선택해주세요.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "확인", style: .default))
             present(alert, animated: true)
             return
         }
-        
+
         // 장소가 입력되었는지 확인
         guard let placeText = placeTextField.text, !placeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            // 알림 표시
             let alert = UIAlertController(title: "알림", message: "장소를 입력해주세요.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "확인", style: .default))
             present(alert, animated: true)
             return
         }
-        
+
+        // 선택된 옵션에서 데이터 추출
+        // gameOptions: [0: 6v6, 1: 11v11, 2: 남성, 3: 여성, 4: 혼성, 5: 풋살화, 6: 축구화, 7: 선출포함]
+        var matchType = "11v11"
+        if selectedOptions.contains(0) { matchType = "6v6" }
+
+        var genderType = "mixed"
+        if selectedOptions.contains(2) { genderType = "male" }
+        else if selectedOptions.contains(3) { genderType = "female" }
+        else if selectedOptions.contains(4) { genderType = "mixed" }
+
+        var shoesRequirement = "any"
+        if selectedOptions.contains(5) { shoesRequirement = "indoor" }
+        else if selectedOptions.contains(6) { shoesRequirement = "cleats" }
+
+        let hasFormerPlayer = selectedOptions.contains(7)
+
+        // 가격 파싱
+        let feeText = priceTextField.text ?? "0"
+        let fee = Int(feeText.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)) ?? 0
+
+        // MatchCreationData 생성
+        let matchData = MatchCreationData(
+            date: date,
+            location: placeText,
+            address: placeText,
+            latitude: nil,
+            longitude: nil,
+            matchType: matchType,
+            genderType: genderType,
+            shoesRequirement: shoesRequirement,
+            hasFormerPlayer: hasFormerPlayer,
+            fee: fee
+        )
+
+        // SecondTeamRecruitmentViewController로 전달
         let secondViewController = SecondTeamRecruitmentViewController()
+        secondViewController.matchCreationData = matchData
         navigationController?.pushViewController(secondViewController, animated: true)
     }
 
@@ -454,6 +491,15 @@ extension FirstTeamRecruitmentViewController: RecruitmentCalendarViewDelegate {
         // 선택된 날짜와 시간을 표시
         dateTimeLabel.text = selectedDate
         dateTimeLabel.textColor = .black // 선택된 경우 검은색으로 변경
+
+        // Date 객체로 파싱 (format: "yyyy년 MM월 dd일 HH:mm")
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        if let parsedDate = dateFormatter.date(from: selectedDate) {
+            self.selectedDate = parsedDate
+        }
+
         view.removeFromSuperview()
     }
 }

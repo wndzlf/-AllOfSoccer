@@ -13,6 +13,77 @@ struct APIService {
     
     private let baseURL = "http://localhost:3000"
 
+    // MARK: - Email Sign-In
+    func emailSignIn(email: String, password: String, completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/auth/signin") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "password": password]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let signInResponse = try JSONDecoder().decode(AppleSignInResponse.self, from: data)
+                    completion(.success(signInResponse))
+                } catch {
+                    print("이메일 로그인 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func emailSignUp(email: String, password: String, name: String, completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/auth/signup") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "password": password, "name": name]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let signUpResponse = try JSONDecoder().decode(AppleSignInResponse.self, from: data)
+                    completion(.success(signUpResponse))
+                } catch {
+                    print("회원가입 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
     // MARK: - Apple Sign-In
     func appleSignIn(appleId: String, email: String?, name: String?,
                      completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {
@@ -122,6 +193,226 @@ struct APIService {
         }
     }
     
+    // 매칭 생성
+    func createMatch(data: MatchCreationData, completion: @escaping (Result<CreateMatchResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        // ISO 8601 날짜 포맷
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime]
+        let dateString = dateFormatter.string(from: data.date)
+
+        var body: [String: Any] = [
+            "title": "\(data.location) \(data.matchType) 경기",
+            "description": data.teamIntroduction ?? "",
+            "date": dateString,
+            "location": data.location,
+            "match_type": data.matchType,
+            "gender_type": data.genderType,
+            "shoes_requirement": data.shoesRequirement,
+            "fee": data.fee,
+            "has_former_player": data.hasFormerPlayer
+        ]
+
+        if let address = data.address { body["address"] = address }
+        if let latitude = data.latitude { body["latitude"] = latitude }
+        if let longitude = data.longitude { body["longitude"] = longitude }
+        if let teamName = data.teamName { body["team_name"] = teamName }
+        if let ageMin = data.ageRangeMin { body["age_range_min"] = ageMin }
+        if let ageMax = data.ageRangeMax { body["age_range_max"] = ageMax }
+        if let skillMin = data.skillLevelMin { body["skill_level_min"] = skillMin }
+        if let skillMax = data.skillLevelMax { body["skill_level_max"] = skillMax }
+        if let intro = data.teamIntroduction { body["team_introduction"] = intro }
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { responseData, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let responseData = responseData else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let createResponse = try JSONDecoder().decode(CreateMatchResponse.self, from: responseData)
+                    completion(.success(createResponse))
+                } catch {
+                    print("매칭 생성 응답 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: responseData, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // 매칭 상세 조회
+    func getMatchDetail(matchId: String, completion: @escaping (Result<MatchDetail, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches/\(matchId)") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MatchDetailResponse.self, from: data)
+                    if let matchDetail = response.data {
+                        completion(.success(matchDetail))
+                    } else {
+                        completion(.failure(NetworkError.noData))
+                    }
+                } catch {
+                    print("매칭 상세 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // 매칭 참가 신청
+    func applyForMatch(matchId: String, completion: @escaping (Result<ApplyMatchResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches/\(matchId)/apply") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(ApplyMatchResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("참가 신청 응답 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // 매칭 참가 취소
+    func cancelMatchApplication(matchId: String, completion: @escaping (Result<CancelMatchResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches/\(matchId)/apply") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(CancelMatchResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("참가 취소 응답 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // 내가 등록한 매칭 목록 가져오기
+    func getMyMatches(page: Int? = nil, limit: Int? = nil, completion: @escaping (Result<MatchListResponse, Error>) -> Void) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/matches/my/created")!
+
+        var queryItems: [URLQueryItem] = []
+        if let page = page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
+        if let limit = limit { queryItems.append(URLQueryItem(name: "limit", value: "\(limit)")) }
+        urlComponents.queryItems = queryItems.isEmpty ? nil : queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MatchListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("내가 등록한 매칭 목록 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
     // 매칭 목록 가져오기
     func getMatches(
         page: Int? = nil,

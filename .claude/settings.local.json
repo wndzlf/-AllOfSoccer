@@ -6,7 +6,10 @@
       "Bash(npm install)",
       "Bash(npm run dev:*)",
       "Bash(curl:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(pod install:*)",
+      "Bash(ls:*)"
     ]
   }
 }

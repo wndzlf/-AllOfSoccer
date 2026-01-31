@@ -1,13 +1,13 @@
 //
-//  LoginViewController.swift
+//  SignUpViewController.swift
 //  AllOfSoccer
 //
-//  Created by 최원석 on 2021/06/13.
+//  Created by Assistant
 //
 
 import UIKit
 
-class SignInViewController: UIViewController {
+class SignUpViewController: UIViewController {
 
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -22,14 +22,24 @@ class SignInViewController: UIViewController {
         return view
     }()
 
-    private let logoLabel: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "AllOfSoccer"
-        label.font = UIFont.boldSystemFont(ofSize: 32)
-        label.textColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        label.text = "회원가입"
+        label.font = UIFont.boldSystemFont(ofSize: 28)
+        label.textColor = .black
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+    }()
+
+    private let nameTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "이름"
+        textField.borderStyle = .roundedRect
+        textField.autocapitalizationType = .words
+        textField.autocorrectionType = .no
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
     }()
 
     private let emailTextField: UITextField = {
@@ -45,7 +55,7 @@ class SignInViewController: UIViewController {
 
     private let passwordTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "비밀번호"
+        textField.placeholder = "비밀번호 (6자 이상)"
         textField.borderStyle = .roundedRect
         textField.isSecureTextEntry = true
         textField.autocapitalizationType = .none
@@ -54,22 +64,24 @@ class SignInViewController: UIViewController {
         return textField
     }()
 
-    private let loginButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("로그인", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
-        button.layer.cornerRadius = 8
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    private let confirmPasswordTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "비밀번호 확인"
+        textField.borderStyle = .roundedRect
+        textField.isSecureTextEntry = true
+        textField.autocapitalizationType = .none
+        textField.autocorrectionType = .no
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
     }()
 
     private let signupButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("회원가입", for: .normal)
-        button.setTitleColor(UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitle("가입하기", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        button.layer.cornerRadius = 8
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -85,14 +97,16 @@ class SignInViewController: UIViewController {
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .white
+        title = "회원가입"
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
-        contentView.addSubview(logoLabel)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(nameTextField)
         contentView.addSubview(emailTextField)
         contentView.addSubview(passwordTextField)
-        contentView.addSubview(loginButton)
+        contentView.addSubview(confirmPasswordTextField)
         contentView.addSubview(signupButton)
 
         NSLayoutConstraint.activate([
@@ -107,32 +121,38 @@ class SignInViewController: UIViewController {
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
 
-            logoLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 100),
-            logoLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
+            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
 
-            emailTextField.topAnchor.constraint(equalTo: logoLabel.bottomAnchor, constant: 60),
-            emailTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            emailTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+            nameTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
+            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+            nameTextField.heightAnchor.constraint(equalToConstant: 50),
+
+            emailTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 16),
+            emailTextField.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            emailTextField.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
             emailTextField.heightAnchor.constraint(equalToConstant: 50),
 
             passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
-            passwordTextField.leadingAnchor.constraint(equalTo: emailTextField.leadingAnchor),
-            passwordTextField.trailingAnchor.constraint(equalTo: emailTextField.trailingAnchor),
+            passwordTextField.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            passwordTextField.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50),
 
-            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 24),
-            loginButton.leadingAnchor.constraint(equalTo: emailTextField.leadingAnchor),
-            loginButton.trailingAnchor.constraint(equalTo: emailTextField.trailingAnchor),
-            loginButton.heightAnchor.constraint(equalToConstant: 50),
+            confirmPasswordTextField.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 16),
+            confirmPasswordTextField.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            confirmPasswordTextField.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
+            confirmPasswordTextField.heightAnchor.constraint(equalToConstant: 50),
 
-            signupButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 16),
-            signupButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            signupButton.topAnchor.constraint(equalTo: confirmPasswordTextField.bottomAnchor, constant: 32),
+            signupButton.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            signupButton.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
+            signupButton.heightAnchor.constraint(equalToConstant: 50),
             signupButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -40)
         ])
     }
 
     private func setupActions() {
-        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         signupButton.addTarget(self, action: #selector(signupButtonTapped), for: .touchUpInside)
     }
 
@@ -142,43 +162,50 @@ class SignInViewController: UIViewController {
     }
 
     // MARK: - Actions
-    @objc private func loginButtonTapped() {
+    @objc private func signupButtonTapped() {
+        guard let name = nameTextField.text, !name.isEmpty else {
+            showAlert(message: "이름을 입력해주세요.")
+            return
+        }
+
         guard let email = emailTextField.text, !email.isEmpty else {
             showAlert(message: "이메일을 입력해주세요.")
             return
         }
 
-        guard let password = passwordTextField.text, !password.isEmpty else {
-            showAlert(message: "비밀번호를 입력해주세요.")
+        guard let password = passwordTextField.text, password.count >= 6 else {
+            showAlert(message: "비밀번호는 6자 이상이어야 합니다.")
             return
         }
 
-        loginButton.isEnabled = false
-        loginButton.setTitle("로그인 중...", for: .normal)
+        guard let confirmPassword = confirmPasswordTextField.text, password == confirmPassword else {
+            showAlert(message: "비밀번호가 일치하지 않습니다.")
+            return
+        }
 
-        APIService.shared.emailSignIn(email: email, password: password) { [weak self] result in
-            self?.loginButton.isEnabled = true
-            self?.loginButton.setTitle("로그인", for: .normal)
+        signupButton.isEnabled = false
+        signupButton.setTitle("가입 중...", for: .normal)
+
+        APIService.shared.emailSignUp(email: email, password: password, name: name) { [weak self] result in
+            self?.signupButton.isEnabled = true
+            self?.signupButton.setTitle("가입하기", for: .normal)
 
             switch result {
             case .success(let response):
                 if response.success, let data = response.data {
                     Auth.updateAcceessToken(token: data.accessToken)
                     Auth.updateRefreshToken(token: data.refreshToken)
-                    self?.navigateToMainScreen()
+                    self?.showAlert(message: "회원가입이 완료되었습니다!") {
+                        self?.navigateToMainScreen()
+                    }
                 } else {
-                    self?.showAlert(message: response.message ?? "로그인에 실패했습니다.")
+                    self?.showAlert(message: response.message ?? "회원가입에 실패했습니다.")
                 }
             case .failure(let error):
-                print("로그인 실패: \(error)")
+                print("회원가입 실패: \(error)")
                 self?.showAlert(message: "서버 연결에 실패했습니다.")
             }
         }
-    }
-
-    @objc private func signupButtonTapped() {
-        let signupVC = SignUpViewController()
-        navigationController?.pushViewController(signupVC, animated: true)
     }
 
     @objc private func dismissKeyboard() {
@@ -195,9 +222,11 @@ class SignInViewController: UIViewController {
         window.makeKeyAndVisible()
     }
 
-    private func showAlert(message: String) {
+    private func showAlert(message: String, completion: (() -> Void)? = nil) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            completion?()
+        })
         present(alert, animated: true)
     }
 }

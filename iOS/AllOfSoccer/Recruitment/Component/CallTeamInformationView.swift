@@ -180,17 +180,18 @@ extension CallTeamInformationView: UITableViewDataSource {
 }
 
 extension CallTeamInformationView: CallTeamInformationTableViewCellDelegate {
-    
+
     internal func didSelect(teamInfo: TeamInfo) {
 
-        guard let find = self.teamInfo.filter { $0.index ==  teamInfo.index }.first else {
+        guard let selectedIndex = self.teamInfo.firstIndex(where: { $0.index == teamInfo.index }) else {
             return
         }
 
-        if find.isSelected {
-            let another = self.teamInfo.filter { $0.index != teamInfo.index}
-            another.forEach { $0.isSelected = false }
-        }
+        // 모든 항목 선택 해제
+        self.teamInfo.forEach { $0.isSelected = false }
+
+        // 선택한 항목만 선택 처리
+        self.teamInfo[selectedIndex].isSelected = true
 
         self.tableView.reloadData()
     }

@@ -41,6 +41,28 @@ struct UserProfile: Codable {
         case appleId = "apple_id"
         case isActive = "is_active"
     }
+
+    // Mock 데이터용 간편 이니셜라이저
+    init(id: String, name: String, profileImage: String?, appleId: String? = nil, isActive: Bool? = nil) {
+        self.id = id
+        self.email = nil
+        self.name = name
+        self.phone = nil
+        self.profileImage = profileImage
+        self.appleId = appleId
+        self.isActive = isActive
+    }
+
+    // 전체 파라미터 이니셜라이저 (Codable 자동 생성 대체)
+    init(id: String, email: String?, name: String, phone: String?, profileImage: String?, appleId: String?, isActive: Bool?) {
+        self.id = id
+        self.email = email
+        self.name = name
+        self.phone = phone
+        self.profileImage = profileImage
+        self.appleId = appleId
+        self.isActive = isActive
+    }
 }
 
 // MARK: - Profile Response
@@ -237,7 +259,7 @@ enum MatchStatus: String, CaseIterable {
     case confirmed = "confirmed"
     case completed = "completed"
     case cancelled = "cancelled"
-    
+
     var displayName: String {
         switch self {
         case .recruiting: return "모집중"
@@ -246,4 +268,151 @@ enum MatchStatus: String, CaseIterable {
         case .cancelled: return "취소"
         }
     }
+}
+
+// MARK: - Match Creation
+struct MatchCreationData {
+    // FirstTeamRecruitmentViewController에서 수집
+    let date: Date
+    let location: String
+    let address: String?
+    let latitude: String?
+    let longitude: String?
+    let matchType: String // "6v6" or "11v11"
+    let genderType: String // "male", "female", "mixed"
+    let shoesRequirement: String // "cleats", "indoor", "any"
+    let hasFormerPlayer: Bool
+    let fee: Int
+
+    // SecondTeamRecruitmentViewController에서 수집
+    var teamName: String?
+    var ageRangeMin: Int?
+    var ageRangeMax: Int?
+    var skillLevelMin: String?
+    var skillLevelMax: String?
+    var teamIntroduction: String?
+    var contactInfo: String?
+}
+
+struct CreateMatchResponse: Codable {
+    let success: Bool
+    let data: Match?
+    let message: String?
+}
+
+// MARK: - Match Detail
+struct MatchDetailResponse: Codable {
+    let success: Bool
+    let data: MatchDetail?
+    let message: String?
+}
+
+struct MatchDetail: Codable {
+    let id: String
+    let title: String
+    let description: String?
+    let date: String
+    let location: String
+    let address: String?
+    let latitude: String?
+    let longitude: String?
+    let fee: Int
+    let maxParticipants: Int
+    let currentParticipants: Int
+    let matchType: String
+    let genderType: String
+    let shoesRequirement: String
+    let ageRangeMin: Int?
+    let ageRangeMax: Int?
+    let skillLevelMin: String?
+    let skillLevelMax: String?
+    let teamIntroduction: String?
+    let mercenaryRecruitmentCount: Int?
+    let isOpponentMatched: Bool?
+    let hasFormerPlayer: Bool?
+    let status: String
+    let isActive: Bool
+    let teamId: String?
+    let createdAt: String
+    let updatedAt: String
+    let team: Team?
+    let matchParticipants: [MatchParticipant]?
+    let comments: [MatchComment]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, description, date, location, address, latitude, longitude, fee
+        case maxParticipants = "max_participants"
+        case currentParticipants = "current_participants"
+        case matchType = "match_type"
+        case genderType = "gender_type"
+        case shoesRequirement = "shoes_requirement"
+        case ageRangeMin = "age_range_min"
+        case ageRangeMax = "age_range_max"
+        case skillLevelMin = "skill_level_min"
+        case skillLevelMax = "skill_level_max"
+        case teamIntroduction = "team_introduction"
+        case mercenaryRecruitmentCount = "mercenary_recruitment_count"
+        case isOpponentMatched = "is_opponent_matched"
+        case hasFormerPlayer = "has_former_player"
+        case status, isActive = "is_active"
+        case teamId = "team_id"
+        case createdAt, updatedAt
+        case team = "Team"
+        case matchParticipants = "MatchParticipants"
+        case comments = "Comments"
+    }
+}
+
+struct MatchParticipant: Codable {
+    let id: String
+    let matchId: String
+    let userId: String
+    let teamId: String?
+    let status: String
+    let createdAt: String
+    let updatedAt: String
+    let user: UserProfile?
+    let team: Team?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case matchId = "match_id"
+        case userId = "user_id"
+        case teamId = "team_id"
+        case status, createdAt, updatedAt
+        case user = "User"
+        case team = "Team"
+    }
+}
+
+struct MatchComment: Codable {
+    let id: String
+    let content: String
+    let userId: String
+    let teamId: String?
+    let type: String
+    let orderIndex: Int?
+    let createdAt: String
+    let updatedAt: String
+    let user: UserProfile?
+
+    enum CodingKeys: String, CodingKey {
+        case id, content, type, createdAt, updatedAt
+        case userId = "user_id"
+        case teamId = "team_id"
+        case orderIndex = "order_index"
+        case user = "User"
+    }
+}
+
+// MARK: - Match Participation
+struct ApplyMatchResponse: Codable {
+    let success: Bool
+    let data: MatchParticipant?
+    let message: String?
+}
+
+struct CancelMatchResponse: Codable {
+    let success: Bool
+    let message: String?
 } 

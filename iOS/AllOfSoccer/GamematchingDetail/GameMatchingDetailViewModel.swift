@@ -48,27 +48,122 @@ class GameMatchingDetailViewModel {
     
     // MARK: - Properties
     private var match: Match?
-    
+    private var matchDetail: MatchDetail?
+    private var matchId: String?
+
     // MARK: - Public Properties
     var data: GameMatchingDetailData {
+        if let detail = matchDetail {
+            return convertMatchDetailToDetailData(detail)
+        }
         return convertMatchToDetailData(match)
     }
-    
+
+    var participants: [MatchParticipant] {
+        return matchDetail?.matchParticipants ?? []
+    }
+
+    var isUserParticipating: Bool {
+        // 현재 로그인한 사용자가 참가 중인지 확인
+        // 실제로는 사용자 ID를 비교해야 하지만, 현재는 참가자 목록이 있는지만 확인
+        return matchDetail?.matchParticipants?.contains(where: { $0.status == "confirmed" }) ?? false
+    }
+
     // MARK: - Initialization
     init(match: Match? = nil) {
         self.match = match
+        self.matchId = match?.id
     }
-    
+
+    init(matchId: String) {
+        self.matchId = matchId
+    }
+
     // MARK: - Data Management
     func setMatch(_ match: Match) {
         self.match = match
+        self.matchId = match.id
     }
-    
+
     func getMatch() -> Match? {
         return match
     }
+
+    func getMatchId() -> String? {
+        return matchId
+    }
+
+    // MARK: - Server Data Fetch
+    func fetchLatestData(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let matchId = matchId else {
+            completion(.failure(NetworkError.noData))
+            return
+        }
+
+        APIService.shared.getMatchDetail(matchId: matchId) { [weak self] result in
+            switch result {
+            case .success(let detail):
+                self?.matchDetail = detail
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
     
     // MARK: - Data Conversion
+    private func convertMatchDetailToDetailData(_ detail: MatchDetail) -> GameMatchingDetailData {
+        // 날짜 파싱 (ISO 8601 형식)
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        var date = dateFormatter.date(from: detail.date)
+        if date == nil {
+            dateFormatter.formatOptions = [.withInternetDateTime]
+            date = dateFormatter.date(from: detail.date)
+        }
+
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "yyyy-MM-dd (E) HH:mm"
+        displayFormatter.locale = Locale(identifier: "ko_KR")
+        let displayDate = displayFormatter.string(from: date ?? Date())
+
+        // 참가비 형식 변환
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let feeAmount = numberFormatter.string(from: NSNumber(value: detail.fee)) ?? "0"
+
+        // 경기 형식 아이템 생성
+        let formatItems = createFormatItemsFromDetail(detail)
+
+        // 나이대 정보
+        let ageRange = createAgeRange(min: detail.ageRangeMin, max: detail.ageRangeMax)
+
+        // 실력 정보
+        let skillLevel = createSkillLevel(min: detail.skillLevelMin, max: detail.skillLevelMax)
+
+        // 유니폼 정보 (기본값)
+        let uniformInfo = UniformInfo(topUniform: [
+            UniformItem(iconName: "tshirt.fill", color: UIColor(red: 0.8, green: 0.2, blue: 0.2, alpha: 1.0))
+        ])
+
+        // 연락처 정보
+        let contactNumber = detail.team?.captain?.name != nil ? "010-1234-5678" : "연락처 정보 없음"
+
+        return GameMatchingDetailData(
+            date: displayDate,
+            location: detail.location,
+            address: detail.address ?? "주소 정보 없음",
+            feeAmount: "\(feeAmount)원",
+            formatItems: formatItems,
+            teamName: detail.team?.name ?? "팀 정보 없음",
+            ageRange: ageRange,
+            skillLevel: skillLevel,
+            uniformInfo: uniformInfo,
+            contactNumber: contactNumber,
+            noteText: detail.teamIntroduction ?? "상세 정보가 없습니다."
+        )
+    }
+
     private func convertMatchToDetailData(_ match: Match?) -> GameMatchingDetailData {
         guard let match = match else {
             // 기본값 반환
@@ -136,13 +231,43 @@ class GameMatchingDetailViewModel {
         )
     }
     
+    private func createFormatItemsFromDetail(_ detail: MatchDetail) -> [FormatItem] {
+        var items: [FormatItem] = []
+
+        // 경기 형식
+        let matchTypeTitle = detail.matchType == "11v11" ? "11 vs 11" : "6 vs 6"
+        items.append(FormatItem(title: matchTypeTitle, iconName: "person.3.fill"))
+
+        // 성별
+        let genderTitle: String
+        switch detail.genderType {
+        case "male": genderTitle = "남성 매치"
+        case "female": genderTitle = "여성 매치"
+        case "mixed": genderTitle = "혼성 매치"
+        default: genderTitle = "성별 제한 없음"
+        }
+        items.append(FormatItem(title: genderTitle, iconName: "person.fill"))
+
+        // 신발 요구사항
+        let shoesTitle: String
+        switch detail.shoesRequirement {
+        case "cleats": shoesTitle = "축구화"
+        case "indoor": shoesTitle = "실내화"
+        case "any": shoesTitle = "신발 제한 없음"
+        default: shoesTitle = "신발 제한 없음"
+        }
+        items.append(FormatItem(title: shoesTitle, iconName: "figure.soccer"))
+
+        return items
+    }
+
     private func createFormatItems(from match: Match) -> [FormatItem] {
         var items: [FormatItem] = []
-        
+
         // 경기 형식
-        let matchTypeTitle = match.matchType == "11 vs 11" ? "11 vs 11" : "6 vs 6"
+        let matchTypeTitle = match.matchType == "11v11" || match.matchType == "11 vs 11" ? "11 vs 11" : "6 vs 6"
         items.append(FormatItem(title: matchTypeTitle, iconName: "person.3.fill"))
-        
+
         // 성별
         let genderTitle: String
         switch match.genderType {
@@ -152,7 +277,7 @@ class GameMatchingDetailViewModel {
         default: genderTitle = "성별 제한 없음"
         }
         items.append(FormatItem(title: genderTitle, iconName: "person.fill"))
-        
+
         // 신발 요구사항
         let shoesTitle: String
         switch match.shoesRequirement {
@@ -162,7 +287,7 @@ class GameMatchingDetailViewModel {
         default: shoesTitle = "신발 제한 없음"
         }
         items.append(FormatItem(title: shoesTitle, iconName: "figure.soccer"))
-        
+
         return items
     }
     

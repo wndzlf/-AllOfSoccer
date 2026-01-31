@@ -19,8 +19,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             window.rootViewController = storyboard.instantiateInitialViewController()
         } else {
-            let storyboard = UIStoryboard(name: "SignIn", bundle: nil)
-            window.rootViewController = storyboard.instantiateInitialViewController()
+            // 코드로 로그인 화면 생성 (Storyboard IBOutlet 에러 회피)
+            let signInVC = SignInViewController()
+            let navigationController = UINavigationController(rootViewController: signInVC)
+            window.rootViewController = navigationController
         }
 
         self.window = window

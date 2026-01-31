@@ -3,6 +3,9 @@ import RangeSeekSlider
 
 class SecondTeamRecruitmentViewController: UIViewController {
 
+    // FirstTeamRecruitmentViewController에서 전달받은 데이터
+    var matchCreationData: MatchCreationData?
+
     private var tableViewModel: [Comment] = []
     private var isDirectInputMode = false
     private let directInputTextView: UITextView = {
@@ -472,9 +475,71 @@ class SecondTeamRecruitmentViewController: UIViewController {
     }
 
     @objc func registerTeamInformationTouchUp(_ sender: UIButton) {
-        let deleteTeamInformationView = DeleteTeamInformationView()
-        deleteTeamInformationView.delegate = self
-        subviewConstraints(view: deleteTeamInformationView)
+        // FirstVC에서 전달받은 데이터 확인
+        guard var data = matchCreationData else {
+            showAlert(message: "매칭 정보가 없습니다. 이전 화면에서 다시 시작해주세요.")
+            return
+        }
+
+        // 팀 이름 확인
+        guard let teamName = teamNameTextField.text, !teamName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showAlert(message: "팀 이름을 입력해주세요.")
+            return
+        }
+
+        // 나머지 데이터 수집
+        data.teamName = teamName
+        data.ageRangeMin = Int(ageRangeSlider.selectedMinValue)
+        data.ageRangeMax = Int(ageRangeSlider.selectedMaxValue)
+
+        // 스킬 레벨 변환 (0-6 슬라이더 값 -> 문자열)
+        let skillLevels = ["beginner", "beginner", "intermediate", "intermediate", "advanced", "advanced", "expert"]
+        let skillIndex = Int(skillSlider.value)
+        data.skillLevelMin = skillLevels[min(skillIndex, skillLevels.count - 1)]
+        data.skillLevelMax = data.skillLevelMin
+
+        // 팀 소개 수집 (테이블뷰 또는 직접입력)
+        if isDirectInputMode {
+            data.teamIntroduction = directInputTextView.text
+        } else {
+            let introTexts = tableViewModel.map { $0.content }
+            data.teamIntroduction = introTexts.joined(separator: "\n")
+        }
+
+        // 연락처
+        data.contactInfo = contactTextField.text
+
+        // 로딩 인디케이터 표시
+        sender.isEnabled = false
+        sender.setTitle("등록 중...", for: .normal)
+
+        // API 호출
+        APIService.shared.createMatch(data: data) { [weak self] result in
+            sender.isEnabled = true
+            sender.setTitle("등록하기", for: .normal)
+
+            switch result {
+            case .success(let response):
+                if response.success {
+                    self?.showAlert(message: "매칭이 성공적으로 등록되었습니다!") {
+                        // 메인 화면으로 복귀
+                        self?.navigationController?.popToRootViewController(animated: true)
+                    }
+                } else {
+                    self?.showAlert(message: response.message ?? "매칭 등록에 실패했습니다.")
+                }
+            case .failure(let error):
+                self?.showAlert(message: "네트워크 오류: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func showAlert(message: String, completion: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            completion?()
+        })
+        present(alert, animated: true)
     }
 
     @objc func skillSliderValueChanged(_ sender: UISlider) {
