@@ -243,12 +243,12 @@ class RecruitmentCalendarView: UIView {
             self.monthPrevButton.topAnchor.constraint(equalTo: calendar.topAnchor, constant: 5),
             self.monthPrevButton.leadingAnchor.constraint(equalTo: calendar.leadingAnchor, constant: 2),
             self.monthPrevButton.widthAnchor.constraint(equalToConstant: 14),
-            self.monthPrevButton.widthAnchor.constraint(equalToConstant: 14),
+            self.monthPrevButton.heightAnchor.constraint(equalToConstant: 14),
 
             self.monthNextButton.topAnchor.constraint(equalTo: calendar.topAnchor, constant: 5),
             self.monthNextButton.trailingAnchor.constraint(equalTo: calendar.trailingAnchor, constant: -2),
             self.monthNextButton.widthAnchor.constraint(equalToConstant: 14),
-            self.monthNextButton.widthAnchor.constraint(equalToConstant: 14)
+            self.monthNextButton.heightAnchor.constraint(equalToConstant: 14)
         ])
     }
 
