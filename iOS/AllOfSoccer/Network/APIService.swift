@@ -538,4 +538,232 @@ extension APIService {
             completion(.failure(error))
         }
     }
+
+    // MARK: - Mercenary Requests
+    func getMercenaryRequests(
+        page: Int = 1,
+        limit: Int = 20,
+        location: String? = nil,
+        skillLevel: String? = nil,
+        status: String? = nil,
+        completion: @escaping (Result<MercenaryRequestListResponse, Error>) -> Void
+    ) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/mercenary-requests")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+
+        if let location = location { queryItems.append(URLQueryItem(name: "location", value: location)) }
+        if let skillLevel = skillLevel { queryItems.append(URLQueryItem(name: "skill_level", value: skillLevel)) }
+        if let status = status { queryItems.append(URLQueryItem(name: "status", value: status)) }
+
+        urlComponents.queryItems = queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 모집 목록 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func createMercenaryRequest(
+        title: String,
+        description: String?,
+        date: String,
+        location: String,
+        address: String?,
+        fee: Int,
+        mercenaryCount: Int,
+        positionsNeeded: [String: Int],
+        skillLevelMin: String?,
+        skillLevelMax: String?,
+        teamName: String?,
+        completion: @escaping (Result<MercenaryRequestResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body: [String: Any] = [
+            "title": title,
+            "date": date,
+            "location": location,
+            "fee": fee,
+            "mercenary_count": mercenaryCount,
+            "positions_needed": positionsNeeded
+        ]
+
+        if let description = description { body["description"] = description }
+        if let address = address { body["address"] = address }
+        if let skillLevelMin = skillLevelMin { body["skill_level_min"] = skillLevelMin }
+        if let skillLevelMax = skillLevelMax { body["skill_level_max"] = skillLevelMax }
+        if let teamName = teamName { body["team_name"] = teamName }
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 모집 생성 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // MARK: - Mercenary Applications
+    func getMercenaryApplications(
+        page: Int = 1,
+        limit: Int = 20,
+        skillLevel: String? = nil,
+        status: String? = nil,
+        completion: @escaping (Result<MercenaryApplicationListResponse, Error>) -> Void
+    ) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/mercenary-applications")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+
+        if let skillLevel = skillLevel { queryItems.append(URLQueryItem(name: "skill_level", value: skillLevel)) }
+        if let status = status { queryItems.append(URLQueryItem(name: "status", value: status)) }
+
+        urlComponents.queryItems = queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryApplicationListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 지원 목록 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func createMercenaryApplication(
+        title: String,
+        description: String?,
+        availableDates: [String],
+        preferredLocations: [String],
+        positions: [String],
+        skillLevel: String,
+        preferredFeeMin: Int?,
+        preferredFeeMax: Int?,
+        completion: @escaping (Result<MercenaryApplicationResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-applications") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body: [String: Any] = [
+            "title": title,
+            "available_dates": availableDates,
+            "preferred_locations": preferredLocations,
+            "positions": positions,
+            "skill_level": skillLevel
+        ]
+
+        if let description = description { body["description"] = description }
+        if let preferredFeeMin = preferredFeeMin { body["preferred_fee_min"] = preferredFeeMin }
+        if let preferredFeeMax = preferredFeeMax { body["preferred_fee_max"] = preferredFeeMax }
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryApplicationResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 지원 생성 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
 }

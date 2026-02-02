@@ -416,4 +416,94 @@ struct ApplyMatchResponse: Codable {
 struct CancelMatchResponse: Codable {
     let success: Bool
     let message: String?
-} 
+}
+
+// MARK: - Mercenary Request Models
+struct MercenaryRequestListResponse: Codable {
+    let success: Bool
+    let data: [MercenaryRequest]
+    let pagination: PaginationInfo
+}
+
+struct MercenaryRequestResponse: Codable {
+    let success: Bool
+    let data: MercenaryRequest
+    let message: String?
+}
+
+struct MercenaryRequest: Codable, Identifiable {
+    let id: String
+    let teamId: String?
+    let title: String
+    let description: String?
+    let date: String
+    let location: String
+    let address: String?
+    let latitude: Double?
+    let longitude: Double?
+    let fee: Int
+    let mercenaryCount: Int
+    let positionsNeeded: [String: Int]
+    let skillLevelMin: String?
+    let skillLevelMax: String?
+    let currentApplicants: Int
+    let status: String
+    let team: Team?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, description, date, location, address, fee, status, team
+        case teamId = "team_id"
+        case latitude, longitude
+        case mercenaryCount = "mercenary_count"
+        case positionsNeeded = "positions_needed"
+        case skillLevelMin = "skill_level_min"
+        case skillLevelMax = "skill_level_max"
+        case currentApplicants = "current_applicants"
+    }
+}
+
+// MARK: - Mercenary Application Models
+struct MercenaryApplicationListResponse: Codable {
+    let success: Bool
+    let data: [MercenaryApplication]
+    let pagination: PaginationInfo
+}
+
+struct MercenaryApplicationResponse: Codable {
+    let success: Bool
+    let data: MercenaryApplication
+    let message: String?
+}
+
+struct MercenaryApplication: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let title: String
+    let description: String?
+    let availableDates: [String]
+    let preferredLocations: [String]
+    let positions: [String]
+    let skillLevel: String
+    let preferredFeeMin: Int?
+    let preferredFeeMax: Int?
+    let status: String
+    let user: UserProfile?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, description, positions, status, user
+        case userId = "user_id"
+        case availableDates = "available_dates"
+        case preferredLocations = "preferred_locations"
+        case skillLevel = "skill_level"
+        case preferredFeeMin = "preferred_fee_min"
+        case preferredFeeMax = "preferred_fee_max"
+    }
+}
+
+// MARK: - Pagination Info
+struct PaginationInfo: Codable {
+    let page: Int
+    let limit: Int
+    let total: Int
+    let total_pages: Int
+}

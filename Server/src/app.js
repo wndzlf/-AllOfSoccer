@@ -20,6 +20,8 @@ const matchRoutes = require('./routes/matches');
 const chatRoutes = require('./routes/chats');
 const notificationRoutes = require('./routes/notifications');
 const uploadRoutes = require('./routes/uploads');
+const mercenaryRequestRoutes = require('./routes/mercenaryRequests');
+const mercenaryApplicationRoutes = require('./routes/mercenaryApplications');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -74,6 +76,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 app.use('/api/teams', authMiddleware, teamRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/mercenary-requests', mercenaryRequestRoutes);
+app.use('/api/mercenary-applications', mercenaryApplicationRoutes);
 app.use('/api/chats', authMiddleware, chatRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/uploads', authMiddleware, uploadRoutes);
