@@ -42,26 +42,17 @@ struct UserProfile: Codable {
         case isActive = "is_active"
     }
 
-    // Mock 데이터용 간편 이니셜라이저
-    init(id: String, name: String, profileImage: String?, appleId: String? = nil, isActive: Bool? = nil) {
-        self.id = id
-        self.email = nil
-        self.name = name
-        self.phone = nil
-        self.profileImage = profileImage
-        self.appleId = appleId
-        self.isActive = isActive
-    }
-
-    // 전체 파라미터 이니셜라이저 (Codable 자동 생성 대체)
-    init(id: String, email: String?, name: String, phone: String?, profileImage: String?, appleId: String?, isActive: Bool?) {
-        self.id = id
-        self.email = email
-        self.name = name
-        self.phone = phone
-        self.profileImage = profileImage
-        self.appleId = appleId
-        self.isActive = isActive
+    // Mock 데이터용 static factory method
+    static func mock(id: String, name: String, profileImage: String? = nil, appleId: String? = nil, isActive: Bool? = nil) -> UserProfile {
+        return UserProfile(
+            id: id,
+            email: nil,
+            name: name,
+            phone: nil,
+            profileImage: profileImage,
+            appleId: appleId,
+            isActive: isActive
+        )
     }
 }
 
@@ -157,19 +148,21 @@ struct Team: Codable {
         case isActive = "is_active"
     }
 
-    // Mock 데이터용 간편 이니셜라이저
-    init(id: String, name: String, logo: String?, captain: UserProfile?) {
-        self.id = id
-        self.name = name
-        self.description = nil
-        self.logo = logo
-        self.captainId = nil
-        self.ageRangeMin = nil
-        self.ageRangeMax = nil
-        self.skillLevel = nil
-        self.introduction = nil
-        self.isActive = nil
-        self.captain = captain
+    // Mock 데이터용 static factory method
+    static func mock(id: String, name: String, logo: String?, captain: UserProfile?) -> Team {
+        return Team(
+            id: id,
+            name: name,
+            description: nil,
+            logo: logo,
+            captainId: nil,
+            ageRangeMin: nil,
+            ageRangeMax: nil,
+            skillLevel: nil,
+            introduction: nil,
+            isActive: nil,
+            captain: captain
+        )
     }
 }
 
