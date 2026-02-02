@@ -424,7 +424,8 @@ class MercenaryRequestViewController: UIViewController {
         let recruitmentCalendarView = RecruitmentCalendarView()
         recruitmentCalendarView.delegate = self
         guard let navigationController = self.navigationController else { return }
-        navigationController.view.addsubviews(recruitmentCalendarView)
+        recruitmentCalendarView.translatesAutoresizingMaskIntoConstraints = false
+        navigationController.view.addSubview(recruitmentCalendarView)
         NSLayoutConstraint.activate([
             recruitmentCalendarView.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
             recruitmentCalendarView.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
