@@ -9,7 +9,8 @@
       "Bash(python3:*)",
       "Bash(xcodebuild:*)",
       "Bash(pod install:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)"
     ]
   }
 }
