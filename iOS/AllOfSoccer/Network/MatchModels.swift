@@ -154,26 +154,22 @@ struct Match: Codable {
         case team
     }
 
-    // 편의 initializer (기본값 제공)
+    // 편의 initializer (GameMatchingViewModel과의 호출 순서와 일치)
     init(
         id: String,
         title: String,
+        description: String? = nil,
         date: String,
         location: String,
+        address: String? = nil,
+        latitude: String? = nil,
+        longitude: String? = nil,
         fee: Int,
         maxParticipants: Int,
         currentParticipants: Int,
         matchType: String,
         genderType: String,
         shoesRequirement: String,
-        status: String,
-        isActive: Bool,
-        createdAt: String,
-        updatedAt: String,
-        description: String? = nil,
-        address: String? = nil,
-        latitude: String? = nil,
-        longitude: String? = nil,
         ageRangeMin: Int? = nil,
         ageRangeMax: Int? = nil,
         skillLevelMin: String? = nil,
@@ -182,7 +178,11 @@ struct Match: Codable {
         mercenaryRecruitmentCount: Int? = nil,
         isOpponentMatched: Bool? = nil,
         hasFormerPlayer: Bool? = nil,
+        status: String,
+        isActive: Bool,
         teamId: String? = nil,
+        createdAt: String,
+        updatedAt: String,
         team: Team? = nil
     ) {
         self.id = id
