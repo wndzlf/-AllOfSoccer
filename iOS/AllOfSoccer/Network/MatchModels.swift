@@ -153,6 +153,72 @@ struct Match: Codable {
         case updatedAt = "updated_at"
         case team
     }
+
+    // Decodable 명시적 구현
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        date = try container.decode(String.self, forKey: .date)
+        location = try container.decode(String.self, forKey: .location)
+        address = try container.decodeIfPresent(String.self, forKey: .address)
+        latitude = try container.decodeIfPresent(String.self, forKey: .latitude)
+        longitude = try container.decodeIfPresent(String.self, forKey: .longitude)
+        fee = try container.decode(Int.self, forKey: .fee)
+        maxParticipants = try container.decode(Int.self, forKey: .maxParticipants)
+        currentParticipants = try container.decode(Int.self, forKey: .currentParticipants)
+        matchType = try container.decode(String.self, forKey: .matchType)
+        genderType = try container.decode(String.self, forKey: .genderType)
+        shoesRequirement = try container.decode(String.self, forKey: .shoesRequirement)
+        ageRangeMin = try container.decodeIfPresent(Int.self, forKey: .ageRangeMin)
+        ageRangeMax = try container.decodeIfPresent(Int.self, forKey: .ageRangeMax)
+        skillLevelMin = try container.decodeIfPresent(String.self, forKey: .skillLevelMin)
+        skillLevelMax = try container.decodeIfPresent(String.self, forKey: .skillLevelMax)
+        teamIntroduction = try container.decodeIfPresent(String.self, forKey: .teamIntroduction)
+        mercenaryRecruitmentCount = try container.decodeIfPresent(Int.self, forKey: .mercenaryRecruitmentCount)
+        isOpponentMatched = try container.decodeIfPresent(Bool.self, forKey: .isOpponentMatched)
+        hasFormerPlayer = try container.decodeIfPresent(Bool.self, forKey: .hasFormerPlayer)
+        status = try container.decode(String.self, forKey: .status)
+        isActive = try container.decode(Bool.self, forKey: .isActive)
+        teamId = try container.decodeIfPresent(String.self, forKey: .teamId)
+        createdAt = try container.decode(String.self, forKey: .createdAt)
+        updatedAt = try container.decode(String.self, forKey: .updatedAt)
+        team = try container.decodeIfPresent(Team.self, forKey: .team)
+    }
+
+    // Encodable 명시적 구현
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encode(date, forKey: .date)
+        try container.encode(location, forKey: .location)
+        try container.encodeIfPresent(address, forKey: .address)
+        try container.encodeIfPresent(latitude, forKey: .latitude)
+        try container.encodeIfPresent(longitude, forKey: .longitude)
+        try container.encode(fee, forKey: .fee)
+        try container.encode(maxParticipants, forKey: .maxParticipants)
+        try container.encode(currentParticipants, forKey: .currentParticipants)
+        try container.encode(matchType, forKey: .matchType)
+        try container.encode(genderType, forKey: .genderType)
+        try container.encode(shoesRequirement, forKey: .shoesRequirement)
+        try container.encodeIfPresent(ageRangeMin, forKey: .ageRangeMin)
+        try container.encodeIfPresent(ageRangeMax, forKey: .ageRangeMax)
+        try container.encodeIfPresent(skillLevelMin, forKey: .skillLevelMin)
+        try container.encodeIfPresent(skillLevelMax, forKey: .skillLevelMax)
+        try container.encodeIfPresent(teamIntroduction, forKey: .teamIntroduction)
+        try container.encodeIfPresent(mercenaryRecruitmentCount, forKey: .mercenaryRecruitmentCount)
+        try container.encodeIfPresent(isOpponentMatched, forKey: .isOpponentMatched)
+        try container.encodeIfPresent(hasFormerPlayer, forKey: .hasFormerPlayer)
+        try container.encode(status, forKey: .status)
+        try container.encode(isActive, forKey: .isActive)
+        try container.encodeIfPresent(teamId, forKey: .teamId)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encodeIfPresent(team, forKey: .team)
+    }
 }
 
 // MARK: - Team

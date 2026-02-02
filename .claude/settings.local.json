@@ -16,7 +16,9 @@
       "Bash(xmllint:*)",
       "Bash(node:*)",
       "Bash(swiftc -parse:*)",
-      "Bash(swiftc:*)"
+      "Bash(swiftc:*)",
+      "Bash(while read file)",
+      "Bash(do echo \"=== $file ===\" grep -n \"Team\\(\\\\|UserProfile\\(\" \"$file\")"
     ]
   }
 }
