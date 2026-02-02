@@ -10,7 +10,8 @@
       "Bash(xcodebuild:*)",
       "Bash(pod install:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git add:*)"
     ]
   }
 }

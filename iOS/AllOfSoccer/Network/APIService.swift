@@ -10,8 +10,10 @@ import Foundation
 struct APIService {
 
     static let shared = APIService()
-    
-    private let baseURL = "http://localhost:3000"
+
+    // 로컬 개발 환경: 맥 IP 주소로 설정
+    // 프로덕션: 실제 서버 주소로 변경
+    private let baseURL = "http://172.30.1.76:3000"
 
     // MARK: - Email Sign-In
     func emailSignIn(email: String, password: String, completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {

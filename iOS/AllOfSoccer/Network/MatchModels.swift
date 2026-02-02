@@ -128,8 +128,9 @@ struct Match: Codable {
         case hasFormerPlayer = "has_former_player"
         case status, isActive = "is_active"
         case teamId = "team_id"
-        case createdAt, updatedAt
-        case team = "Team"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case team
     }
 }
 
