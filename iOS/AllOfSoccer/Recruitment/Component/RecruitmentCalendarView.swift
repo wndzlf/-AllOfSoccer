@@ -28,6 +28,7 @@ class RecruitmentCalendarView: UIView {
 
     private var baseView: UIView = {
         let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor.white
         view.layer.cornerRadius = 12
 
@@ -36,6 +37,7 @@ class RecruitmentCalendarView: UIView {
 
     private var calendar: FSCalendar = {
         let calendar = FSCalendar()
+        calendar.translatesAutoresizingMaskIntoConstraints = false
         calendar.appearance.titleWeekendColor = UIColor.red
         calendar.appearance.selectionColor = UIColor.black
         calendar.appearance.todayColor = nil
@@ -72,6 +74,7 @@ class RecruitmentCalendarView: UIView {
 
     private var timeTitleLabel: UILabel = {
         let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "시간"
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         return label
@@ -79,6 +82,7 @@ class RecruitmentCalendarView: UIView {
 
     private var monthPrevButton: UIButton = {
         let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
         let buttonImage = UIImage(systemName: "arrowtriangle.left.fill")
         button.setImage(buttonImage, for: .normal)
         button.tintColor = UIColor(red: 194.0/255.0, green: 194.0/255.0, blue: 194.0/255.0, alpha: 1.0)
@@ -89,6 +93,7 @@ class RecruitmentCalendarView: UIView {
 
     private var monthNextButton: UIButton = {
         let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
         let buttonImage = UIImage(systemName: "arrowtriangle.right.fill")
         button.setImage(buttonImage, for: .normal)
         button.tintColor = UIColor(red: 194.0/255.0, green: 194.0/255.0, blue: 194.0/255.0, alpha: 1.0)
@@ -99,6 +104,7 @@ class RecruitmentCalendarView: UIView {
 
     private var cancelButton: UIButton = {
         let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("취소", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         button.setTitleColor(UIColor.black, for: .normal)
@@ -114,6 +120,7 @@ class RecruitmentCalendarView: UIView {
 
     private var okButton: UIButton = {
         let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("선택", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         button.setTitleColor(UIColor.white, for: .normal)
@@ -196,10 +203,17 @@ class RecruitmentCalendarView: UIView {
     }
 
     private func setViewConstraint() {
+        self.translatesAutoresizingMaskIntoConstraints = false
 
-        self.addsubviews(self.baseView)
-        self.baseView.addsubviews(self.okAndCancelStackView, self.calendar, self.timeTitleLabel, self.timePickerView)
-        self.calendar.addsubviews(self.monthPrevButton, self.monthNextButton)
+        self.addSubview(self.baseView)
+        self.baseView.translatesAutoresizingMaskIntoConstraints = false
+        self.baseView.addSubview(self.okAndCancelStackView)
+        self.baseView.addSubview(self.calendar)
+        self.baseView.addSubview(self.timeTitleLabel)
+        self.baseView.addSubview(self.timePickerView)
+        self.calendar.translatesAutoresizingMaskIntoConstraints = false
+        self.calendar.addSubview(self.monthPrevButton)
+        self.calendar.addSubview(self.monthNextButton)
 
         NSLayoutConstraint.activate([
 
