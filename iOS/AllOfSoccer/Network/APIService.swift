@@ -570,23 +570,45 @@ extension APIService {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        URLSession.shared.dataTask(with: request) { data, _, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
                     completion(.failure(error))
                     return
                 }
+
+                // Check HTTP status code
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 429 {
+                        let rateLimitError = NSError(domain: "APIService", code: 429, userInfo: [NSLocalizedDescriptionKey: "Too many requests. Please try again later."])
+                        completion(.failure(rateLimitError))
+                        return
+                    }
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
                 guard let data = data else {
                     completion(.failure(NetworkError.noData))
                     return
                 }
+
                 do {
                     let response = try JSONDecoder().decode(MercenaryRequestListResponse.self, from: data)
                     completion(.success(response))
                 } catch {
-                    print("용병 모집 목록 파싱 에러: \(error)")
-                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
-                    completion(.failure(error))
+                    // If JSON decoding fails, check if it's a plain text error response
+                    if let plainTextError = String(data: data, encoding: .utf8), plainTextError.contains("too many requests") || plainTextError.contains("Too many") {
+                        let rateLimitError = NSError(domain: "APIService", code: 429, userInfo: [NSLocalizedDescriptionKey: plainTextError])
+                        completion(.failure(rateLimitError))
+                    } else {
+                        print("용병 모집 목록 파싱 에러: \(error)")
+                        print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                        completion(.failure(error))
+                    }
                 }
             }
         }.resume()
@@ -686,23 +708,45 @@ extension APIService {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        URLSession.shared.dataTask(with: request) { data, _, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
                     completion(.failure(error))
                     return
                 }
+
+                // Check HTTP status code
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 429 {
+                        let rateLimitError = NSError(domain: "APIService", code: 429, userInfo: [NSLocalizedDescriptionKey: "Too many requests. Please try again later."])
+                        completion(.failure(rateLimitError))
+                        return
+                    }
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
                 guard let data = data else {
                     completion(.failure(NetworkError.noData))
                     return
                 }
+
                 do {
                     let response = try JSONDecoder().decode(MercenaryApplicationListResponse.self, from: data)
                     completion(.success(response))
                 } catch {
-                    print("용병 지원 목록 파싱 에러: \(error)")
-                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
-                    completion(.failure(error))
+                    // If JSON decoding fails, check if it's a plain text error response
+                    if let plainTextError = String(data: data, encoding: .utf8), plainTextError.contains("too many requests") || plainTextError.contains("Too many") {
+                        let rateLimitError = NSError(domain: "APIService", code: 429, userInfo: [NSLocalizedDescriptionKey: plainTextError])
+                        completion(.failure(rateLimitError))
+                    } else {
+                        print("용병 지원 목록 파싱 에러: \(error)")
+                        print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                        completion(.failure(error))
+                    }
                 }
             }
         }.resume()

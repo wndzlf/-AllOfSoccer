@@ -63,7 +63,8 @@ class MercenaryMatchViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        fetchData()
+        // viewDidLoad에서 이미 데이터를 로드하므로 여기서는 호출하지 않음
+        // 무한 재귀 호출 방지
     }
 
     // MARK: - Setup
