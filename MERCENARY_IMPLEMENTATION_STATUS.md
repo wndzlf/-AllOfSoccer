@@ -283,6 +283,32 @@ curl "http://172.30.1.76:3000/api/mercenary-applications?page=1&limit=20"
    - 해결: 동일한 카드 스타일로 통일 (cornerRadius 16, shadowOpacity 0.08)
    - 결과: 앱의 일관성 향상
 
+3. **무한 재귀 호출 및 요청 제한 에러** (2026-02-02 해결)
+   - **문제**:
+     - `MercenaryMatchViewController.viewWillAppear()`에서 `fetchData()` 반복 호출
+     - 서버에서 "Too many requests from this IP" 일반 텍스트 응답
+     - JSON 파싱 실패로 인한 `dataCorrupted` 에러
+     - 무한 재귀 호출 발생
+   - **원인**:
+     - viewWillAppear가 매번 뷰 표시 시 fetchData() 호출
+     - 서버 요청 제한(429) 응답이 일반 텍스트로 반환됨
+     - APIService가 JSON 파싱만 시도하고 일반 텍스트 처리 부재
+   - **해결**:
+     1. `MercenaryMatchViewController.viewWillAppear()` - fetchData() 호출 제거
+        - 데이터는 viewDidLoad에서 한 번만 로드
+        - 주석: "viewDidLoad에서 이미 데이터를 로드하므로 여기서는 호출하지 않음"
+     2. `APIService.getMercenaryRequests()` - 에러 처리 강화
+        - HTTP 상태 코드 확인 추가 (429, 4xx, 5xx)
+        - 429 상태 코드 시 명확한 NSError 생성
+        - JSON 파싱 실패 시 일반 텍스트 응답 감지
+        - "too many requests" 포함된 텍스트는 rate limiting 에러로 변환
+     3. `APIService.getMercenaryApplications()` - 동일한 에러 처리 적용
+   - **결과**:
+     - ✅ 무한 재귀 호출 중단
+     - ✅ rate limiting 에러 명확히 처리
+     - ✅ 사용자에게 "너무 많은 요청. 잠시 후 다시 시도하세요" 메시지 표시
+     - ✅ 일반 텍스트 응답 더 이상 JSON 파싱 실패 없음
+
 ### 기능적 개선 필요
 1. **필터링**
    - 현재: 기본적인 필터링만 구현
