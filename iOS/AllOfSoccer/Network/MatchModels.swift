@@ -154,6 +154,67 @@ struct Match: Codable {
         case team
     }
 
+    // 편의 initializer (기본값 제공)
+    init(
+        id: String,
+        title: String,
+        date: String,
+        location: String,
+        fee: Int,
+        maxParticipants: Int,
+        currentParticipants: Int,
+        matchType: String,
+        genderType: String,
+        shoesRequirement: String,
+        status: String,
+        isActive: Bool,
+        createdAt: String,
+        updatedAt: String,
+        description: String? = nil,
+        address: String? = nil,
+        latitude: String? = nil,
+        longitude: String? = nil,
+        ageRangeMin: Int? = nil,
+        ageRangeMax: Int? = nil,
+        skillLevelMin: String? = nil,
+        skillLevelMax: String? = nil,
+        teamIntroduction: String? = nil,
+        mercenaryRecruitmentCount: Int? = nil,
+        isOpponentMatched: Bool? = nil,
+        hasFormerPlayer: Bool? = nil,
+        teamId: String? = nil,
+        team: Team? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.date = date
+        self.location = location
+        self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
+        self.fee = fee
+        self.maxParticipants = maxParticipants
+        self.currentParticipants = currentParticipants
+        self.matchType = matchType
+        self.genderType = genderType
+        self.shoesRequirement = shoesRequirement
+        self.ageRangeMin = ageRangeMin
+        self.ageRangeMax = ageRangeMax
+        self.skillLevelMin = skillLevelMin
+        self.skillLevelMax = skillLevelMax
+        self.teamIntroduction = teamIntroduction
+        self.mercenaryRecruitmentCount = mercenaryRecruitmentCount
+        self.isOpponentMatched = isOpponentMatched
+        self.hasFormerPlayer = hasFormerPlayer
+        self.status = status
+        self.isActive = isActive
+        self.teamId = teamId
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.team = team
+    }
+
     // Decodable 명시적 구현
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
