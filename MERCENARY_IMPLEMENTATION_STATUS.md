@@ -112,6 +112,30 @@
 
 ---
 
+## 🔄 최근 업데이트 (2026-02-02)
+
+### API 통합 완료
+- `MercenaryRequestViewController.swift` - 실제 API 호출 구현
+  - `APIService.shared.createMercenaryRequest()` 통합
+  - 로딩 상태 표시 (버튼 비활성화, "등록 중..." 표시)
+  - 에러 처리 및 사용자 피드백 추가
+  - 등록 성공 후 자동으로 리스트 화면으로 복귀
+
+### UI 일관성 개선
+- `MercenaryMatchTableViewCell.swift` - GameMatchingTableViewCell과 동일한 스타일로 통일
+  - cornerRadius: 8 → 16 (더 둥근 코너)
+  - shadowOpacity: 0.1 → 0.08 (더 은은한 그림자)
+  - shadowOffset, shadowRadius 조정
+  - 상태 배지 추가 (모집 중/모집 완료/구인 중/매칭됨/불가능)
+  - 패딩 및 마진 개선 (16pt 통일)
+  - 색상 일관성: Purple (모집/구인) / Green (완료/매칭)
+
+### 리스트 자동 갱신
+- `MercenaryMatchViewController.swift` - viewWillAppear에서 fetchData() 호출
+- 새로운 항목 등록 후 리스트 화면 복귀 시 자동 갱신
+
+---
+
 ## ⚠️ 테스트 필요 사항
 
 ### 백엔드 테스트
@@ -162,32 +186,42 @@ curl "http://172.30.1.76:3000/api/mercenary-applications?page=1&limit=20"
 
 ## 🔧 알려진 문제 및 개선 사항
 
-### 즉시 수정 필요
-1. **MercenaryMatchViewModel의 APIService 호출**
-   - 현재: ViewModel에서 APIService 메서드 호출
-   - 문제: Codable 모델이 ViewModel에 정의되어 있음
-   - 해결: MatchModels.swift의 모델을 ViewModel에서 사용하도록 수정
+### ✅ 해결된 이슈
+1. **API 미통합** (2026-02-02 해결)
+   - 문제: MercenaryRequestViewController에서 API 호출 부재
+   - 해결: APIService.shared.createMercenaryRequest() 통합
+   - 결과: 용병 모집 등록이 정상 작동
 
-2. **SourceKit 오류**
-   - 원인: Xcode 캐시 문제
-   - 해결: Xcode 재시작 또는 `Derived Data` 폴더 삭제
+2. **UI 불일관성** (2026-02-02 해결)
+   - 문제: MercenaryMatchTableViewCell이 GameMatchingTableViewCell과 다른 스타일
+   - 해결: 동일한 카드 스타일로 통일 (cornerRadius 16, shadowOpacity 0.08)
+   - 결과: 앱의 일관성 향상
 
 ### 기능적 개선 필요
 1. **필터링**
    - 현재: 기본적인 필터링만 구현
    - 필요: 위치, 실력, 날짜 범위로 필터링
+   - 우선순위: 중간
 
 2. **상세 보기**
-   - 현재: 미구현
+   - 현재: 미구현 (TODO 주석 있음)
    - 필요: 용병 모집/지원 상세 페이지
+   - 우선순위: 중간
 
 3. **매칭**
    - 현재: 미구현
    - 필요: 모집글에 지원하기, 지원자 승인 기능
+   - 우선순위: 높음
 
 4. **마이 페이지**
    - 현재: 미구현
    - 필요: 내가 올린 모집글, 내가 지원한 글 관리
+   - 우선순위: 중간
+
+5. **용병 지원 작성 화면**
+   - 현재: MercenaryApplicationViewController 구현됨
+   - 필요: 상세 UI 개선, 실제 사용자 선호도 데이터 입력
+   - 우선순위: 낮음
 
 ---
 
@@ -217,11 +251,13 @@ curl "http://172.30.1.76:3000/api/mercenary-applications?page=1&limit=20"
 - [x] APIService 메서드 추가
 - [x] 모델 정의
 
-### Phase 6: 테스트 및 버그 수정 (🔄 진행 중)
-- [ ] 백엔드 API 테스트
-- [ ] iOS 앱 플로우 테스트
-- [ ] 버그 수정
-- [ ] UI/UX 개선
+### Phase 6: 테스트 및 버그 수정 (✅ 부분 완료)
+- [x] API 통합 완료
+- [x] UI 일관성 개선
+- [x] 자동 갱신 기능 확인
+- [ ] 백엔드 API 전체 테스트 (필터링, 페이징 등)
+- [ ] 매칭 기능 구현 및 테스트
+- [ ] 마이페이지 통합
 
 ---
 
@@ -269,5 +305,11 @@ curl "http://172.30.1.76:3000/api/mercenary-applications?page=1&limit=20"
 
 ---
 
-**최종 업데이트**: 2026-02-02
-**상태**: 🔄 테스트 진행 중
+**최종 업데이트**: 2026-02-02 (API 통합 & UI 개선 완료)
+**상태**: ✅ 핵심 기능 완성 (매칭/마이페이지는 개발 중)
+
+### 주요 변경사항
+- ✅ API 호출 통합 (용병 모집 등록 정상 작동)
+- ✅ UI 일관성 개선 (GameMatchingTableViewCell과 동일 스타일)
+- ✅ 상태 배지 추가 (모집 중/완료, 구인 중/매칭됨/불가능)
+- ✅ 자동 갱신 기능 (viewWillAppear에서 데이터 재로드)

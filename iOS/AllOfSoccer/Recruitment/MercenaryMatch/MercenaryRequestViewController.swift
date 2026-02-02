@@ -254,25 +254,41 @@ class MercenaryRequestViewController: UIViewController {
         let positions = positionSelector.getSelectedPositions()
         let (minLevel, maxLevel) = skillSelector.getSelectedLevels()
 
-        let requestData: [String: Any] = [
-            "title": title,
-            "description": descriptionTextView.text != "상세 내용을 입력하세요" ? descriptionTextView.text ?? "" : "",
-            "date": datePicker.date.toISO8601String(),
-            "location": location,
-            "fee": fee,
-            "mercenary_count": count,
-            "positions_needed": positions,
-            "skill_level_min": minLevel,
-            "skill_level_max": maxLevel,
-            "team_name": "팀"
-        ]
+        let description = descriptionTextView.text != "상세 내용을 입력하세요" ? descriptionTextView.text ?? "" : ""
 
-        // TODO: Call API to create mercenary request
-        print("Submitting mercenary request:", requestData)
-        showAlert("성공", "용병 모집이 등록되었습니다")
+        // Show loading state
+        submitButton.isEnabled = false
+        let originalTitle = submitButton.titleLabel?.text
+        submitButton.setTitle("등록 중...", for: .normal)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.navigationController?.popViewController(animated: true)
+        // Call API to create mercenary request
+        APIService.shared.createMercenaryRequest(
+            title: title,
+            description: description.isEmpty ? nil : description,
+            date: datePicker.date.toISO8601String(),
+            location: location,
+            address: nil,
+            fee: fee,
+            mercenaryCount: count,
+            positionsNeeded: positions,
+            skillLevelMin: minLevel,
+            skillLevelMax: maxLevel,
+            teamName: nil
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.submitButton.isEnabled = true
+                self?.submitButton.setTitle(originalTitle ?? "등록하기", for: .normal)
+
+                switch result {
+                case .success:
+                    self?.showAlert("성공", "용병 모집이 등록되었습니다")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        self?.navigationController?.popViewController(animated: true)
+                    }
+                case .failure(let error):
+                    self?.showAlert("오류", "용병 모집 등록에 실패했습니다: \(error.localizedDescription)")
+                }
+            }
         }
     }
 
