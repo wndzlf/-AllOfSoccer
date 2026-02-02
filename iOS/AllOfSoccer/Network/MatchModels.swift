@@ -619,7 +619,7 @@ struct MercenaryRequestListResponse: Codable {
 
 struct MercenaryRequestResponse: Codable {
     let success: Bool
-    let data: MercenaryRequest
+    let data: MercenaryRequest?
     let message: String?
 }
 

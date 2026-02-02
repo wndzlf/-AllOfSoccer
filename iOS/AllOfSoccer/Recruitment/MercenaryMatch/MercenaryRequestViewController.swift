@@ -81,14 +81,6 @@ class MercenaryRequestViewController: UIViewController {
         return label
     }()
 
-    private let datePicker: UIDatePicker = {
-        let picker = UIDatePicker()
-        picker.translatesAutoresizingMaskIntoConstraints = false
-        picker.preferredDatePickerStyle = .wheels
-        picker.minimumDate = Date()
-        return picker
-    }()
-
     private let placeView = RoundView()
     private let locationImageView: UIImageView = {
         let imageView = UIImageView()
@@ -245,11 +237,6 @@ class MercenaryRequestViewController: UIViewController {
         placeView.addSubview(locationImageView)
         placeView.addSubview(locationTextField)
 
-        // Hidden date picker (for selection)
-        contentView.addSubview(datePicker)
-        datePicker.alpha = 0
-        datePicker.isHidden = true
-
         // Section 3: Fee & Count
         contentView.addSubview(feeCountLabel)
         contentView.addSubview(feeView)
@@ -353,14 +340,6 @@ class MercenaryRequestViewController: UIViewController {
             locationTextField.centerYAnchor.constraint(equalTo: placeView.centerYAnchor)
         ])
 
-        // Hidden date picker
-        NSLayoutConstraint.activate([
-            datePicker.topAnchor.constraint(equalTo: contentView.topAnchor),
-            datePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            datePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            datePicker.heightAnchor.constraint(equalToConstant: 0)
-        ])
-
         // Section 3: Fee & Count
         NSLayoutConstraint.activate([
             feeCountLabel.topAnchor.constraint(equalTo: placeView.bottomAnchor, constant: 24),
@@ -429,12 +408,9 @@ class MercenaryRequestViewController: UIViewController {
         submitButton.addTarget(self, action: #selector(submitButtonTapped), for: .touchUpInside)
         descriptionTextView.delegate = self
 
-        // Add tap gesture for date/time view
+        // Add tap gesture for date/time view to open calendar
         let dateTimeTap = UITapGestureRecognizer(target: self, action: #selector(dateTimeViewTapped))
         dateTimeView.addGestureRecognizer(dateTimeTap)
-
-        // Update date label when date picker changes
-        datePicker.addTarget(self, action: #selector(datePickerChanged), for: .valueChanged)
 
         // Keyboard dismissal
         dismissKeyboard()
@@ -445,25 +421,16 @@ class MercenaryRequestViewController: UIViewController {
     }
 
     @objc private func dateTimeViewTapped() {
-        updateDateLabel()
-    }
-
-    @objc private func datePickerChanged() {
-        updateDateLabel()
-    }
-
-    private func updateDateLabel() {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
-        dateFormatter.locale = Locale(identifier: "ko_KR")
-        let dateString = dateFormatter.string(from: datePicker.date)
-        dateTimeLabel.text = dateString
-        dateTimeLabel.textColor = .black
-        selectedDate = datePicker.date
-
-        // Log the date being selected
-        print("Selected date: \(dateString)")
-        print("ISO8601 format: \(datePicker.date.toISO8601String())")
+        let recruitmentCalendarView = RecruitmentCalendarView()
+        recruitmentCalendarView.delegate = self
+        guard let navigationController = self.navigationController else { return }
+        navigationController.view.addsubviews(recruitmentCalendarView)
+        NSLayoutConstraint.activate([
+            recruitmentCalendarView.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
+            recruitmentCalendarView.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
+            recruitmentCalendarView.trailingAnchor.constraint(equalTo: navigationController.view.trailingAnchor, constant: 0),
+            recruitmentCalendarView.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
+        ])
     }
 
     @objc private func submitButtonTapped() {
@@ -507,7 +474,7 @@ class MercenaryRequestViewController: UIViewController {
         let originalTitle = submitButton.titleLabel?.text
         submitButton.setTitle("등록 중...", for: .normal)
 
-        let dateString = datePicker.date.toISO8601String()
+        let dateString = selectedDate?.toISO8601String() ?? ""
         print("Submitting with date: \(dateString)")
         print("Positions: \(positions)")
 
@@ -523,7 +490,7 @@ class MercenaryRequestViewController: UIViewController {
             positionsNeeded: positions,
             skillLevelMin: minLevel,
             skillLevelMax: maxLevel,
-            teamName: nil
+            teamName: "개인 모집"
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.submitButton.isEnabled = true
@@ -580,6 +547,30 @@ extension MercenaryRequestViewController {
     }
 }
 
+// MARK: - RecruitmentCalendarViewDelegate
+extension MercenaryRequestViewController: RecruitmentCalendarViewDelegate {
+    func cancelButtonDidSelected(_ view: RecruitmentCalendarView) {
+        view.removeFromSuperview()
+    }
+
+    func okButtonDidSelected(_ view: RecruitmentCalendarView, selectedDate: String) {
+        // 선택된 날짜와 시간을 표시
+        dateTimeLabel.text = selectedDate
+        dateTimeLabel.textColor = .black
+
+        // Date 객체로 파싱 (format: "yyyy년 MM월 dd일 HH:mm")
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        if let parsedDate = dateFormatter.date(from: selectedDate) {
+            self.selectedDate = parsedDate
+        }
+
+        view.removeFromSuperview()
+    }
+}
+
+// MARK: - Keyboard Handling
 extension MercenaryRequestViewController {
     private func addKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
