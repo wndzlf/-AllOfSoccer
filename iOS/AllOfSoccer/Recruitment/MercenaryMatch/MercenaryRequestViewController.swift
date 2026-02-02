@@ -423,15 +423,7 @@ class MercenaryRequestViewController: UIViewController {
     @objc private func dateTimeViewTapped() {
         let recruitmentCalendarView = RecruitmentCalendarView()
         recruitmentCalendarView.delegate = self
-        guard let navigationController = self.navigationController else { return }
-        recruitmentCalendarView.translatesAutoresizingMaskIntoConstraints = false
-        navigationController.view.addSubview(recruitmentCalendarView)
-        NSLayoutConstraint.activate([
-            recruitmentCalendarView.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
-            recruitmentCalendarView.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
-            recruitmentCalendarView.trailingAnchor.constraint(equalTo: navigationController.view.trailingAnchor, constant: 0),
-            recruitmentCalendarView.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
-        ])
+        addSubviewWithConstraints(view: recruitmentCalendarView)
     }
 
     @objc private func submitButtonTapped() {
@@ -515,6 +507,17 @@ class MercenaryRequestViewController: UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+
+    private func addSubviewWithConstraints(view: UIView) {
+        guard let navigationController = self.navigationController else { return }
+        navigationController.view.addSubview(view)
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: navigationController.view.topAnchor, constant: 0),
+            view.leadingAnchor.constraint(equalTo: navigationController.view.leadingAnchor, constant: 0),
+            view.trailingAnchor.constraint(equalTo: navigationController.view.trailingAnchor, constant: 0),
+            view.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
+        ])
     }
 }
 
