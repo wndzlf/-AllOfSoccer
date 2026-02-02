@@ -42,17 +42,47 @@ struct UserProfile: Codable {
         case isActive = "is_active"
     }
 
-    // Mock 데이터용 static factory method
-    static func mock(id: String, name: String, profileImage: String? = nil, appleId: String? = nil, isActive: Bool? = nil) -> UserProfile {
-        return UserProfile(
-            id: id,
-            email: nil,
-            name: name,
-            phone: nil,
-            profileImage: profileImage,
-            appleId: appleId,
-            isActive: isActive
-        )
+    // 편의 initializer (기본값 제공)
+    init(
+        id: String,
+        name: String,
+        profileImage: String? = nil,
+        email: String? = nil,
+        phone: String? = nil,
+        appleId: String? = nil,
+        isActive: Bool? = nil
+    ) {
+        self.id = id
+        self.email = email
+        self.name = name
+        self.phone = phone
+        self.profileImage = profileImage
+        self.appleId = appleId
+        self.isActive = isActive
+    }
+
+    // Decodable 명시적 구현
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        email = try container.decodeIfPresent(String.self, forKey: .email)
+        name = try container.decode(String.self, forKey: .name)
+        phone = try container.decodeIfPresent(String.self, forKey: .phone)
+        profileImage = try container.decodeIfPresent(String.self, forKey: .profileImage)
+        appleId = try container.decodeIfPresent(String.self, forKey: .appleId)
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive)
+    }
+
+    // Encodable 명시적 구현
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(email, forKey: .email)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(phone, forKey: .phone)
+        try container.encodeIfPresent(profileImage, forKey: .profileImage)
+        try container.encodeIfPresent(appleId, forKey: .appleId)
+        try container.encodeIfPresent(isActive, forKey: .isActive)
     }
 }
 
@@ -148,21 +178,63 @@ struct Team: Codable {
         case isActive = "is_active"
     }
 
-    // Mock 데이터용 static factory method
-    static func mock(id: String, name: String, logo: String?, captain: UserProfile?) -> Team {
-        return Team(
-            id: id,
-            name: name,
-            description: nil,
-            logo: logo,
-            captainId: nil,
-            ageRangeMin: nil,
-            ageRangeMax: nil,
-            skillLevel: nil,
-            introduction: nil,
-            isActive: nil,
-            captain: captain
-        )
+    // 편의 initializer (기본값 제공)
+    init(
+        id: String,
+        name: String,
+        logo: String? = nil,
+        captain: UserProfile? = nil,
+        description: String? = nil,
+        captainId: String? = nil,
+        ageRangeMin: Int? = nil,
+        ageRangeMax: Int? = nil,
+        skillLevel: String? = nil,
+        introduction: String? = nil,
+        isActive: Bool? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.logo = logo
+        self.captainId = captainId
+        self.ageRangeMin = ageRangeMin
+        self.ageRangeMax = ageRangeMax
+        self.skillLevel = skillLevel
+        self.introduction = introduction
+        self.isActive = isActive
+        self.captain = captain
+    }
+
+    // Decodable 명시적 구현
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        logo = try container.decodeIfPresent(String.self, forKey: .logo)
+        captainId = try container.decodeIfPresent(String.self, forKey: .captainId)
+        ageRangeMin = try container.decodeIfPresent(Int.self, forKey: .ageRangeMin)
+        ageRangeMax = try container.decodeIfPresent(Int.self, forKey: .ageRangeMax)
+        skillLevel = try container.decodeIfPresent(String.self, forKey: .skillLevel)
+        introduction = try container.decodeIfPresent(String.self, forKey: .introduction)
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive)
+        captain = try container.decodeIfPresent(UserProfile.self, forKey: .captain)
+    }
+
+    // Encodable 명시적 구현
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(logo, forKey: .logo)
+        try container.encodeIfPresent(captainId, forKey: .captainId)
+        try container.encodeIfPresent(ageRangeMin, forKey: .ageRangeMin)
+        try container.encodeIfPresent(ageRangeMax, forKey: .ageRangeMax)
+        try container.encodeIfPresent(skillLevel, forKey: .skillLevel)
+        try container.encodeIfPresent(introduction, forKey: .introduction)
+        try container.encodeIfPresent(isActive, forKey: .isActive)
+        try container.encodeIfPresent(captain, forKey: .captain)
     }
 }
 
