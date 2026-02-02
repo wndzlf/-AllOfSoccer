@@ -12,17 +12,68 @@ class MercenaryMatchViewController: UIViewController {
     private let viewModel = MercenaryMatchViewModel()
 
     // MARK: - UI Components
-    private let segmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["용병 모집", "용병 지원"])
-        control.translatesAutoresizingMaskIntoConstraints = false
-        control.selectedSegmentIndex = 0
-        return control
+    private let filterStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.distribution = .fill
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.backgroundColor = .systemBackground
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        stack.isLayoutMarginsRelativeArrangement = true
+        return stack
+    }()
+
+    private let monthButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.setImage(UIImage(systemName: "calendar"), for: .normal)
+        button.semanticContentAttribute = .forceRightToLeft
+        button.tintColor = .black
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        return button
+    }()
+
+    private let locationButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("장소 ▼", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        button.backgroundColor = UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+        button.layer.cornerRadius = 6
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        return button
+    }()
+
+    private let skillButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("실력 ▼", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        button.backgroundColor = UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+        button.layer.cornerRadius = 6
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        return button
+    }()
+
+    private let resetButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
+        button.tintColor = .black
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        return button
     }()
 
     private let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        table.backgroundColor = .systemBackground
         table.separatorStyle = .none
         table.estimatedRowHeight = 140
         table.rowHeight = UITableView.automaticDimension
@@ -40,21 +91,21 @@ class MercenaryMatchViewController: UIViewController {
         return button
     }()
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .medium)
-        indicator.translatesAutoresizingMaskIntoConstraints = false
-        indicator.hidesWhenStopped = true
-        return indicator
-    }()
-
-    // MARK: - Variables
-    private var currentDataType: MercenaryMatchViewModel.DataType = .request
+    // MARK: - Filter Variables
+    private var selectedDate: Date?
+    private var selectedLocation: String?
+    private var selectedSkillLevel: String?
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
         title = "용병 모집"
+        navigationController?.navigationBar.titleTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor.black,
+            NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18, weight: .semibold)
+        ]
+
         setupUI()
         setupTableView()
         setupActions()
@@ -67,32 +118,39 @@ class MercenaryMatchViewController: UIViewController {
         // 무한 재귀 호출 방지
     }
 
-    // MARK: - Setup
+    // MARK: - Setup UI
     private func setupUI() {
-        view.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
-
-        // Segmented Control as title view
-        navigationItem.titleView = segmentedControl
+        view.backgroundColor = .systemBackground
 
         // Add subviews
+        view.addSubview(filterStackView)
+        filterStackView.addArrangedSubview(monthButton)
+        filterStackView.addArrangedSubview(locationButton)
+        filterStackView.addArrangedSubview(skillButton)
+        filterStackView.addArrangedSubview(resetButton)
+
         view.addSubview(tableView)
         view.addSubview(createButton)
-        view.addSubview(loadingIndicator)
 
         // Constraints
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            // Filter Stack
+            filterStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            filterStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            filterStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            filterStackView.heightAnchor.constraint(equalToConstant: 50),
+
+            // TableView
+            tableView.topAnchor.constraint(equalTo: filterStackView.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
+            // Create Button
             createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             createButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             createButton.widthAnchor.constraint(equalToConstant: 80),
-            createButton.heightAnchor.constraint(equalToConstant: 50),
-
-            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            createButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 
@@ -103,40 +161,89 @@ class MercenaryMatchViewController: UIViewController {
     }
 
     private func setupActions() {
-        segmentedControl.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
+        monthButton.addTarget(self, action: #selector(monthButtonTapped), for: .touchUpInside)
+        locationButton.addTarget(self, action: #selector(locationButtonTapped), for: .touchUpInside)
+        skillButton.addTarget(self, action: #selector(skillButtonTapped), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetFilterButtonTapped), for: .touchUpInside)
         createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
     }
 
     // MARK: - Actions
-    @objc private func segmentChanged() {
-        currentDataType = segmentedControl.selectedSegmentIndex == 0 ? .request : .application
-        tableView.setContentOffset(.zero, animated: false)
-        tableView.reloadData()
+    @objc private func monthButtonTapped() {
+        let calendarView = RecruitmentCalendarView()
+        calendarView.delegate = self
+        view.addSubview(calendarView)
+        calendarView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            calendarView.topAnchor.constraint(equalTo: view.topAnchor),
+            calendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            calendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            calendarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+
+    @objc private func locationButtonTapped() {
+        showLocationPicker()
+    }
+
+    @objc private func skillButtonTapped() {
+        showSkillLevelPicker()
+    }
+
+    @objc private func resetFilterButtonTapped() {
+        selectedDate = nil
+        selectedLocation = nil
+        selectedSkillLevel = nil
+        monthButton.setTitle("2월", for: .normal)
+        locationButton.setTitle("장소 ▼", for: .normal)
+        skillButton.setTitle("실력 ▼", for: .normal)
         fetchData()
     }
 
     @objc private func createButtonTapped() {
-        if segmentedControl.selectedSegmentIndex == 0 {
-            // 용병 모집하기
-            let requestVC = MercenaryRequestViewController()
-            navigationController?.pushViewController(requestVC, animated: true)
-        } else {
-            // 용병 지원하기
-            let applicationVC = MercenaryApplicationViewController()
-            navigationController?.pushViewController(applicationVC, animated: true)
+        let requestVC = MercenaryRequestViewController()
+        navigationController?.pushViewController(requestVC, animated: true)
+    }
+
+    // MARK: - Filter Pickers
+    private func showLocationPicker() {
+        let alert = UIAlertController(title: "장소 선택", message: nil, preferredStyle: .actionSheet)
+
+        let locations = ["서울 노원구", "서울 강남구", "서울 마포구", "서울 종로구", "전체"]
+
+        for location in locations {
+            alert.addAction(UIAlertAction(title: location, style: .default) { _ in
+                self.selectedLocation = location == "전체" ? nil : location
+                self.locationButton.setTitle(location, for: .normal)
+                self.fetchData()
+            })
         }
+
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func showSkillLevelPicker() {
+        let alert = UIAlertController(title: "실력 선택", message: nil, preferredStyle: .actionSheet)
+
+        let levels = ["초급", "중급", "고급", "고수", "전체"]
+
+        for level in levels {
+            alert.addAction(UIAlertAction(title: level, style: .default) { _ in
+                self.selectedSkillLevel = level == "전체" ? nil : level
+                self.skillButton.setTitle(level, for: .normal)
+                self.fetchData()
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        present(alert, animated: true)
     }
 
     // MARK: - Data Fetching
     private func fetchData() {
-        if currentDataType == .request {
-            viewModel.fetchMercenaryRequests { [weak self] success in
-                self?.tableView.reloadData()
-            }
-        } else {
-            viewModel.fetchMercenaryApplications { [weak self] success in
-                self?.tableView.reloadData()
-            }
+        viewModel.fetchMercenaryRequests { [weak self] success in
+            self?.tableView.reloadData()
         }
     }
 
@@ -147,14 +254,34 @@ class MercenaryMatchViewController: UIViewController {
     }
 }
 
+// MARK: - RecruitmentCalendarViewDelegate
+extension MercenaryMatchViewController: RecruitmentCalendarViewDelegate {
+    func cancelButtonDidSelected(_ view: RecruitmentCalendarView) {
+        view.removeFromSuperview()
+    }
+
+    func okButtonDidSelected(_ view: RecruitmentCalendarView, selectedDate: String) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+
+        if let date = dateFormatter.date(from: selectedDate) {
+            self.selectedDate = date
+            let monthFormatter = DateFormatter()
+            monthFormatter.dateFormat = "M월"
+            monthFormatter.locale = Locale(identifier: "ko_KR")
+            monthButton.setTitle(monthFormatter.string(from: date), for: .normal)
+            fetchData()
+        }
+
+        view.removeFromSuperview()
+    }
+}
+
 // MARK: - UITableViewDelegate & DataSource
 extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if currentDataType == .request {
-            return viewModel.getRequestCount()
-        } else {
-            return viewModel.getApplicationCount()
-        }
+        return viewModel.getRequestCount()
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -162,14 +289,8 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
             return UITableViewCell()
         }
 
-        if currentDataType == .request {
-            if let request = viewModel.getRequest(at: indexPath.row) {
-                cell.configureWithRequest(request, viewModel: viewModel)
-            }
-        } else {
-            if let application = viewModel.getApplication(at: indexPath.row) {
-                cell.configureWithApplication(application, viewModel: viewModel)
-            }
+        if let request = viewModel.getRequest(at: indexPath.row) {
+            cell.configureWithRequest(request, viewModel: viewModel)
         }
 
         return cell
@@ -178,34 +299,16 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        if currentDataType == .request {
-            if let request = viewModel.getRequest(at: indexPath.row) {
-                // TODO: Navigate to mercenary request detail
-                print("선택된 용병 모집: \(request.title)")
-            }
-        } else {
-            if let application = viewModel.getApplication(at: indexPath.row) {
-                // TODO: Navigate to mercenary application detail
-                print("선택된 용병 지원: \(application.title)")
-            }
+        if let request = viewModel.getRequest(at: indexPath.row) {
+            print("선택된 용병 모집: \(request.title)")
         }
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        // Load more when reaching the end
         let requestCount = viewModel.getRequestCount()
-        let applicationCount = viewModel.getApplicationCount()
-        let currentCount = currentDataType == .request ? requestCount : applicationCount
-
-        if indexPath.row == currentCount - 1 {
-            if currentDataType == .request {
-                viewModel.loadNextPageOfRequests { [weak self] _ in
-                    self?.tableView.reloadData()
-                }
-            } else {
-                viewModel.loadNextPageOfApplications { [weak self] _ in
-                    self?.tableView.reloadData()
-                }
+        if indexPath.row == requestCount - 1 {
+            viewModel.loadNextPageOfRequests { [weak self] _ in
+                self?.tableView.reloadData()
             }
         }
     }
