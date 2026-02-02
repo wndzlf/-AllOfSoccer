@@ -18,7 +18,8 @@
       "Bash(swiftc -parse:*)",
       "Bash(swiftc:*)",
       "Bash(while read file)",
-      "Bash(do echo \"=== $file ===\" grep -n \"Team\\(\\\\|UserProfile\\(\" \"$file\")"
+      "Bash(do echo \"=== $file ===\" grep -n \"Team\\(\\\\|UserProfile\\(\" \"$file\")",
+      "Bash(lsof:*)"
     ]
   }
 }

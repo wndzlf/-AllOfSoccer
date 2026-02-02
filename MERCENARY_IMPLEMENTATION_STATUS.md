@@ -134,6 +134,13 @@
 - `MercenaryMatchViewController.swift` - viewWillAppear에서 fetchData() 호출
 - 새로운 항목 등록 후 리스트 화면 복귀 시 자동 갱신
 
+### API 요청 데이터 타입 수정 (2026-02-02 추가)
+- `SkillLevelSelectorView.swift` - 실력 레벨 데이터 타입 수정
+  - 문제: 한글 값("초급", "중급" 등)을 서버에 전송
+  - 해결: 영문 enum 값("beginner", "intermediate" 등) 사용
+  - selectedMinLevel/selectedMaxLevel을 SkillLevel enum 타입으로 변경
+  - getSelectedLevels()에서 englishValue로 변환하여 반환
+
 ---
 
 ## ⚠️ 테스트 필요 사항

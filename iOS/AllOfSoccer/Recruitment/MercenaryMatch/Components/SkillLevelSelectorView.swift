@@ -25,8 +25,8 @@ class SkillLevelSelectorView: UIView {
     }
 
     // MARK: - Properties
-    var selectedMinLevel: String = "beginner"
-    var selectedMaxLevel: String = "expert"
+    var selectedMinLevel: SkillLevel = .beginner
+    var selectedMaxLevel: SkillLevel = .expert
     private var minButtons: [SkillLevel: UIButton] = [:]
     private var maxButtons: [SkillLevel: UIButton] = [:]
 
@@ -128,7 +128,7 @@ class SkillLevelSelectorView: UIView {
         }
 
         if let selectedLevel = minButtons.first(where: { $0.value == sender })?.key {
-            selectedMinLevel = selectedLevel.englishValue
+            selectedMinLevel = selectedLevel
         }
     }
 
@@ -139,11 +139,11 @@ class SkillLevelSelectorView: UIView {
         }
 
         if let selectedLevel = maxButtons.first(where: { $0.value == sender })?.key {
-            selectedMaxLevel = selectedLevel.englishValue
+            selectedMaxLevel = selectedLevel
         }
     }
 
     func getSelectedLevels() -> (min: String, max: String) {
-        return (selectedMinLevel, selectedMaxLevel)
+        return (selectedMinLevel.englishValue, selectedMaxLevel.englishValue)
     }
 }
