@@ -141,6 +141,46 @@
   - selectedMinLevel/selectedMaxLevel을 SkillLevel enum 타입으로 변경
   - getSelectedLevels()에서 englishValue로 변환하여 반환
 
+### Date 필드 에러 해결 및 UI 완전 리디자인 (2026-02-02 추가)
+
+#### 1. Date 필드 에러 수정
+- `Date+Extension.swift` - ISO8601 날짜 포맷 변환 메서드 추가
+  - `toISO8601String()` 메서드 구현
+  - 형식: "2026-02-02T14:30:00Z"
+  - API 요청 시 정상적으로 날짜 전송
+
+#### 2. MercenaryRequestViewController UI 완전 리디자인
+팀 모집 화면(FirstTeamRecruitmentViewController)과 동일한 전문적인 스타일로 통일
+
+**배경 및 색상**:
+- 배경색: `UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)` (밝은 회색)
+- 버튼색: `UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)` (빨간색)
+- 아이콘색: `UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)` (회색)
+
+**입력 필드**:
+- RoundView를 사용한 깔끔한 입력 필드 디자인 (cornerRadius: 6)
+- 각 필드마다 아이콘 추가 (달력, 지도핀, 신용카드, 사람 아이콘)
+- 전문적인 폰트 크기와 굵기 설정
+
+**섹션 구성** (5개 섹션):
+1. 기본 정보: 제목, 설명
+2. 일시/장소: 날짜(탭으로 선택), 시간, 장소
+3. 참가비/모집인원: 수평 레이아웃으로 효율적 배치
+4. 모집 포지션: PositionSelectorView 통합
+5. 실력 요구사항: SkillLevelSelectorView 통합
+
+**레이아웃 개선**:
+- 일관된 16pt 패딩 및 마진
+- 필드 간 12pt 간격
+- 섹션 간 24pt 간격
+- ScrollView를 통한 키보드 처리
+- 고정 62pt 높이 하단 버튼
+
+**기능 개선**:
+- 날짜 선택 시각적 피드백
+- 포지션 필수 입력 검증
+- 디버깅을 위한 로그 추가
+
 ---
 
 ## ⚠️ 테스트 필요 사항
