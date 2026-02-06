@@ -51,10 +51,18 @@ router.get('/', async (req, res) => {
     }
 
     if (age_min || age_max) {
-      where.age_range_min = {};
-      where.age_range_max = {};
-      if (age_min) where.age_range_min[Op.gte] = parseInt(age_min);
-      if (age_max) where.age_range_max[Op.lte] = parseInt(age_max);
+      // Range overlap: [match_min, match_max] overlaps [filter_min, filter_max]
+      // if match_max >= filter_min AND match_min <= filter_max
+      const conditions = [];
+      if (age_min) {
+        conditions.push({ age_range_max: { [Op.gte]: parseInt(age_min) } });
+      }
+      if (age_max) {
+        conditions.push({ age_range_min: { [Op.lte]: parseInt(age_max) } });
+      }
+      if (conditions.length > 0) {
+        where[Op.and] = conditions;
+      }
     }
 
     if (skill_level) {

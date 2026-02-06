@@ -13,6 +13,11 @@ router.get('/', async (req, res) => {
       limit = 20,
       location,
       date,
+      match_type,
+      gender_type,
+      shoes_requirement,
+      age_min,
+      age_max,
       skill_level,
       fee_min,
       fee_max,
@@ -31,6 +36,33 @@ router.get('/', async (req, res) => {
 
     if (date) {
       where.date = { [Op.gte]: new Date(date) };
+    }
+
+    if (match_type) {
+      where.match_type = match_type;
+    }
+
+    if (gender_type) {
+      where.gender_type = gender_type;
+    }
+
+    if (shoes_requirement) {
+      where.shoes_requirement = shoes_requirement;
+    }
+
+    if (age_min || age_max) {
+      // Range overlap: [request_min, request_max] overlaps [filter_min, filter_max]
+      // if request_max >= filter_min AND request_min <= filter_max
+      const conditions = [];
+      if (age_min) {
+        conditions.push({ age_range_max: { [Op.gte]: parseInt(age_min) } });
+      }
+      if (age_max) {
+        conditions.push({ age_range_min: { [Op.lte]: parseInt(age_max) } });
+      }
+      if (conditions.length > 0) {
+        where[Op.and] = conditions;
+      }
     }
 
     if (skill_level) {
@@ -101,6 +133,11 @@ router.post('/', auth, async (req, res) => {
       fee,
       mercenary_count,
       positions_needed,
+      match_type,
+      gender_type,
+      shoes_requirement,
+      age_range_min,
+      age_range_max,
       skill_level_min,
       skill_level_max,
       team_id,
@@ -159,6 +196,11 @@ router.post('/', auth, async (req, res) => {
       fee: fee || 0,
       mercenary_count,
       positions_needed: positions_needed || {},
+      match_type: match_type || '11v11',
+      gender_type: gender_type || 'mixed',
+      shoes_requirement: shoes_requirement || 'any',
+      age_range_min,
+      age_range_max,
       skill_level_min: skill_level_min || 'beginner',
       skill_level_max: skill_level_max || 'expert',
       status: 'recruiting',

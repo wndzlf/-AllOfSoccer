@@ -77,6 +77,29 @@ const MercenaryRequest = sequelize.define('MercenaryRequest', {
     allowNull: false,
     defaultValue: 0
   },
+  match_type: {
+    type: DataTypes.ENUM('6v6', '11v11'),
+    allowNull: true,
+    defaultValue: '11v11'
+  },
+  gender_type: {
+    type: DataTypes.ENUM('male', 'female', 'mixed'),
+    allowNull: true,
+    defaultValue: 'mixed'
+  },
+  shoes_requirement: {
+    type: DataTypes.ENUM('futsal', 'soccer', 'any'),
+    allowNull: true,
+    defaultValue: 'any'
+  },
+  age_range_min: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  age_range_max: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   status: {
     type: DataTypes.ENUM('recruiting', 'closed'),
     defaultValue: 'recruiting'
