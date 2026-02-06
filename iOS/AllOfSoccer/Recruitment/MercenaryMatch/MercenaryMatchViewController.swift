@@ -37,6 +37,21 @@ class MercenaryMatchViewController: UIViewController {
         return collectionView
     }()
 
+    private let horizontalCalendarView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumInteritemSpacing = 12
+        layout.minimumLineSpacing = 10
+        layout.sectionInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        layout.scrollDirection = .horizontal
+
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .systemBackground
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.allowsMultipleSelection = true
+        collectionView.register(HorizontalCalendarCollectionViewCell.self, forCellWithReuseIdentifier: "HorizontalCalendarCollectionViewCell")
+        return collectionView
+    }()
+
     private let resetButtonView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -73,6 +88,8 @@ class MercenaryMatchViewController: UIViewController {
     private var filterButtons = ["장소", "포지션", "실력"]
     private var selectedFilters: [String: String] = [:]
 
+    var horizontalCalendarViewModel = HorizonralCalendarViewModel()
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -88,6 +105,29 @@ class MercenaryMatchViewController: UIViewController {
         setupFilterView()
         setupActions()
         fetchData()
+        self.setupData()
+    }
+
+    private func setupData() {
+        // Setup horizontal calendar data
+        let dateRange = 90
+        for nextDay in 0...dateRange {
+            let cellData = HorizontalCalendarModel(date: makeDate(nextDay))
+            self.horizontalCalendarViewModel.append(cellData)
+        }
+
+        // Setup filter tag data
+//        for filterType in FilterType.allCases {
+//            let tagCellData = FilterTagModel(filterType: filterType)
+//            self.tagCellModel.append(tagCellData)
+//        }
+    }
+
+    private func makeDate(_ nextDay: Int) -> Date {
+        let calendar = Calendar.current
+        let currentDate = Date()
+
+        return calendar.date(byAdding: .day, value: nextDay, to: currentDate) ?? currentDate
     }
 
     override func viewDidLayoutSubviews() {
@@ -112,6 +152,12 @@ class MercenaryMatchViewController: UIViewController {
         calendarHeaderView.tag = 2001
 
         calendarHeaderView.addSubview(monthButton)
+
+        // Horizontal calendar
+        calendarHeaderView.addSubview(horizontalCalendarView)
+
+        horizontalCalendarView.delegate = self
+        horizontalCalendarView.dataSource = self
 
         // Filter tag container
         let filterTagContainer = UIView()
@@ -151,6 +197,20 @@ class MercenaryMatchViewController: UIViewController {
 
         // Month button (왼쪽)
         monthButton.frame = CGRect(x: 16, y: 8, width: 50, height: 34)
+
+        // Horizontal calendar (right side)
+        horizontalCalendarView.frame = CGRect(
+            x: 58,
+            y: -20,
+            width: width - 58 - 17,
+            height: calendarHeaderHeight
+        )
+
+        // Update collection view layout
+        if let layout = horizontalCalendarView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = (horizontalCalendarView.frame.width - (12*6) - 8) / 7
+            layout.itemSize = CGSize(width: itemWidth, height: 70)
+        }
 
         // Filter tag container
         let filterTagHeight: CGFloat = 50
