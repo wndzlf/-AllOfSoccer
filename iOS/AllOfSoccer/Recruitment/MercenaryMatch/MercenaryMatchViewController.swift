@@ -298,7 +298,16 @@ class MercenaryMatchViewController: UIViewController {
 
     // MARK: - Data Fetching
     private func fetchData() {
-        viewModel.fetchMercenaryRequests { [weak self] success in
+        let location = selectedFilters[MercenaryFilterType.location.tagTitle]
+        let position = selectedFilters[MercenaryFilterType.position.tagTitle]
+        let skillLevel = selectedFilters[MercenaryFilterType.skillLevel.tagTitle]
+
+        viewModel.fetchMercenaryRequests(
+            page: 1,
+            location: location,
+            position: position,
+            skillLevel: skillLevel
+        ) { [weak self] success in
             self?.tableView.reloadData()
         }
     }
@@ -410,7 +419,15 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let requestCount = viewModel.getRequestCount()
         if indexPath.row == requestCount - 1 {
-            viewModel.loadNextPageOfRequests { [weak self] _ in
+            let location = selectedFilters[MercenaryFilterType.location.tagTitle]
+            let position = selectedFilters[MercenaryFilterType.position.tagTitle]
+            let skillLevel = selectedFilters[MercenaryFilterType.skillLevel.tagTitle]
+
+            viewModel.loadNextPageOfRequests(
+                location: location,
+                position: position,
+                skillLevel: skillLevel
+            ) { [weak self] _ in
                 self?.tableView.reloadData()
             }
         }

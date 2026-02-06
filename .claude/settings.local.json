@@ -19,7 +19,9 @@
       "Bash(swiftc:*)",
       "Bash(while read file)",
       "Bash(do echo \"=== $file ===\" grep -n \"Team\\(\\\\|UserProfile\\(\" \"$file\")",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(swift:*)",
+      "Bash(git push:*)"
     ]
   }
 }

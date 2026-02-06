@@ -51,11 +51,22 @@ class MercenaryMatchViewModel: ObservableObject {
     private let pageSize = 20
 
     // MARK: - Data Fetching
-    func fetchMercenaryRequests(page: Int = 1, completion: @escaping (Bool) -> Void) {
+    func fetchMercenaryRequests(
+        page: Int = 1,
+        location: String? = nil,
+        position: String? = nil,
+        skillLevel: String? = nil,
+        completion: @escaping (Bool) -> Void
+    ) {
         isLoading = true
         errorMessage = nil
 
-        APIService.shared.getMercenaryRequests(page: page, limit: pageSize) { [weak self] result in
+        APIService.shared.getMercenaryRequests(
+            page: page,
+            limit: pageSize,
+            location: location,
+            skillLevel: skillLevel
+        ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
 
@@ -122,8 +133,19 @@ class MercenaryMatchViewModel: ObservableObject {
         return mercenaryApplications[index]
     }
 
-    func loadNextPageOfRequests(completion: @escaping (Bool) -> Void) {
-        fetchMercenaryRequests(page: currentPage + 1, completion: completion)
+    func loadNextPageOfRequests(
+        location: String? = nil,
+        position: String? = nil,
+        skillLevel: String? = nil,
+        completion: @escaping (Bool) -> Void
+    ) {
+        fetchMercenaryRequests(
+            page: currentPage + 1,
+            location: location,
+            position: position,
+            skillLevel: skillLevel,
+            completion: completion
+        )
     }
 
     func loadNextPageOfApplications(completion: @escaping (Bool) -> Void) {
