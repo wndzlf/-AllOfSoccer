@@ -84,7 +84,7 @@ class MercenaryMatchViewController: UIViewController {
     }()
 
     // MARK: - Filter Data
-    private var filterButtons = ["장소", "포지션", "실력"]
+    private var tagCellModel: [MercenaryFilterTagModel] = []
     private var selectedFilters: [String: String] = [:]
 
     var horizontalCalendarViewModel = HorizonralCalendarViewModel()
@@ -116,10 +116,10 @@ class MercenaryMatchViewController: UIViewController {
         }
 
         // Setup filter tag data
-//        for filterType in FilterType.allCases {
-//            let tagCellData = FilterTagModel(filterType: filterType)
-//            self.tagCellModel.append(tagCellData)
-//        }
+        for filterType in MercenaryFilterType.allCases {
+            let tagCellData = MercenaryFilterTagModel(filterType: filterType)
+            self.tagCellModel.append(tagCellData)
+        }
     }
 
     private func makeDate(_ nextDay: Int) -> Date {
@@ -333,7 +333,7 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
         if collectionView === horizontalCalendarView {
             return horizontalCalendarViewModel.horizontalCount
         } else {
-            return filterButtons.count
+            return tagCellModel.count
         }
     }
 
@@ -345,46 +345,36 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FilterButtonCell", for: indexPath) as! FilterButtonCollectionViewCell
-            let filterName = filterButtons[indexPath.item]
-            let isSelected = selectedFilters[filterName] != nil
-            cell.configure(with: filterName, isSelected: isSelected)
+            let filterModel = tagCellModel[indexPath.item]
+            let isSelected = selectedFilters[filterModel.filterType.tagTitle] != nil
+            cell.configure(with: filterModel.filterType.tagTitle, isSelected: isSelected)
             return cell
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView === filterTagCollectionView {
-            let filterName = filterButtons[indexPath.item]
-            showFilterPicker(for: filterName)
+            showFilterPicker(for: tagCellModel[indexPath.item])
         }
     }
 
-    private func showFilterPicker(for filterName: String) {
-        let alert = UIAlertController(title: filterName, message: "선택하세요", preferredStyle: .actionSheet)
+    private func showFilterPicker(for filterModel: MercenaryFilterTagModel) {
+        let alert = UIAlertController(title: filterModel.filterType.tagTitle, message: "선택하세요", preferredStyle: .actionSheet)
 
-        let options: [String]
-        switch filterName {
-        case "장소":
-            options = ["서울 노원구", "서울 강남구", "서울 마포구", "서울 종로구", "전체"]
-        case "포지션":
-            options = ["GK", "DF", "MF", "FW", "전체"]
-        case "실력":
-            options = ["초급", "중급", "고급", "고수", "전체"]
-        default:
-            options = ["전체"]
-        }
-
+        let options = filterModel.filterType.filterList
         for option in options {
             alert.addAction(UIAlertAction(title: option, style: .default) { _ in
-                if option == "전체" {
-                    self.selectedFilters.removeValue(forKey: filterName)
-                } else {
-                    self.selectedFilters[filterName] = option
-                }
+                self.selectedFilters[filterModel.filterType.tagTitle] = option
                 self.filterTagCollectionView.reloadData()
                 self.fetchData()
             })
         }
+
+        alert.addAction(UIAlertAction(title: "전체", style: .default) { _ in
+            self.selectedFilters.removeValue(forKey: filterModel.filterType.tagTitle)
+            self.filterTagCollectionView.reloadData()
+            self.fetchData()
+        })
 
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
         present(alert, animated: true)
