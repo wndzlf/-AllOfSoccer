@@ -24,15 +24,14 @@ class MercenaryMatchViewController: UIViewController {
 
     private let filterTagCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.estimatedItemSize = CGSize(width: 80, height: 32)
-        layout.minimumInteritemSpacing = 8
-        layout.minimumLineSpacing = 8
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        layout.estimatedItemSize = CGSize(width: 500, height: 28)
+        layout.minimumInteritemSpacing = 6
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
         layout.scrollDirection = .horizontal
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemBackground
-        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.allowsMultipleSelection = true
         collectionView.register(FilterButtonCollectionViewCell.self, forCellWithReuseIdentifier: "FilterButtonCell")
         return collectionView
     }()
@@ -186,8 +185,8 @@ class MercenaryMatchViewController: UIViewController {
         guard let calendarHeaderView = view.viewWithTag(2001),
               let filterTagContainer = view.viewWithTag(2002) else { return }
 
-        // Calendar header (고정 높이)
-        let calendarHeaderHeight: CGFloat = 50
+        // Calendar header (팀 매치와 동일: 96pt)
+        let calendarHeaderHeight: CGFloat = 96
         calendarHeaderView.frame = CGRect(
             x: 0,
             y: topOffset,
@@ -195,8 +194,8 @@ class MercenaryMatchViewController: UIViewController {
             height: calendarHeaderHeight
         )
 
-        // Month button (왼쪽)
-        monthButton.frame = CGRect(x: 16, y: 8, width: 50, height: 34)
+        // Month button (왼쪽, 팀 매치와 동일)
+        monthButton.frame = CGRect(x: 16, y: 15, width: 30, height: 34)
 
         // Horizontal calendar (right side)
         horizontalCalendarView.frame = CGRect(
@@ -212,9 +211,9 @@ class MercenaryMatchViewController: UIViewController {
             layout.itemSize = CGSize(width: itemWidth, height: 70)
         }
 
-        // Filter tag container
-        let filterTagHeight: CGFloat = 50
-        let filterTagY = topOffset + calendarHeaderHeight
+        // Filter tag container (팀 매치와 동일: 52pt)
+        let filterTagHeight: CGFloat = 52
+        let filterTagY = topOffset + calendarHeaderHeight + 1
         filterTagContainer.frame = CGRect(
             x: 0,
             y: filterTagY,
@@ -222,20 +221,20 @@ class MercenaryMatchViewController: UIViewController {
             height: filterTagHeight
         )
 
-        // Reset button view (왼쪽, 고정 너비)
-        resetButtonView.frame = CGRect(x: 0, y: 0, width: 50, height: filterTagHeight)
-        resetButton.frame = CGRect(x: 16, y: 12, width: 22, height: 22)
+        // Reset button view (팀 매치와 동일: 38pt width)
+        resetButtonView.frame = CGRect(x: 0, y: -20, width: 38, height: filterTagHeight)
+        resetButton.frame = CGRect(x: 16, y: 15, width: 22, height: 22)
 
-        // Filter tag collection view (오른쪽, 스크롤)
+        // Filter tag collection view (팀 매치와 동일)
         filterTagCollectionView.frame = CGRect(
-            x: 50,
-            y: 0,
-            width: width - 50,
+            x: 38,
+            y: -20,
+            width: width - 38,
             height: filterTagHeight
         )
 
-        // TableView
-        let tableViewY = filterTagY + filterTagHeight
+        // TableView (팀 매치와 동일: -20 오버랩으로 간격 축소)
+        let tableViewY = filterTagY + filterTagHeight - 20
         let tableViewHeight = view.bounds.height - tableViewY
         tableView.frame = CGRect(
             x: 0,
@@ -244,12 +243,13 @@ class MercenaryMatchViewController: UIViewController {
             height: tableViewHeight
         )
 
-        // Create Button
+        // Create Button (팀 매치의 recruitment 버튼 위치 참고)
+        let buttonSize: CGFloat = 60
         createButton.frame = CGRect(
-            x: width - 100,
-            y: view.bounds.height - 80,
-            width: 80,
-            height: 50
+            x: width - 20 - buttonSize,
+            y: view.bounds.height - 100 - buttonSize,
+            width: buttonSize,
+            height: buttonSize
         )
     }
 
