@@ -327,27 +327,36 @@ extension MercenaryMatchViewController: RecruitmentCalendarViewDelegate {
     }
 }
 
-// MARK: - UICollectionViewDelegate & DataSource (Filter)
+// MARK: - UICollectionViewDelegate & DataSource
 extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return filterButtons.count
+        if collectionView === horizontalCalendarView {
+            return horizontalCalendarViewModel.horizontalCount
+        } else {
+            return filterButtons.count
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FilterButtonCell", for: indexPath) as? FilterButtonCollectionViewCell else {
-            return UICollectionViewCell()
+        if collectionView === horizontalCalendarView {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HorizontalCalendarCollectionViewCell", for: indexPath) as! HorizontalCalendarCollectionViewCell
+            let calendarModel = horizontalCalendarViewModel.getSelectedDateModel(with: indexPath)
+            cell.configure(calendarModel)
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FilterButtonCell", for: indexPath) as! FilterButtonCollectionViewCell
+            let filterName = filterButtons[indexPath.item]
+            let isSelected = selectedFilters[filterName] != nil
+            cell.configure(with: filterName, isSelected: isSelected)
+            return cell
         }
-
-        let filterName = filterButtons[indexPath.item]
-        let isSelected = selectedFilters[filterName] != nil
-        cell.configure(with: filterName, isSelected: isSelected)
-
-        return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let filterName = filterButtons[indexPath.item]
-        showFilterPicker(for: filterName)
+        if collectionView === filterTagCollectionView {
+            let filterName = filterButtons[indexPath.item]
+            showFilterPicker(for: filterName)
+        }
     }
 
     private func showFilterPicker(for filterName: String) {
