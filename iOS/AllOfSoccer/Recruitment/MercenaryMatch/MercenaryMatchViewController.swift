@@ -316,17 +316,15 @@ class MercenaryMatchViewController: UIViewController {
 
     // MARK: - Data Fetching
     private func fetchData() {
-        let location = selectedFilters[MercenaryFilterType.location.tagTitle]
-        let position = selectedFilters[MercenaryFilterType.position.tagTitle]
-        let skillLevel = selectedFilters[MercenaryFilterType.skillLevel.tagTitle]
-
-        viewModel.fetchMercenaryRequests(
-            page: 1,
-            location: location,
-            position: position,
-            skillLevel: skillLevel
-        ) { [weak self] success in
-            self?.tableView.reloadData()
+        if !self.didSelectedFilterList.isEmpty {
+            self.applyFilters()
+        } else {
+            // 필터가 없으면 전체 데이터 로드
+            viewModel.fetchMercenaryRequests(
+                page: 1
+            ) { [weak self] success in
+                self?.tableView.reloadData()
+            }
         }
     }
 }
@@ -552,7 +550,6 @@ extension MercenaryMatchViewController: UIGestureRecognizerDelegate {
         return true
     }
 }
-}
 
 // MARK: - UITableViewDelegate & DataSource
 extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSource {
@@ -583,14 +580,30 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let requestCount = viewModel.getRequestCount()
         if indexPath.row == requestCount - 1 {
-            let location = selectedFilters[MercenaryFilterType.location.tagTitle]
-            let position = selectedFilters[MercenaryFilterType.position.tagTitle]
-            let skillLevel = selectedFilters[MercenaryFilterType.skillLevel.tagTitle]
+            // 필터 분류
+            var locationFilters: [String] = []
+            var gameTypeFilters: [String] = []
+            var statusFilters: [String] = []
+
+            for (filterKey, filterType) in self.didSelectedFilterList {
+                switch filterType {
+                case .location:
+                    locationFilters.append(filterKey)
+                case .game:
+                    gameTypeFilters.append(filterKey)
+                case .status:
+                    statusFilters.append(filterKey)
+                }
+            }
+
+            let location = locationFilters.first
+            let matchType = gameTypeFilters.first
+            let status = statusFilters.first
 
             viewModel.loadNextPageOfRequests(
                 location: location,
-                position: position,
-                skillLevel: skillLevel
+                matchType: matchType,
+                status: status
             ) { [weak self] _ in
                 self?.tableView.reloadData()
             }
