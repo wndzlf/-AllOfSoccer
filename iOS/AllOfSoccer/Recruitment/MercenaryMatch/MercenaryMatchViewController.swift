@@ -24,7 +24,7 @@ class MercenaryMatchViewController: UIViewController {
 
     private let filterTagCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.estimatedItemSize = CGSize(width: 500, height: 28)
+        layout.estimatedItemSize = CGSize(width: 500, height: 31)
         layout.minimumInteritemSpacing = 6
         layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
         layout.scrollDirection = .horizontal
@@ -32,7 +32,7 @@ class MercenaryMatchViewController: UIViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemBackground
         collectionView.allowsMultipleSelection = true
-        collectionView.register(FilterButtonCollectionViewCell.self, forCellWithReuseIdentifier: "FilterButtonCell")
+        collectionView.register(GameMatchingFilterCollectionViewCell.self, forCellWithReuseIdentifier: "GameMatchingFilterCell")
         return collectionView
     }()
 
@@ -83,9 +83,18 @@ class MercenaryMatchViewController: UIViewController {
         return button
     }()
 
+    // MARK: - Filter Properties
+    private let filterDetailView = FilterDetailView()
+    private lazy var filterDetailBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
+        view.isHidden = true
+        return view
+    }()
+
     // MARK: - Filter Data
-    private var tagCellModel: [MercenaryFilterTagModel] = []
-    private var selectedFilters: [String: String] = [:]
+    private var tagCellModel: [FilterTagModel] = []
+    private var didSelectedFilterList: [String: FilterType] = [:]
 
     var horizontalCalendarViewModel = HorizonralCalendarViewModel()
 
@@ -115,9 +124,9 @@ class MercenaryMatchViewController: UIViewController {
             self.horizontalCalendarViewModel.append(cellData)
         }
 
-        // Setup filter tag data
-        for filterType in MercenaryFilterType.allCases {
-            let tagCellData = MercenaryFilterTagModel(filterType: filterType)
+        // Setup filter tag data - 팀매치와 동일 (장소, 경기종류, 매칭여부)
+        for filterType in FilterType.allCases {
+            let tagCellData = FilterTagModel(filterType: filterType)
             self.tagCellModel.append(tagCellData)
         }
     }
@@ -132,6 +141,11 @@ class MercenaryMatchViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         setupLayout()
+
+        // Setup filter detail view layout if tabBarController is available
+        if let tabBarController = self.tabBarController {
+            setupFilterDetailViewLayout(in: tabBarController.view)
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -173,6 +187,9 @@ class MercenaryMatchViewController: UIViewController {
 
         // Create Button
         view.addSubview(createButton)
+
+        // Filter detail view setup
+        setupFilterDetailView()
     }
 
     private func setupLayout() {
@@ -285,7 +302,8 @@ class MercenaryMatchViewController: UIViewController {
     }
 
     @objc private func resetFilterButtonTapped() {
-        selectedFilters.removeAll()
+        didSelectedFilterList.removeAll()
+        filterDetailView.didSelectedFilterList.removeAll()
         filterTagCollectionView.reloadData()
         monthButton.setTitle("2월", for: .normal)
         fetchData()
@@ -353,41 +371,187 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
             cell.configure(calendarModel)
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FilterButtonCell", for: indexPath) as! FilterButtonCollectionViewCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GameMatchingFilterCell", for: indexPath) as! GameMatchingFilterCollectionViewCell
             let filterModel = tagCellModel[indexPath.item]
-            let isSelected = selectedFilters[filterModel.filterType.tagTitle] != nil
-            cell.configure(with: filterModel.filterType.tagTitle, isSelected: isSelected)
+            cell.configure(filterModel, self.didSelectedFilterList)
             return cell
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView === filterTagCollectionView {
-            showFilterPicker(for: tagCellModel[indexPath.item])
+            // FilterDetailView 표시
+            self.filterDetailView.filterType = self.tagCellModel[indexPath.item].filterType
+            self.filterDetailView.didSelectedFilterList = self.didSelectedFilterList
+            self.appearFilterDetailView()
         }
     }
 
-    private func showFilterPicker(for filterModel: MercenaryFilterTagModel) {
-        let alert = UIAlertController(title: filterModel.filterType.tagTitle, message: "선택하세요", preferredStyle: .actionSheet)
+    // MARK: - Filter Setup
+    private func setupFilterDetailView() {
+        self.filterDetailView.delegate = self
+        self.filterDetailView.isHidden = true
 
-        let options = filterModel.filterType.filterList
-        for option in options {
-            alert.addAction(UIAlertAction(title: option, style: .default) { _ in
-                self.selectedFilters[filterModel.filterType.tagTitle] = option
-                self.filterTagCollectionView.reloadData()
-                self.fetchData()
-            })
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(filterDetailBackgroundTapped)
+        )
+        tapGesture.delegate = self
+        self.filterDetailBackgroundView.addGestureRecognizer(tapGesture)
+    }
+
+    private func setupFilterDetailViewLayout(in parentView: UIView) {
+        if filterDetailBackgroundView.superview == nil {
+            parentView.addSubview(filterDetailBackgroundView)
+            filterDetailBackgroundView.addSubview(filterDetailView)
         }
 
-        alert.addAction(UIAlertAction(title: "전체", style: .default) { _ in
-            self.selectedFilters.removeValue(forKey: filterModel.filterType.tagTitle)
-            self.filterTagCollectionView.reloadData()
-            self.fetchData()
+        filterDetailBackgroundView.frame = parentView.bounds
+        filterDetailBackgroundView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        let initialHeight: CGFloat = 244
+        let detailWidth = parentView.bounds.width
+        let detailY = parentView.bounds.height - initialHeight
+
+        filterDetailView.frame = CGRect(
+            x: 0,
+            y: detailY,
+            width: detailWidth,
+            height: initialHeight
+        )
+    }
+
+    // MARK: - Filter Display
+    private func appearFilterDetailView() {
+        guard let tabbar = self.tabBarController else { return }
+
+        self.filterDetailView.isHidden = false
+        self.filterDetailBackgroundView.isHidden = false
+        self.filterDetailBackgroundView.alpha = 0
+
+        self.createButton.isHidden = true  // 등록 버튼 숨김
+
+        let viewHeight: CGFloat = 244
+        let viewWidth = tabbar.view.bounds.width
+        filterDetailView.frame = CGRect(
+            x: 0,
+            y: tabbar.view.bounds.height,
+            width: viewWidth,
+            height: viewHeight
+        )
+
+        UIView.animate(withDuration: 0.3) {
+            self.filterDetailBackgroundView.alpha = 1
+            self.filterDetailView.frame = CGRect(
+                x: 0,
+                y: tabbar.view.bounds.height - viewHeight,
+                width: viewWidth,
+                height: viewHeight
+            )
+        }
+    }
+
+    @objc private func filterDetailBackgroundTapped() {
+        dismissFilterDetailView()
+    }
+
+    private func dismissFilterDetailView() {
+        guard let tabbar = self.tabBarController else { return }
+
+        UIView.animate(withDuration: 0.3, animations: {
+            self.filterDetailBackgroundView.alpha = 0
+            self.filterDetailView.frame.origin.y = tabbar.view.bounds.height
+        }, completion: { _ in
+            self.filterDetailView.isHidden = true
+            self.filterDetailBackgroundView.isHidden = true
+            self.createButton.isHidden = false
         })
-
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        present(alert, animated: true)
     }
+
+    // MARK: - Filter Application
+    private func applyFilters() {
+        // 필터 분류
+        var locationFilters: [String] = []
+        var gameTypeFilters: [String] = []
+        var statusFilters: [String] = []
+
+        for (filterKey, filterType) in self.didSelectedFilterList {
+            switch filterType {
+            case .location:
+                locationFilters.append(filterKey)
+            case .game:
+                gameTypeFilters.append(filterKey)
+            case .status:
+                statusFilters.append(filterKey)
+            }
+        }
+
+        // API 호출 (필터 파라미터 전달)
+        let location = locationFilters.first
+        let matchType = gameTypeFilters.first
+        let status = statusFilters.first
+
+        viewModel.fetchMercenaryRequests(
+            page: 1,
+            location: location,
+            position: nil,
+            skillLevel: nil,
+            matchType: matchType,
+            status: status
+        ) { [weak self] success in
+            self?.tableView.reloadData()
+        }
+    }
+}
+
+// MARK: - FilterDetailViewDelegate
+extension MercenaryMatchViewController: FilterDetailViewDelegate {
+    func finishButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
+        // 뷰 닫기
+        guard let tabbar = self.tabBarController else { return }
+
+        UIView.animate(withDuration: 0.3, animations: {
+            self.filterDetailBackgroundView.alpha = 0
+            self.filterDetailView.frame.origin.y = tabbar.view.bounds.height
+        }, completion: { _ in
+            self.filterDetailView.isHidden = true
+            self.filterDetailBackgroundView.isHidden = true
+            self.createButton.isHidden = false
+
+            // 필터 저장
+            self.didSelectedFilterList = detailView.didSelectedFilterList
+
+            // 필터 적용
+            if !self.didSelectedFilterList.isEmpty {
+                self.applyFilters()
+            } else {
+                // 필터가 없으면 전체 데이터 로드
+                self.fetchData()
+            }
+
+            // 필터 태그 UI 업데이트
+            self.filterTagCollectionView.reloadData()
+        })
+    }
+
+    func cancelButtonDidSelected(_ detailView: FilterDetailView, selectedList: [String]) {
+        dismissFilterDetailView()
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension MercenaryMatchViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        // filterDetailView 내부 터치는 무시
+        if touch.view?.isDescendant(of: filterDetailView) == true {
+            return false
+        }
+        return true
+    }
+}
 }
 
 // MARK: - UITableViewDelegate & DataSource

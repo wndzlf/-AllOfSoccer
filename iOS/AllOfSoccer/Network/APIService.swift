@@ -544,6 +544,7 @@ extension APIService {
         page: Int = 1,
         limit: Int = 20,
         location: String? = nil,
+        matchType: String? = nil,
         skillLevel: String? = nil,
         status: String? = nil,
         completion: @escaping (Result<MercenaryRequestListResponse, Error>) -> Void
@@ -556,6 +557,7 @@ extension APIService {
         ]
 
         if let location = location { queryItems.append(URLQueryItem(name: "location", value: location)) }
+        if let matchType = matchType { queryItems.append(URLQueryItem(name: "match_type", value: matchType)) }
         if let skillLevel = skillLevel { queryItems.append(URLQueryItem(name: "skill_level", value: skillLevel)) }
         if let status = status { queryItems.append(URLQueryItem(name: "status", value: status)) }
 

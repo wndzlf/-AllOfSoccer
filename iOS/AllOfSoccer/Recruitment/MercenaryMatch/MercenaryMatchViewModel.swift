@@ -7,35 +7,6 @@
 
 import Foundation
 
-// MARK: - MercenaryFilterType
-enum MercenaryFilterType: CaseIterable {
-    case location
-    case position
-    case skillLevel
-
-    var tagTitle: String {
-        switch self {
-        case .location:
-            return "장소"
-        case .position:
-            return "포지션"
-        case .skillLevel:
-            return "실력"
-        }
-    }
-
-    var filterList: [String] {
-        switch self {
-        case .location:
-            return ["서울 노원구", "서울 강남구", "서울 마포구", "서울 종로구", "기타지역"]
-        case .position:
-            return ["GK", "DF", "MF", "FW"]
-        case .skillLevel:
-            return ["초급", "중급", "고급", "고수"]
-        }
-    }
-}
-
 class MercenaryMatchViewModel: ObservableObject {
     enum DataType {
         case request
@@ -56,6 +27,8 @@ class MercenaryMatchViewModel: ObservableObject {
         location: String? = nil,
         position: String? = nil,
         skillLevel: String? = nil,
+        matchType: String? = nil,
+        status: String? = nil,
         completion: @escaping (Bool) -> Void
     ) {
         isLoading = true
@@ -65,7 +38,9 @@ class MercenaryMatchViewModel: ObservableObject {
             page: page,
             limit: pageSize,
             location: location,
-            skillLevel: skillLevel
+            matchType: matchType,
+            skillLevel: skillLevel,
+            status: status
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
@@ -137,6 +112,8 @@ class MercenaryMatchViewModel: ObservableObject {
         location: String? = nil,
         position: String? = nil,
         skillLevel: String? = nil,
+        matchType: String? = nil,
+        status: String? = nil,
         completion: @escaping (Bool) -> Void
     ) {
         fetchMercenaryRequests(
@@ -144,6 +121,8 @@ class MercenaryMatchViewModel: ObservableObject {
             location: location,
             position: position,
             skillLevel: skillLevel,
+            matchType: matchType,
+            status: status,
             completion: completion
         )
     }
