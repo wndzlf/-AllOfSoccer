@@ -1,6 +1,6 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { MercenaryRequest, Team, User, MercenaryMatch } = require('../models');
+const { MercenaryRequest, Team, User, MercenaryMatch, UserInterest } = require('../models');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -273,9 +273,37 @@ router.get('/:id', async (req, res) => {
       });
     }
 
+    // 현재 로그인한 사용자의 관심 여부 확인
+    let is_interested_by_user = false;
+    if (req.headers.authorization) {
+      try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
+        const interest = await UserInterest.findOne({
+          where: {
+            user_id: decoded.id,
+            mercenary_request_id: req.params.id,
+            interest_type: 'mercenary'
+          }
+        });
+        is_interested_by_user = !!interest;
+      } catch (e) {
+        // Token validation failed, set to false
+        is_interested_by_user = false;
+      }
+    }
+
+    const responseData = {
+      ...request.toJSON(),
+      team_introduction: request.team?.introduction || null,
+      team_captain_name: request.team?.captain?.name || null,
+      team_captain_image: request.team?.captain?.profile_image || null,
+      is_interested_by_user
+    };
+
     res.json({
       success: true,
-      data: request
+      data: responseData
     });
   } catch (error) {
     res.status(500).json({
@@ -724,6 +752,87 @@ router.get('/my/applied', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch my applied mercenary requests',
+      error: error.message
+    });
+  }
+});
+
+// 용병 모집 관심 추가
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const request = await MercenaryRequest.findByPk(req.params.id);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Mercenary request not found'
+      });
+    }
+
+    // 이미 관심 표시했는지 확인
+    const existingInterest = await UserInterest.findOne({
+      where: {
+        user_id: req.user.id,
+        mercenary_request_id: req.params.id,
+        interest_type: 'mercenary'
+      }
+    });
+
+    if (existingInterest) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already marked this mercenary request as interested'
+      });
+    }
+
+    const interest = await UserInterest.create({
+      user_id: req.user.id,
+      mercenary_request_id: req.params.id,
+      interest_type: 'mercenary'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: interest,
+      message: 'Mercenary request marked as interested'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark mercenary request as interested',
+      error: error.message
+    });
+  }
+});
+
+// 용병 모집 관심 제거
+router.delete('/:id/like', auth, async (req, res) => {
+  try {
+    const interest = await UserInterest.findOne({
+      where: {
+        user_id: req.user.id,
+        mercenary_request_id: req.params.id,
+        interest_type: 'mercenary'
+      }
+    });
+
+    if (!interest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interest not found'
+      });
+    }
+
+    await interest.destroy();
+
+    res.json({
+      success: true,
+      message: 'Interest removed successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove interest',
       error: error.message
     });
   }

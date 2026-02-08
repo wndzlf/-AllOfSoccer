@@ -7,6 +7,8 @@ const Comment = require('./Comment');
 const MercenaryRequest = require('./MercenaryRequest');
 const MercenaryApplication = require('./MercenaryApplication');
 const MercenaryMatch = require('./MercenaryMatch');
+const UserProfile = require('./UserProfile');
+const UserInterest = require('./UserInterest');
 
 // User - Team 관계 (팀장)
 User.hasMany(Team, { as: 'captainedTeams', foreignKey: 'captain_id' });
@@ -68,6 +70,22 @@ MercenaryMatch.belongsTo(MercenaryRequest, { as: 'mercenaryRequest', foreignKey:
 User.hasMany(MercenaryMatch, { foreignKey: 'user_id' });
 MercenaryMatch.belongsTo(User, { foreignKey: 'user_id' });
 
+// User - UserProfile 관계 (1:1)
+User.hasOne(UserProfile, { foreignKey: 'user_id' });
+UserProfile.belongsTo(User, { foreignKey: 'user_id' });
+
+// User - UserInterest 관계
+User.hasMany(UserInterest, { foreignKey: 'user_id' });
+UserInterest.belongsTo(User, { foreignKey: 'user_id' });
+
+// Match - UserInterest 관계
+Match.hasMany(UserInterest, { foreignKey: 'match_id' });
+UserInterest.belongsTo(Match, { foreignKey: 'match_id' });
+
+// MercenaryRequest - UserInterest 관계
+MercenaryRequest.hasMany(UserInterest, { foreignKey: 'mercenary_request_id' });
+UserInterest.belongsTo(MercenaryRequest, { foreignKey: 'mercenary_request_id' });
+
 module.exports = {
   User,
   Team,
@@ -77,5 +95,7 @@ module.exports = {
   Comment,
   MercenaryRequest,
   MercenaryApplication,
-  MercenaryMatch
+  MercenaryMatch,
+  UserProfile,
+  UserInterest
 }; 

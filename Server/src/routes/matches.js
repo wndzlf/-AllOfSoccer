@@ -1,6 +1,6 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { Match, Team, User, MatchParticipant, Comment } = require('../models');
+const { Match, Team, User, MatchParticipant, Comment, UserInterest } = require('../models');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -479,9 +479,23 @@ router.get('/:id', auth, async (req, res) => {
       });
     }
 
+    // 현재 사용자의 관심 여부 확인
+    const interest = await UserInterest.findOne({
+      where: {
+        user_id: req.user.id,
+        match_id: req.params.id,
+        interest_type: 'match'
+      }
+    });
+
+    const responseData = {
+      ...match.toJSON(),
+      is_interested_by_user: !!interest
+    };
+
     res.json({
       success: true,
-      data: match
+      data: responseData
     });
   } catch (error) {
     res.status(500).json({
@@ -792,6 +806,87 @@ router.get('/my/created', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch my matches',
+      error: error.message
+    });
+  }
+});
+
+// 팀 매칭 관심 추가
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const match = await Match.findByPk(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // 이미 관심 표시했는지 확인
+    const existingInterest = await UserInterest.findOne({
+      where: {
+        user_id: req.user.id,
+        match_id: req.params.id,
+        interest_type: 'match'
+      }
+    });
+
+    if (existingInterest) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already marked this match as interested'
+      });
+    }
+
+    const interest = await UserInterest.create({
+      user_id: req.user.id,
+      match_id: req.params.id,
+      interest_type: 'match'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: interest,
+      message: 'Match marked as interested'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark match as interested',
+      error: error.message
+    });
+  }
+});
+
+// 팀 매칭 관심 제거
+router.delete('/:id/like', auth, async (req, res) => {
+  try {
+    const interest = await UserInterest.findOne({
+      where: {
+        user_id: req.user.id,
+        match_id: req.params.id,
+        interest_type: 'match'
+      }
+    });
+
+    if (!interest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interest not found'
+      });
+    }
+
+    await interest.destroy();
+
+    res.json({
+      success: true,
+      message: 'Interest removed successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove interest',
       error: error.message
     });
   }
