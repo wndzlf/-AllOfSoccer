@@ -26,7 +26,7 @@ class MercenaryRequestViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "기본 정보"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         label.textColor = .black
         return label
     }()
@@ -57,7 +57,7 @@ class MercenaryRequestViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "일시/장소"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         label.textColor = .black
         return label
     }()
@@ -67,7 +67,7 @@ class MercenaryRequestViewController: UIViewController {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(systemName: "calendar")
-        imageView.tintColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
+        imageView.tintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -86,7 +86,7 @@ class MercenaryRequestViewController: UIViewController {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(systemName: "mappin.circle.fill")
-        imageView.tintColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
+        imageView.tintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -105,7 +105,7 @@ class MercenaryRequestViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "참가비 및 모집 인원"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         label.textColor = .black
         return label
     }()
@@ -115,7 +115,7 @@ class MercenaryRequestViewController: UIViewController {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(systemName: "creditcard.fill")
-        imageView.tintColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
+        imageView.tintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -135,7 +135,7 @@ class MercenaryRequestViewController: UIViewController {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(systemName: "person.2.fill")
-        imageView.tintColor = UIColor(red: 0.537, green: 0.556, blue: 0.580, alpha: 1.0)
+        imageView.tintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -155,7 +155,7 @@ class MercenaryRequestViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "모집 포지션"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         label.textColor = .black
         return label
     }()
@@ -167,7 +167,7 @@ class MercenaryRequestViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "실력 요구사항"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         label.textColor = .black
         return label
     }()
@@ -179,10 +179,11 @@ class MercenaryRequestViewController: UIViewController {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("등록하기", for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
-        button.layer.cornerRadius = 8
+        button.backgroundColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
+        button.layer.cornerRadius = 0
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
 
@@ -210,13 +211,14 @@ class MercenaryRequestViewController: UIViewController {
 
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        view.backgroundColor = .white
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "chevron.left"),
             style: .plain,
             target: self,
             action: #selector(backButtonTapped)
         )
+        navigationItem.leftBarButtonItem?.tintColor = .black
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -257,10 +259,13 @@ class MercenaryRequestViewController: UIViewController {
         // Submit Button
         view.addSubview(submitButton)
 
-        // Configure RoundViews
+        // Configure RoundViews with subtle borders
+        let borderColor = UIColor(red: 0.92, green: 0.92, blue: 0.96, alpha: 1.0)
         [titleView, descriptionView, dateTimeView, placeView, feeView, countView].forEach { view in
             view.backgroundColor = .white
-            view.layer.cornerRadius = 6
+            view.layer.cornerRadius = 8
+            view.borderColor = borderColor
+            view.borderWidth = 1
             view.translatesAutoresizingMaskIntoConstraints = false
         }
     }
@@ -296,7 +301,7 @@ class MercenaryRequestViewController: UIViewController {
             titleTextField.trailingAnchor.constraint(equalTo: titleView.trailingAnchor, constant: -16),
             titleTextField.centerYAnchor.constraint(equalTo: titleView.centerYAnchor),
 
-            descriptionView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 10),
+            descriptionView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 12),
             descriptionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             descriptionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             descriptionView.heightAnchor.constraint(equalToConstant: 100),
@@ -309,7 +314,7 @@ class MercenaryRequestViewController: UIViewController {
 
         // Section 2: Date & Location
         NSLayoutConstraint.activate([
-            dateLocationLabel.topAnchor.constraint(equalTo: descriptionView.bottomAnchor, constant: 24),
+            dateLocationLabel.topAnchor.constraint(equalTo: descriptionView.bottomAnchor, constant: 32),
             dateLocationLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
 
             dateTimeView.topAnchor.constraint(equalTo: dateLocationLabel.bottomAnchor, constant: 12),
@@ -325,7 +330,7 @@ class MercenaryRequestViewController: UIViewController {
             dateTimeLabel.leadingAnchor.constraint(equalTo: calendarImageView.trailingAnchor, constant: 12),
             dateTimeLabel.centerYAnchor.constraint(equalTo: dateTimeView.centerYAnchor),
 
-            placeView.topAnchor.constraint(equalTo: dateTimeView.bottomAnchor, constant: 10),
+            placeView.topAnchor.constraint(equalTo: dateTimeView.bottomAnchor, constant: 12),
             placeView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             placeView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             placeView.heightAnchor.constraint(equalToConstant: 50),
@@ -342,7 +347,7 @@ class MercenaryRequestViewController: UIViewController {
 
         // Section 3: Fee & Count
         NSLayoutConstraint.activate([
-            feeCountLabel.topAnchor.constraint(equalTo: placeView.bottomAnchor, constant: 24),
+            feeCountLabel.topAnchor.constraint(equalTo: placeView.bottomAnchor, constant: 32),
             feeCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
 
             feeView.topAnchor.constraint(equalTo: feeCountLabel.bottomAnchor, constant: 12),
@@ -376,7 +381,7 @@ class MercenaryRequestViewController: UIViewController {
 
         // Section 4: Positions
         NSLayoutConstraint.activate([
-            positionLabel.topAnchor.constraint(equalTo: feeView.bottomAnchor, constant: 24),
+            positionLabel.topAnchor.constraint(equalTo: feeView.bottomAnchor, constant: 32),
             positionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
 
             positionSelector.topAnchor.constraint(equalTo: positionLabel.bottomAnchor, constant: 12),
@@ -386,7 +391,7 @@ class MercenaryRequestViewController: UIViewController {
 
         // Section 5: Skill Level
         NSLayoutConstraint.activate([
-            skillLabel.topAnchor.constraint(equalTo: positionSelector.bottomAnchor, constant: 24),
+            skillLabel.topAnchor.constraint(equalTo: positionSelector.bottomAnchor, constant: 32),
             skillLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
 
             skillSelector.topAnchor.constraint(equalTo: skillLabel.bottomAnchor, constant: 12),

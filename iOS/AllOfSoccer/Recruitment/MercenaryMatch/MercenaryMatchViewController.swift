@@ -12,14 +12,16 @@ class MercenaryMatchViewController: UIViewController {
     private let viewModel = MercenaryMatchViewModel()
 
     // MARK: - UI Components
-    private let monthButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        button.setImage(UIImage(systemName: "calendar"), for: .normal)
-        button.semanticContentAttribute = .forceRightToLeft
-        button.tintColor = .black
-        return button
+    private let monthLabel: UILabel = {
+        let result = UILabel()
+        result.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        result.text = "2월"
+
+//        result.setTitleColor(.black, for: .normal)
+//        result.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+//        result.semanticContentAttribute = .forceRightToLeft
+//        result.tintColor = .black
+        return result
     }()
 
     private let filterTagCollectionView: UICollectionView = {
@@ -75,11 +77,15 @@ class MercenaryMatchViewController: UIViewController {
 
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("등록하기", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 1.0)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 25
+        button.backgroundColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0) // #EC5F5F
+        button.tintColor = .white
+        button.layer.cornerRadius = 30
+        button.clipsToBounds = true
+
+        let config = UIImage.SymbolConfiguration(pointSize: 28, weight: .semibold)
+        let image = UIImage(systemName: "person.badge.plus", withConfiguration: config)
+        button.setImage(image, for: .normal)
+
         return button
     }()
 
@@ -111,6 +117,7 @@ class MercenaryMatchViewController: UIViewController {
         setupUI()
         setupTableView()
         setupFilterView()
+        setupCalendarView()
         setupActions()
         fetchData()
         self.setupData()
@@ -164,7 +171,7 @@ class MercenaryMatchViewController: UIViewController {
         view.addSubview(calendarHeaderView)
         calendarHeaderView.tag = 2001
 
-        calendarHeaderView.addSubview(monthButton)
+        calendarHeaderView.addSubview(monthLabel)
 
         // Horizontal calendar
         calendarHeaderView.addSubview(horizontalCalendarView)
@@ -212,7 +219,7 @@ class MercenaryMatchViewController: UIViewController {
         )
 
         // Month button (왼쪽, 팀 매치와 동일)
-        monthButton.frame = CGRect(x: 16, y: 15, width: 30, height: 34)
+        monthLabel.frame = CGRect(x: 16, y: 15, width: 30, height: 34)
 
         // Horizontal calendar (right side)
         horizontalCalendarView.frame = CGRect(
@@ -281,31 +288,35 @@ class MercenaryMatchViewController: UIViewController {
         filterTagCollectionView.dataSource = self
     }
 
+    private func setupCalendarView() {
+        // Set UIScrollViewDelegate to detect calendar scroll
+        horizontalCalendarView.delegate = self
+    }
+
     private func setupActions() {
-        monthButton.addTarget(self, action: #selector(monthButtonTapped), for: .touchUpInside)
         resetButton.addTarget(self, action: #selector(resetFilterButtonTapped), for: .touchUpInside)
         createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
     }
 
     // MARK: - Actions
     @objc private func monthButtonTapped() {
-        let calendarView = RecruitmentCalendarView()
-        calendarView.delegate = self
-        view.addSubview(calendarView)
-        calendarView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            calendarView.topAnchor.constraint(equalTo: view.topAnchor),
-            calendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            calendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            calendarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+//        let calendarView = RecruitmentCalendarView()
+//        calendarView.delegate = self
+//        view.addSubview(calendarView)
+//        calendarView.translatesAutoresizingMaskIntoConstraints = false
+//        NSLayoutConstraint.activate([
+//            calendarView.topAnchor.constraint(equalTo: view.topAnchor),
+//            calendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            calendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            calendarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+//        ])
     }
 
     @objc private func resetFilterButtonTapped() {
         didSelectedFilterList.removeAll()
         filterDetailView.didSelectedFilterList.removeAll()
         filterTagCollectionView.reloadData()
-        monthButton.setTitle("2월", for: .normal)
+//        monthLabel.setTitle("2월", for: .normal)
         fetchData()
     }
 
@@ -344,7 +355,7 @@ extension MercenaryMatchViewController: RecruitmentCalendarViewDelegate {
             let monthFormatter = DateFormatter()
             monthFormatter.dateFormat = "M월"
             monthFormatter.locale = Locale(identifier: "ko_KR")
-            monthButton.setTitle(monthFormatter.string(from: date), for: .normal)
+//            monthButton.setTitle(monthFormatter.string(from: date), for: .normal)
             fetchData()
         }
 
@@ -548,6 +559,33 @@ extension MercenaryMatchViewController: UIGestureRecognizerDelegate {
             return false
         }
         return true
+    }
+}
+
+// MARK: - UIScrollViewDelegate (Calendar Scroll Detection)
+extension MercenaryMatchViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // Only handle calendar scroll
+        if scrollView === horizontalCalendarView {
+            updateMonthLabel()
+        }
+    }
+
+    private func updateMonthLabel() {
+        // Get the first visible cell's index path
+        guard let visibleIndexPaths = horizontalCalendarView.indexPathsForVisibleItems.sorted(by: { $0.item < $1.item }).first else {
+            return
+        }
+
+        let visibleCell = horizontalCalendarViewModel.getSelectedDateModel(with: visibleIndexPaths)
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month], from: visibleCell.date)
+
+        let monthFormatter = DateFormatter()
+        monthFormatter.dateFormat = "M월"
+        monthFormatter.locale = Locale(identifier: "ko_KR")
+
+        monthLabel.text = monthFormatter.string(from: visibleCell.date)
     }
 }
 
