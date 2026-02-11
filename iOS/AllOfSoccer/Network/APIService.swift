@@ -616,6 +616,51 @@ extension APIService {
         }.resume()
     }
 
+    func getMercenaryRequestDetail(
+        requestId: String,
+        completion: @escaping (Result<MercenaryRequestResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests/\(requestId)") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 모집 상세 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
     func createMercenaryRequest(
         title: String,
         description: String?,
@@ -809,6 +854,363 @@ extension APIService {
                     print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
                     completion(.failure(error))
                 }
+            }
+        }.resume()
+    }
+
+    func getMyMercenaryRequests(
+        page: Int = 1,
+        limit: Int = 20,
+        completion: @escaping (Result<MercenaryRequestListResponse, Error>) -> Void
+    ) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/mercenary-requests/my/created")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+
+        urlComponents.queryItems = queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("내 용병 모집 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func getMyFavoriteMatches(
+        page: Int = 1,
+        limit: Int = 20,
+        completion: @escaping (Result<MatchListResponse, Error>) -> Void
+    ) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/users/my/interests/matches")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+
+        urlComponents.queryItems = queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(MatchListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("찜한 팀 매칭 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func getMyFavoriteMercenaryRequests(
+        page: Int = 1,
+        limit: Int = 20,
+        completion: @escaping (Result<MercenaryRequestListResponse, Error>) -> Void
+    ) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/users/my/interests/mercenary")!
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)")
+        ]
+
+        urlComponents.queryItems = queryItems
+
+        guard let url = urlComponents.url else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 400 {
+                        let serverError = NSError(domain: "APIService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                        completion(.failure(serverError))
+                        return
+                    }
+                }
+
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestListResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("찜한 용병 모집 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // MARK: - User Profile (New UserProfile model)
+    func getUserProfile(completion: @escaping (Result<UserProfileDetailResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/users/profile/me") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(UserProfileDetailResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("사용자 프로필 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func updateUserProfile(
+        nickname: String?,
+        bio: String?,
+        preferredPositions: [String]?,
+        preferredSkillLevel: String?,
+        location: String?,
+        completion: @escaping (Result<UserProfileDetailResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/users/profile/me") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body: [String: Any] = [:]
+        if let nickname = nickname { body["nickname"] = nickname }
+        if let bio = bio { body["bio"] = bio }
+        if let positions = preferredPositions { body["preferred_positions"] = positions }
+        if let skillLevel = preferredSkillLevel { body["preferred_skill_level"] = skillLevel }
+        if let location = location { body["location"] = location }
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(UserProfileDetailResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("프로필 수정 파싱 에러: \(error)")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // MARK: - Like/Unlike APIs
+    func likeMatch(matchId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches/\(matchId)/like") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success(true))
+            }
+        }.resume()
+    }
+
+    func unlikeMatch(matchId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/matches/\(matchId)/like") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success(true))
+            }
+        }.resume()
+    }
+
+    func likeMercenaryRequest(requestId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests/\(requestId)/like") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success(true))
+            }
+        }.resume()
+    }
+
+    func unlikeMercenaryRequest(requestId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests/\(requestId)/like") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success(true))
             }
         }.resume()
     }

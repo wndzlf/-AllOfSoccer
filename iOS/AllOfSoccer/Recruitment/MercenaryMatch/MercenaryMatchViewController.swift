@@ -611,8 +611,13 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
         tableView.deselectRow(at: indexPath, animated: true)
 
         if let request = viewModel.getRequest(at: indexPath.row) {
-            print("선택된 용병 모집: \(request.title)")
+            navigateToDetailScreen(requestId: request.id)
         }
+    }
+
+    private func navigateToDetailScreen(requestId: String) {
+        let detailVC = MercenaryDetailViewController(requestId: requestId)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

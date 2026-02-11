@@ -93,6 +93,35 @@ struct ProfileResponse: Codable {
     let message: String?
 }
 
+// MARK: - User Profile Detail (from /api/users/profile/me)
+struct UserProfileDetail: Codable {
+    let id: Int?
+    let userId: Int?
+    let nickname: String?
+    let bio: String?
+    let preferredPositions: [String]?
+    let preferredSkillLevel: String?
+    let profileImageUrl: String?
+    let location: String?
+    let phone: String?
+    let email: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case nickname, bio, location, phone, email
+        case preferredPositions = "preferred_positions"
+        case preferredSkillLevel = "preferred_skill_level"
+        case profileImageUrl = "profile_image_url"
+    }
+}
+
+struct UserProfileDetailResponse: Codable {
+    let success: Bool
+    let data: UserProfileDetail?
+    let message: String?
+}
+
 // MARK: - Match List Response
 struct MatchListResponse: Codable {
     let success: Bool
@@ -640,6 +669,11 @@ struct MercenaryRequest: Codable, Identifiable {
     let skillLevelMax: String?
     let currentApplicants: Int
     let status: String
+    let matchType: String?
+    let genderType: String?
+    let shoesRequirement: String?
+    let ageRangeMin: Int?
+    let ageRangeMax: Int?
     let team: Team?
 
     enum CodingKeys: String, CodingKey {
@@ -651,6 +685,11 @@ struct MercenaryRequest: Codable, Identifiable {
         case skillLevelMin = "skill_level_min"
         case skillLevelMax = "skill_level_max"
         case currentApplicants = "current_applicants"
+        case matchType = "match_type"
+        case genderType = "gender_type"
+        case shoesRequirement = "shoes_requirement"
+        case ageRangeMin = "age_range_min"
+        case ageRangeMax = "age_range_max"
     }
 }
 

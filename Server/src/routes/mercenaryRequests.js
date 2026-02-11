@@ -5,6 +5,20 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// UUID 형식 검증 헬퍼
+const isValidUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+// UUID 파라미터 검증 미들웨어
+const validateId = (req, res, next) => {
+  if (req.params.id && !isValidUUID(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid ID format'
+    });
+  }
+  next();
+};
+
 // 용병 모집 목록 조회 (필터링, 정렬, 페이징)
 router.get('/', async (req, res) => {
   try {
@@ -114,7 +128,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch mercenary requests',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -233,13 +247,13 @@ router.post('/', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to create mercenary request',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 모집 상세 조회
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateId, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id, {
       include: [
@@ -277,16 +291,19 @@ router.get('/:id', async (req, res) => {
     let is_interested_by_user = false;
     if (req.headers.authorization) {
       try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
-        const interest = await UserInterest.findOne({
-          where: {
-            user_id: decoded.id,
-            mercenary_request_id: req.params.id,
-            interest_type: 'mercenary'
-          }
-        });
-        is_interested_by_user = !!interest;
+        const token = req.headers.authorization.replace('Bearer ', '');
+        const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'test-secret');
+        const userId = decoded.userId || decoded.id;
+        if (userId) {
+          const interest = await UserInterest.findOne({
+            where: {
+              user_id: userId,
+              mercenary_request_id: req.params.id,
+              interest_type: 'mercenary'
+            }
+          });
+          is_interested_by_user = !!interest;
+        }
       } catch (e) {
         // Token validation failed, set to false
         is_interested_by_user = false;
@@ -309,13 +326,13 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch mercenary request',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 모집 수정
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', validateId, auth, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id, {
       include: [
@@ -349,7 +366,21 @@ router.put('/:id', auth, async (req, res) => {
       });
     }
 
-    await request.update(req.body);
+    // 허용된 필드만 업데이트 (mass assignment 방지)
+    const allowedFields = [
+      'title', 'description', 'date', 'location', 'address',
+      'latitude', 'longitude', 'fee', 'mercenary_count', 'positions_needed',
+      'match_type', 'gender_type', 'shoes_requirement',
+      'age_range_min', 'age_range_max', 'skill_level_min', 'skill_level_max',
+      'status'
+    ];
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    await request.update(updateData);
 
     const updatedRequest = await MercenaryRequest.findByPk(req.params.id, {
       include: [
@@ -376,13 +407,13 @@ router.put('/:id', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update mercenary request',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 모집 삭제
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', validateId, auth, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id, {
       include: [
@@ -418,13 +449,13 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to delete mercenary request',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 지원하기
-router.post('/:id/apply', auth, async (req, res) => {
+router.post('/:id/apply', validateId, auth, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id);
 
@@ -482,13 +513,13 @@ router.post('/:id/apply', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to apply for mercenary request',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 지원 취소
-router.delete('/:id/apply', auth, async (req, res) => {
+router.delete('/:id/apply', validateId, auth, async (req, res) => {
   try {
     const match = await MercenaryMatch.findOne({
       where: {
@@ -531,13 +562,13 @@ router.delete('/:id/apply', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to cancel application',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 지원자 목록 조회
-router.get('/:id/applicants', auth, async (req, res) => {
+router.get('/:id/applicants', validateId, auth, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id, {
       include: [
@@ -582,13 +613,13 @@ router.get('/:id/applicants', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch applicants',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 지원자 승인
-router.post('/:id/accept/:userId', auth, async (req, res) => {
+router.post('/:id/accept/:userId', validateId, auth, async (req, res) => {
   try {
     const match = await MercenaryMatch.findOne({
       where: {
@@ -638,7 +669,7 @@ router.post('/:id/accept/:userId', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to accept application',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -698,7 +729,7 @@ router.get('/my/created', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch my mercenary requests',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -752,17 +783,17 @@ router.get('/my/applied', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch my applied mercenary requests',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 모집 관심 추가
-router.post('/:id/like', auth, async (req, res) => {
+router.post('/:id/like', validateId, auth, async (req, res) => {
   try {
     const request = await MercenaryRequest.findByPk(req.params.id);
 
-    if (!request) {
+    if (!request || !request.is_active) {
       return res.status(404).json({
         success: false,
         message: 'Mercenary request not found'
@@ -800,13 +831,13 @@ router.post('/:id/like', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to mark mercenary request as interested',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // 용병 모집 관심 제거
-router.delete('/:id/like', auth, async (req, res) => {
+router.delete('/:id/like', validateId, auth, async (req, res) => {
   try {
     const interest = await UserInterest.findOne({
       where: {
@@ -833,7 +864,7 @@ router.delete('/:id/like', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to remove interest',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

@@ -39,10 +39,10 @@ router.get('/', auth, async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('사용자 목록 조회 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch users',
-      error: error.message
+      message: 'Failed to fetch users'
     });
   }
 });
@@ -66,10 +66,10 @@ router.get('/:id', auth, async (req, res) => {
       data: user
     });
   } catch (error) {
+    console.error('사용자 조회 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user',
-      error: error.message
+      message: 'Failed to fetch user'
     });
   }
 });
@@ -97,13 +97,17 @@ router.get('/profile/me', auth, async (req, res) => {
       data: profile
     });
   } catch (error) {
+    console.error('프로필 조회 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user profile',
-      error: error.message
+      message: 'Failed to fetch user profile'
     });
   }
 });
+
+// 유효한 skill_level 값 목록
+const VALID_SKILL_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'national', 'worldclass', 'legend'];
+const VALID_POSITIONS = ['GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LM', 'RM', 'LW', 'RW', 'ST', 'CF'];
 
 // 사용자 프로필 수정 (부분 수정 지원)
 router.put('/profile/me', auth, async (req, res) => {
@@ -111,8 +115,9 @@ router.put('/profile/me', auth, async (req, res) => {
     const { nickname, bio, preferred_positions, preferred_skill_level, location, phone, email } = req.body;
 
     // 닉네임 검증
-    if (nickname !== undefined) {
-      if (nickname && (nickname.length < 2 || nickname.length > 50)) {
+    if (nickname !== undefined && nickname !== null) {
+      const trimmed = String(nickname).trim();
+      if (trimmed.length < 2 || trimmed.length > 50) {
         return res.status(400).json({
           success: false,
           message: 'Nickname must be between 2 and 50 characters'
@@ -121,8 +126,8 @@ router.put('/profile/me', auth, async (req, res) => {
     }
 
     // 소개글 검증
-    if (bio !== undefined) {
-      if (bio && bio.length > 500) {
+    if (bio !== undefined && bio !== null) {
+      if (String(bio).length > 500) {
         return res.status(400).json({
           success: false,
           message: 'Bio must be less than 500 characters'
@@ -133,10 +138,48 @@ router.put('/profile/me', auth, async (req, res) => {
     // 이메일 검증
     if (email !== undefined && email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(String(email))) {
         return res.status(400).json({
           success: false,
           message: 'Invalid email format'
+        });
+      }
+    }
+
+    // 전화번호 형식 검증
+    if (phone !== undefined && phone) {
+      const phoneRegex = /^[0-9\-+() ]{8,20}$/;
+      if (!phoneRegex.test(String(phone))) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid phone number format'
+        });
+      }
+    }
+
+    // preferred_positions 배열 검증
+    if (preferred_positions !== undefined && preferred_positions !== null) {
+      if (!Array.isArray(preferred_positions)) {
+        return res.status(400).json({
+          success: false,
+          message: 'preferred_positions must be an array'
+        });
+      }
+      const invalidPositions = preferred_positions.filter(p => !VALID_POSITIONS.includes(p));
+      if (invalidPositions.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid positions: ${invalidPositions.join(', ')}. Valid: ${VALID_POSITIONS.join(', ')}`
+        });
+      }
+    }
+
+    // preferred_skill_level 검증
+    if (preferred_skill_level !== undefined && preferred_skill_level !== null) {
+      if (!VALID_SKILL_LEVELS.includes(preferred_skill_level)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid skill level. Valid: ${VALID_SKILL_LEVELS.join(', ')}`
         });
       }
     }
@@ -158,7 +201,7 @@ router.put('/profile/me', auth, async (req, res) => {
         email
       });
     } else {
-      // 기존 프로필 수정
+      // 기존 프로필 수정 - 허용된 필드만 업데이트
       const updateData = {};
       if (nickname !== undefined) updateData.nickname = nickname;
       if (bio !== undefined) updateData.bio = bio;
@@ -177,10 +220,10 @@ router.put('/profile/me', auth, async (req, res) => {
       message: 'Profile updated successfully'
     });
   } catch (error) {
+    console.error('프로필 수정 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user profile',
-      error: error.message
+      message: 'Failed to update user profile'
     });
   }
 });
@@ -214,7 +257,23 @@ const upload = multer({
 });
 
 // 프로필 이미지 업로드
-router.post('/profile-image/me', auth, upload.single('image'), async (req, res) => {
+router.post('/profile-image/me', auth, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File size must be less than 5MB'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'Invalid file upload'
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -235,6 +294,13 @@ router.post('/profile-image/me', auth, upload.single('image'), async (req, res) 
         profile_image_url: imageUrl
       });
     } else {
+      // 기존 이미지 파일 삭제
+      if (profile.profile_image_url) {
+        const oldPath = path.join(__dirname, '../../', profile.profile_image_url);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
       await profile.update({ profile_image_url: imageUrl });
     }
 
@@ -246,10 +312,10 @@ router.post('/profile-image/me', auth, upload.single('image'), async (req, res) 
       message: 'Profile image uploaded successfully'
     });
   } catch (error) {
+    console.error('프로필 이미지 업로드 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to upload profile image',
-      error: error.message
+      message: 'Failed to upload profile image'
     });
   }
 });
@@ -261,8 +327,8 @@ router.post('/profile-image/me', auth, upload.single('image'), async (req, res) 
 // 관심 팀 매칭 목록 조회
 router.get('/my/interests/matches', auth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const offset = (page - 1) * limit;
 
     const { count, rows: interests } = await UserInterest.findAndCountAll({
@@ -273,6 +339,7 @@ router.get('/my/interests/matches', auth, async (req, res) => {
       include: [
         {
           model: Match,
+          where: { is_active: true },
           include: [
             {
               model: Team,
@@ -297,7 +364,7 @@ router.get('/my/interests/matches', auth, async (req, res) => {
 
     res.json({
       success: true,
-      data: interests.map(i => i.Match),
+      data: interests.map(i => i.Match).filter(Boolean),
       pagination: {
         page,
         limit,
@@ -306,10 +373,10 @@ router.get('/my/interests/matches', auth, async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('관심 매칭 조회 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch interested matches',
-      error: error.message
+      message: 'Failed to fetch interested matches'
     });
   }
 });
@@ -317,8 +384,8 @@ router.get('/my/interests/matches', auth, async (req, res) => {
 // 관심 용병 목록 조회
 router.get('/my/interests/mercenary', auth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const offset = (page - 1) * limit;
 
     const { count, rows: interests } = await UserInterest.findAndCountAll({
@@ -329,6 +396,7 @@ router.get('/my/interests/mercenary', auth, async (req, res) => {
       include: [
         {
           model: MercenaryRequest,
+          where: { is_active: true },
           include: [
             {
               model: Team,
@@ -353,7 +421,7 @@ router.get('/my/interests/mercenary', auth, async (req, res) => {
 
     res.json({
       success: true,
-      data: interests.map(i => i.MercenaryRequest),
+      data: interests.map(i => i.MercenaryRequest).filter(Boolean),
       pagination: {
         page,
         limit,
@@ -362,10 +430,10 @@ router.get('/my/interests/mercenary', auth, async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('관심 용병 조회 에러:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch interested mercenary requests',
-      error: error.message
+      message: 'Failed to fetch interested mercenary requests'
     });
   }
 });
