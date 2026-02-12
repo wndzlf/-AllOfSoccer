@@ -160,7 +160,8 @@ class MercenaryMatchTableViewCell: UITableViewCell {
 
     // MARK: - Configure
     func configureWithRequest(_ request: MercenaryRequest, viewModel: MercenaryMatchViewModel) {
-        titleLabel.text = request.title
+        let teamName = request.team?.name ?? "팀 미지정"
+        titleLabel.text = "[\(teamName)] \(request.title)"
         locationLabel.text = "📍 \(request.location)"
         dateLabel.text = "🕐 \(viewModel.formatDate(request.date))"
         feeLabel.text = viewModel.formatFee(request.fee)

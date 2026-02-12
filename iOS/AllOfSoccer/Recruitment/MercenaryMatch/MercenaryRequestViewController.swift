@@ -188,6 +188,7 @@ class MercenaryRequestViewController: UIViewController {
     }()
 
     private var selectedDate: Date?
+    private var selectedTeamName: String = "개인 모집"
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -219,6 +220,12 @@ class MercenaryRequestViewController: UIViewController {
             action: #selector(backButtonTapped)
         )
         navigationItem.leftBarButtonItem?.tintColor = .black
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "이전 글 불러오기",
+            style: .plain,
+            target: self,
+            action: #selector(loadPreviousRequestTapped)
+        )
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -425,6 +432,69 @@ class MercenaryRequestViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
 
+    @objc private func loadPreviousRequestTapped() {
+        APIService.shared.getMyMercenaryRequests(page: 1, limit: 20) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    guard !response.data.isEmpty else {
+                        self?.showAlert("안내", "불러올 이전 용병 모집 글이 없습니다")
+                        return
+                    }
+                    self?.presentPreviousRequestActionSheet(requests: response.data)
+                case .failure(let error):
+                    self?.showAlert("오류", "이전 글을 불러오지 못했습니다: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    private func presentPreviousRequestActionSheet(requests: [MercenaryRequest]) {
+        let sheet = UIAlertController(title: "이전 글 불러오기", message: "불러올 게시글을 선택하세요.", preferredStyle: .actionSheet)
+        let recentRequests = Array(requests.prefix(8))
+
+        for request in recentRequests {
+            let teamName = request.team?.name ?? "내 팀"
+            let actionTitle = "[\(teamName)] \(request.title)"
+            sheet.addAction(UIAlertAction(title: actionTitle, style: .default, handler: { [weak self] _ in
+                self?.applyPreviousRequestDraft(request)
+            }))
+        }
+
+        sheet.addAction(UIAlertAction(title: "취소", style: .cancel))
+        if let popover = sheet.popoverPresentationController {
+            popover.barButtonItem = navigationItem.rightBarButtonItem
+        }
+        present(sheet, animated: true)
+    }
+
+    private func applyPreviousRequestDraft(_ request: MercenaryRequest) {
+        titleTextField.text = request.title
+        locationTextField.text = request.location
+        feeTextField.text = "\(request.fee)"
+        countTextField.text = "\(request.mercenaryCount)"
+        selectedTeamName = request.team?.name ?? "개인 모집"
+
+        if let description = request.description, !description.isEmpty {
+            descriptionTextView.text = description
+            descriptionTextView.textColor = .black
+        } else {
+            descriptionTextView.text = "상세 내용을 입력하세요"
+            descriptionTextView.textColor = .lightGray
+        }
+
+        if let date = parseServerDate(request.date) {
+            selectedDate = date
+            dateTimeLabel.text = formattedDisplayDate(date)
+            dateTimeLabel.textColor = .black
+        }
+
+        positionSelector.setSelectedPositions(request.positionsNeeded)
+        skillSelector.setSelectedLevels(min: request.skillLevelMin, max: request.skillLevelMax)
+
+        showAlert("안내", "이전 글을 불러왔습니다. 날짜/장소만 수정 후 등록하세요.")
+    }
+
     @objc private func dateTimeViewTapped() {
         let recruitmentCalendarView = RecruitmentCalendarView()
         recruitmentCalendarView.delegate = self
@@ -488,7 +558,7 @@ class MercenaryRequestViewController: UIViewController {
             positionsNeeded: positions,
             skillLevelMin: minLevel,
             skillLevelMax: maxLevel,
-            teamName: "개인 모집"
+            teamName: selectedTeamName
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.submitButton.isEnabled = true
@@ -512,6 +582,25 @@ class MercenaryRequestViewController: UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+
+    private func parseServerDate(_ dateString: String) -> Date? {
+        let isoFormatter = ISO8601DateFormatter()
+        if let date = isoFormatter.date(from: dateString) {
+            return date
+        }
+
+        let fallback = DateFormatter()
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        fallback.locale = Locale(identifier: "en_US_POSIX")
+        return fallback.date(from: dateString)
+    }
+
+    private func formattedDisplayDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.string(from: date)
     }
 
     private func addSubviewWithConstraints(view: UIView) {

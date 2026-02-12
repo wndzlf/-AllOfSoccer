@@ -65,6 +65,14 @@ class PositionSelectorView: UIView {
         }
         return result
     }
+
+    func setSelectedPositions(_ positions: [String: Int]) {
+        for (position, buttonView) in positionButtons {
+            let value = positions[position.rawValue] ?? 0
+            buttonView.setCount(value)
+        }
+        selectedPositions = positions
+    }
 }
 
 // MARK: - PositionButtonView
@@ -164,6 +172,11 @@ class PositionButtonView: UIView {
 
     @objc private func plusPressed() {
         count += 1
+        countLabel.text = "\(count)"
+    }
+
+    func setCount(_ newValue: Int) {
+        count = max(0, newValue)
         countLabel.text = "\(count)"
     }
 }

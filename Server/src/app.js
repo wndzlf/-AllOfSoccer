@@ -22,6 +22,7 @@ const notificationRoutes = require('./routes/notifications');
 const uploadRoutes = require('./routes/uploads');
 const mercenaryRequestRoutes = require('./routes/mercenaryRequests');
 const mercenaryApplicationRoutes = require('./routes/mercenaryApplications');
+const teamReviewRoutes = require('./routes/teamReviews');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -36,7 +37,7 @@ const server = createServer(app);
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || "http://localhost:3000",
+    origin: (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.split(',')) || "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
@@ -51,7 +52,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || "http://localhost:3000",
+  origin: (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.split(',')) || "http://localhost:3000",
   credentials: true
 }));
 app.use(morgan('combined'));
@@ -78,6 +79,7 @@ app.use('/api/teams', authMiddleware, teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/mercenary-requests', mercenaryRequestRoutes);
 app.use('/api/mercenary-applications', mercenaryApplicationRoutes);
+app.use('/api/team-reviews', teamReviewRoutes);
 app.use('/api/chats', authMiddleware, chatRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/uploads', authMiddleware, uploadRoutes);

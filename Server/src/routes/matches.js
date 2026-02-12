@@ -19,6 +19,38 @@ const validateId = (req, res, next) => {
   next();
 };
 
+const REGION_KEYWORDS = {
+  서울북부: ['노원', '도봉', '강북', '성북', '중랑', '동대문', '광진', '종로', '은평', '서대문', '마포'],
+  서울남부: ['강남', '서초', '송파', '강동', '강서', '양천', '영등포', '구로', '금천', '동작', '관악', '용산'],
+  경기북부: ['고양', '파주', '의정부', '양주', '동두천', '연천', '포천', '가평', '남양주', '구리'],
+  경기남부: ['성남', '수원', '용인', '화성', '평택', '안산', '안양', '과천', '군포', '의왕', '시흥', '광명', '오산', '이천', '안성', '하남', '광주'],
+  인천부천: ['인천', '부천', '송도', '계양', '부평', '남동', '연수', '미추홀'],
+  기타지역: ['천안', '아산', '청주', '대전', '대구', '부산', '울산', '광주', '전주', '제주', '강원', '충북', '충남', '전북', '전남', '경북', '경남']
+};
+
+const normalizeRegionKey = (rawLocation = '') => rawLocation.replace(/\s+/g, '').replace('/', '');
+
+const buildLocationWhere = (location) => {
+  const normalized = normalizeRegionKey(location);
+  const keywords = REGION_KEYWORDS[normalized];
+
+  if (keywords && keywords.length > 0) {
+    return {
+      [Op.or]: [
+        ...keywords.map((keyword) => ({ location: { [Op.iLike]: `%${keyword}%` } })),
+        ...keywords.map((keyword) => ({ address: { [Op.iLike]: `%${keyword}%` } }))
+      ]
+    };
+  }
+
+  return {
+    [Op.or]: [
+      { location: { [Op.iLike]: `%${location}%` } },
+      { address: { [Op.iLike]: `%${location}%` } }
+    ]
+  };
+};
+
 // 매칭 목록 조회 (필터링, 정렬, 페이징)
 router.get('/', async (req, res) => {
   try {
@@ -35,7 +67,7 @@ router.get('/', async (req, res) => {
       skill_level,
       fee_min,
       fee_max,
-      status = 'recruiting',
+      status,
       sort_by = 'created_at',
       sort_order = 'DESC'
     } = req.query;
@@ -45,7 +77,7 @@ router.get('/', async (req, res) => {
 
     // 필터링 조건들
     if (location) {
-      where.location = { [Op.iLike]: `%${location}%` };
+      Object.assign(where, buildLocationWhere(location));
     }
 
     if (date) {
@@ -139,9 +171,15 @@ if (process.env.NODE_ENV === 'development') {
   router.post('/seed', async (req, res) => {
     try {
       console.log('🌱 매칭 목데이터 생성 시작...');
+      const buildFutureDate = (daysFromNow, hour = 20) => {
+        const date = new Date();
+        date.setDate(date.getDate() + daysFromNow);
+        date.setHours(hour, 0, 0, 0);
+        return date.toISOString();
+      };
 
       // 1. 사용자 생성 (팀장들)
-      const users = await User.bulkCreate([
+      await User.bulkCreate([
         {
           id: '550e8400-e29b-41d4-a716-446655440001',
           name: '김팀장',
@@ -168,13 +206,13 @@ if (process.env.NODE_ENV === 'development') {
       console.log('✅ 사용자 생성 완료');
 
       // 2. 팀 생성
-      const teams = await Team.bulkCreate([
+      await Team.bulkCreate([
         {
           id: '660e8400-e29b-41d4-a716-446655440001',
           name: 'FC 캘란',
           description: 'FC 캘란입니다. 실력 하하 매너 최상상!',
           logo: null,
-          captain_id: users[0].id,
+          captain_id: '550e8400-e29b-41d4-a716-446655440001',
           age_range_min: 20,
           age_range_max: 35,
           skill_level: 'intermediate',
@@ -186,7 +224,7 @@ if (process.env.NODE_ENV === 'development') {
           name: 'FC 바르셀로나',
           description: 'FC 바르셀로나입니다. 실력 있는 분들과 함께하는 경기를 선호합니다.',
           logo: null,
-          captain_id: users[1].id,
+          captain_id: '550e8400-e29b-41d4-a716-446655440002',
           age_range_min: 25,
           age_range_max: 40,
           skill_level: 'advanced',
@@ -198,7 +236,7 @@ if (process.env.NODE_ENV === 'development') {
           name: 'FC 뮌헨',
           description: 'FC 뮌헨입니다. 즐겁게 축구하실 분들 모집합니다!',
           logo: null,
-          captain_id: users[2].id,
+          captain_id: '550e8400-e29b-41d4-a716-446655440003',
           age_range_min: 20,
           age_range_max: 30,
           skill_level: 'beginner',
@@ -210,12 +248,12 @@ if (process.env.NODE_ENV === 'development') {
       console.log('✅ 팀 생성 완료');
 
       // 3. 매칭 생성 (iOS 목데이터 기반)
-      const matches = await Match.bulkCreate([
+      const matchSeedData = [
         {
           id: '770e8400-e29b-41d4-a716-446655440001',
           title: '양원역 구장에서 11vs11 경기',
           description: '11대 11 실력 하하 구장비 7천원',
-          date: '2024-09-14T22:00:00.000Z',
+          date: buildFutureDate(1, 19),
           location: '양원역 구장',
           address: '서울시 노원구 양원역 근처 구장',
           latitude: 37.6065,
@@ -233,13 +271,13 @@ if (process.env.NODE_ENV === 'development') {
           team_introduction: 'FC 캘란입니다. 실력 하하 매너 최상상!',
           status: 'recruiting',
           is_active: true,
-          team_id: teams[0].id
+          team_id: '660e8400-e29b-41d4-a716-446655440001'
         },
         {
           id: '770e8400-e29b-41d4-a716-446655440002',
           title: '태릉중학교에서 11vs11 경기',
           description: '11대 11 실력 하하 구장비 5만원',
-          date: '2024-09-14T22:00:00.000Z',
+          date: buildFutureDate(3, 21),
           location: '태릉중학교',
           address: '서울시 노원구 태릉로 456 태릉중학교 운동장',
           latitude: 37.6185,
@@ -255,15 +293,15 @@ if (process.env.NODE_ENV === 'development') {
           skill_level_min: 'intermediate',
           skill_level_max: 'expert',
           team_introduction: 'FC 바르셀로나입니다. 실력 있는 분들과 함께하는 경기를 선호합니다.',
-          status: 'recruiting',
+          status: 'full',
           is_active: true,
-          team_id: teams[1].id
+          team_id: '660e8400-e29b-41d4-a716-446655440002'
         },
         {
           id: '770e8400-e29b-41d4-a716-446655440003',
           title: '용산 아이파크몰에서 11vs11 경기',
           description: '11대 11 실력 하하 구장비 7천원',
-          date: '2024-09-14T22:00:00.000Z',
+          date: buildFutureDate(7, 18),
           location: '용산 아이파크몰',
           address: '서울시 용산구 한강대로23길 55',
           latitude: 37.5295,
@@ -279,22 +317,26 @@ if (process.env.NODE_ENV === 'development') {
           skill_level_min: 'beginner',
           skill_level_max: 'intermediate',
           team_introduction: 'FC 뮌헨입니다. 즐겁게 축구하실 분들 모집합니다!',
-          status: 'recruiting',
+          status: 'completed',
           is_active: true,
-          team_id: teams[2].id
+          team_id: '660e8400-e29b-41d4-a716-446655440003'
         }
-      ], { ignoreDuplicates: true });
+      ];
+
+      for (const matchData of matchSeedData) {
+        await Match.upsert(matchData);
+      }
 
       console.log('✅ 매칭 생성 완료');
-      console.log(`📊 총 ${matches.length}개의 매칭이 생성되었습니다.`);
+      console.log(`📊 총 ${matchSeedData.length}개의 매칭이 생성되었습니다.`);
 
       res.json({
         success: true,
         message: '목데이터 생성 완료',
         data: {
-          users: users.length,
-          teams: teams.length,
-          matches: matches.length
+          users: 3,
+          teams: 3,
+          matches: matchSeedData.length
         }
       });
 

@@ -320,6 +320,66 @@ router.post('/:id/members', auth, async (req, res) => {
   }
 });
 
+// 팀 자가 가입 (팀원이 직접 "내가 이 팀원" 등록)
+router.post('/:id/join', auth, async (req, res) => {
+  try {
+    const team = await Team.findByPk(req.params.id);
+
+    if (!team || !team.is_active) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
+      });
+    }
+
+    const existingMember = await TeamMember.findOne({
+      where: {
+        team_id: req.params.id,
+        user_id: req.user.id
+      }
+    });
+
+    if (existingMember && existingMember.is_active) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already an active member of this team'
+      });
+    }
+
+    if (existingMember && !existingMember.is_active) {
+      await existingMember.update({
+        is_active: true,
+        role: existingMember.role || 'member',
+        joined_at: new Date()
+      });
+
+      return res.json({
+        success: true,
+        data: existingMember,
+        message: 'Joined team successfully'
+      });
+    }
+
+    const member = await TeamMember.create({
+      team_id: req.params.id,
+      user_id: req.user.id,
+      role: 'member'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: member,
+      message: 'Joined team successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to join team',
+      error: error.message
+    });
+  }
+});
+
 // 팀 멤버 제거
 router.delete('/:id/members/:userId', auth, async (req, res) => {
   try {
@@ -370,6 +430,55 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to remove member',
+      error: error.message
+    });
+  }
+});
+
+// 팀 자가 탈퇴
+router.delete('/:id/leave', auth, async (req, res) => {
+  try {
+    const team = await Team.findByPk(req.params.id);
+
+    if (!team || !team.is_active) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
+      });
+    }
+
+    if (team.captain_id === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Captain cannot leave the team directly. Transfer captain role first.'
+      });
+    }
+
+    const member = await TeamMember.findOne({
+      where: {
+        team_id: req.params.id,
+        user_id: req.user.id,
+        is_active: true
+      }
+    });
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active team membership not found'
+      });
+    }
+
+    await member.update({ is_active: false });
+
+    res.json({
+      success: true,
+      message: 'Left team successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to leave team',
       error: error.message
     });
   }

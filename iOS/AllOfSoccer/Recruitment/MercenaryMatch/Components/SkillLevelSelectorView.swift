@@ -146,4 +146,18 @@ class SkillLevelSelectorView: UIView {
     func getSelectedLevels() -> (min: String, max: String) {
         return (selectedMinLevel.englishValue, selectedMaxLevel.englishValue)
     }
+
+    func setSelectedLevels(min: String?, max: String?) {
+        if let min = min,
+           let minLevel = SkillLevel.allCases.first(where: { $0.englishValue == min }),
+           let minButton = minButtons[minLevel] {
+            minLevelSelected(minButton)
+        }
+
+        if let max = max,
+           let maxLevel = SkillLevel.allCases.first(where: { $0.englishValue == max }),
+           let maxButton = maxButtons[maxLevel] {
+            maxLevelSelected(maxButton)
+        }
+    }
 }

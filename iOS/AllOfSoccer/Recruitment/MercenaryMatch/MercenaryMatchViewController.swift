@@ -338,6 +338,24 @@ class MercenaryMatchViewController: UIViewController {
             }
         }
     }
+
+    private func normalizeMatchTypeFilter(_ raw: String?) -> String? {
+        guard let raw else { return nil }
+        switch raw {
+        case "11 vs 11": return "11v11"
+        case "풋살": return "6v6"
+        default: return raw
+        }
+    }
+
+    private func normalizeStatusFilter(_ raw: String?) -> String? {
+        guard let raw else { return nil }
+        switch raw {
+        case "매칭 중": return "recruiting"
+        case "매칭 완료": return "closed"
+        default: return raw
+        }
+    }
 }
 
 // MARK: - RecruitmentCalendarViewDelegate
@@ -497,8 +515,8 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
 
         // API 호출 (필터 파라미터 전달)
         let location = locationFilters.first
-        let matchType = gameTypeFilters.first
-        let status = statusFilters.first
+        let matchType = normalizeMatchTypeFilter(gameTypeFilters.first)
+        let status = normalizeStatusFilter(statusFilters.first)
 
         viewModel.fetchMercenaryRequests(
             page: 1,
@@ -640,8 +658,8 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
             }
 
             let location = locationFilters.first
-            let matchType = gameTypeFilters.first
-            let status = statusFilters.first
+            let matchType = normalizeMatchTypeFilter(gameTypeFilters.first)
+            let status = normalizeStatusFilter(statusFilters.first)
 
             viewModel.loadNextPageOfRequests(
                 location: location,
@@ -692,4 +710,3 @@ class FilterButtonCollectionViewCell: UICollectionViewCell {
         contentView.backgroundColor = isSelected ? UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 0.2) : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
     }
 }
-

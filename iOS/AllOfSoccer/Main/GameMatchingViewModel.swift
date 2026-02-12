@@ -208,8 +208,7 @@ class GameMatchingViewModel {
     private func fetchMatchingList() async throws {
         APIService.shared.getMatches(
             page: 1,
-            limit: 20,
-            status: "recruiting"
+            limit: 50
         ) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
@@ -1080,36 +1079,29 @@ class GameMatchingViewModel {
         // 장소 필터 적용
         if !currentLocationFilters.isEmpty {
             filtered = filtered.filter { match in
-                currentLocationFilters.contains(match.location)
+                currentLocationFilters.contains { filter in
+                    self.matchesLocationCategory(match: match, filter: filter)
+                }
             }
         }
         
         // 경기 종류 필터 적용
         if !currentGameTypeFilters.isEmpty {
             filtered = filtered.filter { match in
-                currentGameTypeFilters.contains(match.matchType)
+                currentGameTypeFilters.contains { filter in
+                    self.matchesGameTypeCategory(match: match, filter: filter)
+                }
             }
         }
         
         // 매칭 여부 필터 적용
         if !currentStatusFilters.isEmpty {
             filtered = filtered.filter { match in
-                // "매칭 완료" -> isOpponentMatched == true
-                // "매칭 중" -> isOpponentMatched == false
-                
-                let isMatched = match.isOpponentMatched ?? false
-                
-                var matchesFilter = false
-                
-                if currentStatusFilters.contains("매칭 완료") && isMatched {
-                    matchesFilter = true
-                }
-                
-                if currentStatusFilters.contains("매칭 중") && !isMatched {
-                    matchesFilter = true
-                }
-                
-                return matchesFilter
+                let isCompleted = self.isMatchCompleted(match)
+                let isRecruiting = self.isMatchRecruiting(match)
+
+                return (currentStatusFilters.contains("매칭 완료") && isCompleted) ||
+                    (currentStatusFilters.contains("매칭 중") && isRecruiting)
             }
         }
         
@@ -1159,6 +1151,75 @@ class GameMatchingViewModel {
     /// 현재 적용된 필터 확인
     internal func hasActiveFilters() -> Bool {
         return !selectedDate.isEmpty || !currentLocationFilters.isEmpty || !currentGameTypeFilters.isEmpty || !currentStatusFilters.isEmpty
+    }
+
+    private func normalizeRegion(_ text: String) -> String {
+        text.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "/", with: "")
+    }
+
+    private func normalizeGameType(_ value: String) -> String {
+        let normalized = value.lowercased().replacingOccurrences(of: " ", with: "")
+        if normalized == "11vs11" || normalized == "11v11" {
+            return "11v11"
+        }
+        if normalized == "6vs6" || normalized == "6v6" || normalized == "풋살" {
+            return "6v6"
+        }
+        return normalized
+    }
+
+    private func regionKeywords(for filter: String) -> [String] {
+        switch normalizeRegion(filter) {
+        case "서울북부":
+            return ["노원", "도봉", "강북", "성북", "중랑", "동대문", "광진", "종로", "은평", "서대문", "마포"]
+        case "서울남부":
+            return ["강남", "서초", "송파", "강동", "강서", "양천", "영등포", "구로", "금천", "동작", "관악", "용산"]
+        case "경기북부":
+            return ["고양", "파주", "의정부", "양주", "동두천", "연천", "포천", "가평", "남양주", "구리"]
+        case "경기남부":
+            return ["성남", "수원", "용인", "화성", "평택", "안산", "안양", "과천", "군포", "의왕", "시흥", "광명", "오산", "이천", "안성", "하남", "광주"]
+        case "인천부천":
+            return ["인천", "부천", "송도", "계양", "부평", "남동", "연수", "미추홀"]
+        case "기타지역":
+            return ["천안", "아산", "청주", "대전", "대구", "부산", "울산", "광주", "전주", "제주", "강원", "충북", "충남", "전북", "전남", "경북", "경남"]
+        default:
+            return [filter]
+        }
+    }
+
+    private func matchesLocationCategory(match: Match, filter: String) -> Bool {
+        let searchText = "\(match.location) \(match.address ?? "")"
+        return regionKeywords(for: filter).contains { keyword in
+            searchText.localizedCaseInsensitiveContains(keyword)
+        }
+    }
+
+    private func matchesGameTypeCategory(match: Match, filter: String) -> Bool {
+        let serverType = normalizeGameType(match.matchType)
+        let filterType = normalizeGameType(filter)
+        if filterType == "6v6" {
+            return serverType == "6v6"
+        }
+        if filterType == "11v11" {
+            return serverType == "11v11"
+        }
+        return serverType == filterType
+    }
+
+    private func isMatchCompleted(_ match: Match) -> Bool {
+        let normalizedStatus = match.status.lowercased()
+        if ["completed", "full", "cancelled"].contains(normalizedStatus) {
+            return true
+        }
+        return match.isOpponentMatched == true
+    }
+
+    private func isMatchRecruiting(_ match: Match) -> Bool {
+        let normalizedStatus = match.status.lowercased()
+        if normalizedStatus == "recruiting" {
+            return true
+        }
+        return match.isOpponentMatched == false
     }
 }
 

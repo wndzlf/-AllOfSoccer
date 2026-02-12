@@ -3,7 +3,8 @@ const { User } = require('../models');
 
 const auth = async (req, res, next) => {
   try {
-    let token = req.header('Authorization')?.replace('Bearer ', '');
+    const authorizationHeader = req.header('Authorization');
+    let token = authorizationHeader ? authorizationHeader.replace('Bearer ', '') : '';
 
     // 개발 환경에서 토큰이 없으면 테스트 토큰 사용
     if (!token && process.env.NODE_ENV === 'development') {

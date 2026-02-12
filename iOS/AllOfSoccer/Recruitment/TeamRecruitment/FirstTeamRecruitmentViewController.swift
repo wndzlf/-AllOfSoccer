@@ -405,9 +405,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
 
 
     @objc private func callPreviousInformationButtonTouchUp(_ sender: UIButton) {
-        let callPreviousInformationView = CallPreviusMatchingInformationView()
-        callPreviousInformationView.delegate = self
-        subviewConstraints(view: callPreviousInformationView)
+        loadPreviousMatchDraft()
     }
     
     @objc private func nextButtonTouchUp(_ sender: UIButton) {
@@ -479,6 +477,106 @@ class FirstTeamRecruitmentViewController: UIViewController {
             view.bottomAnchor.constraint(equalTo: navigationController.view.bottomAnchor, constant: 0)
         ])
     }
+
+    private func loadPreviousMatchDraft() {
+        APIService.shared.getMyMatches(page: 1, limit: 20) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    guard !response.data.isEmpty else {
+                        self?.showSimpleAlert(message: "불러올 이전 팀 모집 글이 없습니다.")
+                        return
+                    }
+                    self?.presentPreviousMatchActionSheet(matches: response.data)
+                case .failure(let error):
+                    self?.showSimpleAlert(message: "이전 글을 불러오지 못했습니다: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    private func presentPreviousMatchActionSheet(matches: [Match]) {
+        let sheet = UIAlertController(title: "이전 글 불러오기", message: "불러올 게시글을 선택하세요.", preferredStyle: .actionSheet)
+        let recentMatches = Array(matches.prefix(8))
+
+        for match in recentMatches {
+            let teamName = match.team?.name ?? "내 팀"
+            let actionTitle = "[\(teamName)] \(match.title)"
+            sheet.addAction(UIAlertAction(title: actionTitle, style: .default, handler: { [weak self] _ in
+                self?.applyPreviousMatchDraft(match)
+            }))
+        }
+
+        sheet.addAction(UIAlertAction(title: "취소", style: .cancel))
+
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = callPreviousInformationButton
+            popover.sourceRect = callPreviousInformationButton.bounds
+        }
+        present(sheet, animated: true)
+    }
+
+    private func applyPreviousMatchDraft(_ match: Match) {
+        placeTextField.text = match.location
+        priceTextField.text = "\(match.fee)"
+
+        if let date = parseServerDate(match.date) {
+            selectedDate = date
+            dateTimeLabel.text = formattedDisplayDate(date)
+            dateTimeLabel.textColor = .black
+        }
+
+        selectedOptions.removeAll()
+        if match.matchType == "6v6" {
+            selectedOptions.insert(0)
+        } else {
+            selectedOptions.insert(1)
+        }
+
+        switch match.genderType {
+        case "male": selectedOptions.insert(2)
+        case "female": selectedOptions.insert(3)
+        default: selectedOptions.insert(4)
+        }
+
+        switch match.shoesRequirement {
+        case "futsal", "indoor": selectedOptions.insert(5)
+        case "soccer", "cleats": selectedOptions.insert(6)
+        default: break
+        }
+
+        if match.hasFormerPlayer == true {
+            selectedOptions.insert(7)
+        }
+
+        gameOptionsCollectionView.reloadData()
+        showSimpleAlert(message: "이전 글을 불러왔습니다. 날짜/장소만 수정해서 등록할 수 있습니다.")
+    }
+
+    private func parseServerDate(_ dateString: String) -> Date? {
+        let isoFormatter = ISO8601DateFormatter()
+        if let date = isoFormatter.date(from: dateString) {
+            return date
+        }
+
+        let fallback = DateFormatter()
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        fallback.locale = Locale(identifier: "en_US_POSIX")
+        return fallback.date(from: dateString)
+    }
+
+    private func formattedDisplayDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.string(from: date)
+    }
+
+    private func showSimpleAlert(message: String) {
+        let alert = UIAlertController(title: "안내", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - Extensions
@@ -512,6 +610,7 @@ extension FirstTeamRecruitmentViewController: CallPreviusMatchingInformationView
     }
     
     func OKButtonDidSelected(_ view: CallPreviusMatchingInformationView) {
+        loadPreviousMatchDraft()
         view.removeFromSuperview()
     }
 }
