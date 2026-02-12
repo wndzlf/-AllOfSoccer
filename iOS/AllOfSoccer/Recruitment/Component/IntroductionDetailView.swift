@@ -76,7 +76,7 @@ class IntroductionDetailView: UIView {
         button.contentHorizontalAlignment = .left
         button.tag = Comment.first.rawValue
 
-        button.addTarget(self, action: #selector(firstSelectableButtonTouchUp), for: .touchUpInside)
+        button.addTarget(self, action: #selector(commentButtonTouchUp(_:)), for: .touchUpInside)
 
         return button
     }()
@@ -99,7 +99,7 @@ class IntroductionDetailView: UIView {
         button.contentHorizontalAlignment = .left
         button.tag = Comment.second.rawValue
 
-        button.addTarget(self, action: #selector(secondSelectableButtonTouchUp), for: .touchUpInside)
+        button.addTarget(self, action: #selector(commentButtonTouchUp(_:)), for: .touchUpInside)
 
         return button
     }()
@@ -122,7 +122,7 @@ class IntroductionDetailView: UIView {
         button.contentHorizontalAlignment = .left
         button.tag = Comment.third.rawValue
 
-        button.addTarget(self, action: #selector(thirdSelectableButtonTouchUp), for: .touchUpInside)
+        button.addTarget(self, action: #selector(commentButtonTouchUp(_:)), for: .touchUpInside)
 
         return button
     }()
@@ -145,7 +145,7 @@ class IntroductionDetailView: UIView {
         button.contentHorizontalAlignment = .left
         button.tag = Comment.fourth.rawValue
 
-        button.addTarget(self, action: #selector(fourthSelectableButtonTouchUp), for: .touchUpInside)
+        button.addTarget(self, action: #selector(commentButtonTouchUp(_:)), for: .touchUpInside)
 
         return button
     }()
@@ -168,7 +168,7 @@ class IntroductionDetailView: UIView {
         button.contentHorizontalAlignment = .left
         button.tag = Comment.fifth.rawValue
 
-        button.addTarget(self, action: #selector(fifthSelectableButtonTouchUp), for: .touchUpInside)
+        button.addTarget(self, action: #selector(commentButtonTouchUp(_:)), for: .touchUpInside)
 
         return button
     }()
@@ -219,46 +219,21 @@ class IntroductionDetailView: UIView {
         return stackView
     }()
 
-    @objc private func fifthSelectableButtonTouchUp(_ sender: UIButton) {
-        if !sender.isSelected {
-            // 직접입력 버튼이 선택될 때 다른 모든 버튼 선택 해제
+    @objc private func commentButtonTouchUp(_ sender: UIButton) {
+        guard let tappedComment = Comment(rawValue: sender.tag) else { return }
+        let shouldSelect = !sender.isSelected
+
+        // 직접입력은 단독 선택
+        if tappedComment == .fifth {
             let buttons = commentButtonStackView.arrangedSubviews.compactMap { $0 as? SeletableButton }
-            buttons.forEach { button in
-                if button != sender {
-                    button.isSelected = false
-                }
-            }
+            buttons.forEach { $0.isSelected = false }
+            sender.isSelected = shouldSelect
+            return
         }
-        sender.isSelected = !sender.isSelected
-    }
 
-    @objc private func firstSelectableButtonTouchUp(_ sender: UIButton) {
-        if !sender.isSelected {
-            // 일반 버튼이 선택될 때 직접입력 버튼 선택 해제
-            fifthCommentButton.isSelected = false
-        }
-        sender.isSelected = !sender.isSelected
-    }
-
-    @objc private func secondSelectableButtonTouchUp(_ sender: UIButton) {
-        if !sender.isSelected {
-            fifthCommentButton.isSelected = false
-        }
-        sender.isSelected = !sender.isSelected
-    }
-
-    @objc private func thirdSelectableButtonTouchUp(_ sender: UIButton) {
-        if !sender.isSelected {
-            fifthCommentButton.isSelected = false
-        }
-        sender.isSelected = !sender.isSelected
-    }
-
-    @objc private func fourthSelectableButtonTouchUp(_ sender: UIButton) {
-        if !sender.isSelected {
-            fifthCommentButton.isSelected = false
-        }
-        sender.isSelected = !sender.isSelected
+        // 일반 문구를 누르면 직접입력은 해제
+        fifthCommentButton.isSelected = false
+        sender.isSelected = shouldSelect
     }
 
     @objc func cancelButtonDidSelected(sender: UIButton) {

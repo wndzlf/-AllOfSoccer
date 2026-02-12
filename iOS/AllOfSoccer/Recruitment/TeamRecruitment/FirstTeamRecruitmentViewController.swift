@@ -144,6 +144,12 @@ class FirstTeamRecruitmentViewController: UIViewController {
             target: self,
             action: #selector(backButtonItemTouchUp)
         )
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "이전 글 불러오기",
+            style: .plain,
+            target: self,
+            action: #selector(callPreviousInformationButtonTouchUp)
+        )
     }
     
     private func setupUI() {
@@ -255,9 +261,6 @@ class FirstTeamRecruitmentViewController: UIViewController {
         scrollView.addSubview(contentView)
         
         // Add subviews to contentView
-        contentView.addSubview(headerView)
-        headerView.addSubview(callPreviousInformationButton)
-        
         contentView.addSubview(dateLocationLabel)
         contentView.addSubview(dateTimeView)
         dateTimeView.addSubview(calendarImageView)
@@ -290,20 +293,9 @@ class FirstTeamRecruitmentViewController: UIViewController {
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
         
-        // Header constraints
-        NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            headerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            headerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            headerView.heightAnchor.constraint(equalToConstant: 52),
-            
-            callPreviousInformationButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
-            callPreviousInformationButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
-        ])
-        
         // Date/Location constraints
         NSLayoutConstraint.activate([
-            dateLocationLabel.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 20),
+            dateLocationLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             dateLocationLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
             dateTimeView.topAnchor.constraint(equalTo: dateLocationLabel.bottomAnchor, constant: 12),
@@ -383,7 +375,6 @@ class FirstTeamRecruitmentViewController: UIViewController {
     }
     
     private func setupActions() {
-        callPreviousInformationButton.addTarget(self, action: #selector(callPreviousInformationButtonTouchUp), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextButtonTouchUp), for: .touchUpInside)
         
         // Add tap gesture for date/time view
@@ -404,7 +395,7 @@ class FirstTeamRecruitmentViewController: UIViewController {
 
 
 
-    @objc private func callPreviousInformationButtonTouchUp(_ sender: UIButton) {
+    @objc private func callPreviousInformationButtonTouchUp() {
         loadPreviousMatchDraft()
     }
     
@@ -496,8 +487,8 @@ class FirstTeamRecruitmentViewController: UIViewController {
     }
 
     private func presentPreviousMatchActionSheet(matches: [Match]) {
-        let sheet = UIAlertController(title: "이전 글 불러오기", message: "불러올 게시글을 선택하세요.", preferredStyle: .actionSheet)
-        let recentMatches = Array(matches.prefix(8))
+        let sheet = UIAlertController(title: "이전 글 불러오기", message: "최신 5개 중 불러올 게시글을 선택하세요.", preferredStyle: .actionSheet)
+        let recentMatches = Array(matches.prefix(5))
 
         for match in recentMatches {
             let teamName = match.team?.name ?? "내 팀"

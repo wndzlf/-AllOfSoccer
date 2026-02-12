@@ -57,6 +57,7 @@ class SecondTeamRecruitmentViewController: UIViewController {
     private let contactImageView = UIImageView()
     private let contactTextField = UITextField()
     private let informationCheckButton = IBSelectTableButton()
+    private let informationAgreementLabel = UILabel()
     
     // Bottom Button
     private let registerButton = UIButton(type: .system)
@@ -226,7 +227,19 @@ class SecondTeamRecruitmentViewController: UIViewController {
         informationCheckButton.translatesAutoresizingMaskIntoConstraints = false
         informationCheckButton.setImage(UIImage(systemName: "checkmark.circle"), for: .normal)
         informationCheckButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
-        informationCheckButton.tintColor = UIColor(red: 0.803, green: 0.803, blue: 0.803, alpha: 1.0)
+        informationCheckButton.normalTintColor = UIColor(red: 0.803, green: 0.803, blue: 0.803, alpha: 1.0)
+        informationCheckButton.selectTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        informationCheckButton.normalBackgroundColor = .clear
+        informationCheckButton.selectBackgroundColor = .clear
+        informationCheckButton.normalBorderColor = .clear
+        informationCheckButton.selectBorderColor = .clear
+        informationCheckButton.borderWidth = 0
+        
+        informationAgreementLabel.text = "연락처 공개 안내에 동의합니다."
+        informationAgreementLabel.font = UIFont.systemFont(ofSize: 14)
+        informationAgreementLabel.textColor = .darkGray
+        informationAgreementLabel.isUserInteractionEnabled = true
+        informationAgreementLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Bottom Button
         registerButton.setTitle("등록하기", for: .normal)
@@ -272,6 +285,7 @@ class SecondTeamRecruitmentViewController: UIViewController {
         contactView.addSubview(contactImageView)
         contactView.addSubview(contactTextField)
         contentView.addSubview(informationCheckButton)
+        contentView.addSubview(informationAgreementLabel)
         
         view.addSubview(registerButton)
         
@@ -380,7 +394,10 @@ class SecondTeamRecruitmentViewController: UIViewController {
             informationCheckButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             informationCheckButton.widthAnchor.constraint(equalToConstant: 22),
             informationCheckButton.heightAnchor.constraint(equalToConstant: 22),
-
+            
+            informationAgreementLabel.centerYAnchor.constraint(equalTo: informationCheckButton.centerYAnchor),
+            informationAgreementLabel.leadingAnchor.constraint(equalTo: informationCheckButton.trailingAnchor, constant: 8),
+            informationAgreementLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16),
         ])
         
         // Bottom button constraints
@@ -409,6 +426,9 @@ class SecondTeamRecruitmentViewController: UIViewController {
         informationCheckButton.addTarget(self, action: #selector(informationCheckButtonTouchUp), for: .touchUpInside)
         callTeamInformationButton.addTarget(self, action: #selector(callTeamInformationButtonTouchUp), for: .touchUpInside)
         registerButton.addTarget(self, action: #selector(registerTeamInformationTouchUp), for: .touchUpInside)
+
+        let agreementTapGesture = UITapGestureRecognizer(target: self, action: #selector(informationAgreementLabelTouchUp))
+        informationAgreementLabel.addGestureRecognizer(agreementTapGesture)
     }
     
     private func setupSliders() {
@@ -467,6 +487,10 @@ class SecondTeamRecruitmentViewController: UIViewController {
     @objc private func informationCheckButtonTouchUp(_ sender: IBSelectTableButton) {
         sender.isSelected = !sender.isSelected
     }
+    
+    @objc private func informationAgreementLabelTouchUp() {
+        informationCheckButton.isSelected.toggle()
+    }
 
     @objc private func callTeamInformationButtonTouchUp(_ sender: UIButton) {
         let callTeamInformationView = CallTeamInformationView()
@@ -503,7 +527,9 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
         // 연락처 공개 동의 확인
         guard informationCheckButton.isSelected else {
-            showAlert(message: "연락처 공개 안내에 동의해주세요.")
+            showAlert(message: "연락처 공개 안내에 동의해주세요.") { [weak self] in
+                self?.scrollToAgreementSection()
+            }
             return
         }
 
@@ -606,28 +632,21 @@ class SecondTeamRecruitmentViewController: UIViewController {
         if let rangeSlider = rangeSlider {
             // RangeSeekSlider의 경우 (나이대)
             let sliderWidth = rangeSlider.frame.width
-            let handleRadius: CGFloat = 9 // handleDiameter의 절반
-            let effectiveWidth = sliderWidth - (2 * handleRadius) // 실제 사용 가능한 너비
-            let division: CGFloat = 6 // 6개의 간격으로 7개의 포인트
-            let stepWidth = effectiveWidth / division
-            
-            // 각 라벨의 x 위치 계산
-            for i in 0...6 {
-                let xPosition = handleRadius + (stepWidth * CGFloat(i))
-                labelsXPosition.append(xPosition)
-            }
-        } else if let customSlider = customSlider {
-            // UISlider의 경우 (실력)
-            let sliderWidth = customSlider.frame.width
-            let thumbWidth: CGFloat = 20 // thumb 이미지의 너비
-            let effectiveWidth = sliderWidth - thumbWidth
+            let handleRadius: CGFloat = 9
+            let effectiveWidth = sliderWidth - (2 * handleRadius)
             let division: CGFloat = 6
             let stepWidth = effectiveWidth / division
             
-            // 각 라벨의 x 위치 계산
             for i in 0...6 {
-                let xPosition = (thumbWidth/2) + (stepWidth * CGFloat(i))
-                labelsXPosition.append(xPosition)
+                labelsXPosition.append(handleRadius + (stepWidth * CGFloat(i)))
+            }
+        } else if let customSlider = customSlider {
+            // UISlider의 경우 (실력)
+            let trackRect = customSlider.trackRect(forBounds: customSlider.bounds)
+            let division: CGFloat = 6
+            for i in 0...6 {
+                let progress = CGFloat(i) / division
+                labelsXPosition.append(trackRect.minX + (trackRect.width * progress))
             }
         }
 
@@ -643,14 +662,21 @@ class SecondTeamRecruitmentViewController: UIViewController {
             label.removeFromSuperview()
             contentView.addSubview(label)
             
-            // 모든 라벨에 대해 중앙 정렬 적용
-            let xPosition = labelPosition - (label.intrinsicContentSize.width / 2)
-            
             NSLayoutConstraint.activate([
                 label.topAnchor.constraint(equalTo: slider.bottomAnchor, constant: 12),
-                label.leadingAnchor.constraint(equalTo: slider.leadingAnchor, constant: xPosition)
+                label.centerXAnchor.constraint(equalTo: slider.leadingAnchor, constant: labelPosition)
             ])
         }
+    }
+
+    private func scrollToAgreementSection() {
+        let targetRect = CGRect(
+            x: 0,
+            y: max(informationCheckButton.frame.minY - 20, 0),
+            width: contentView.bounds.width,
+            height: 80
+        )
+        scrollView.scrollRectToVisible(targetRect, animated: true)
     }
 }
 
