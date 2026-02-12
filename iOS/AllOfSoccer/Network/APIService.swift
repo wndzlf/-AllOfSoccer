@@ -1214,4 +1214,141 @@ extension APIService {
             }
         }.resume()
     }
+
+    // MARK: - Mercenary Application
+    func applyForMercenary(
+        requestId: String,
+        completion: @escaping (Result<MercenaryRequestResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests/\(requestId)/apply") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 신청 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func cancelMercenaryApplication(
+        requestId: String,
+        completion: @escaping (Result<MercenaryRequestResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/mercenary-requests/\(requestId)/apply") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(MercenaryRequestResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("용병 신청 취소 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // MARK: - Profile Image Upload
+    func uploadProfileImage(
+        image: UIImage,
+        completion: @escaping (Result<UserProfileDetailResponse, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/users/profile-image/me") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        // multipart/form-data로 이미지 전송
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+
+        // 이미지 바운더리 및 데이터
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"image\"; filename=\"profile.jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+
+        if let imageData = image.jpegData(compressionQuality: 0.8) {
+            body.append(imageData)
+        }
+
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(UserProfileDetailResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    print("프로필 이미지 업로드 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
 }

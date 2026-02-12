@@ -578,6 +578,7 @@ class UserProfileViewModel {
 
         let positions = position?.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
 
+        // 1단계: 프로필 정보 업데이트
         APIService.shared.updateUserProfile(
             nickname: nickname.isEmpty ? nil : nickname,
             bio: introduction,
@@ -585,16 +586,41 @@ class UserProfileViewModel {
             preferredSkillLevel: skillLevel,
             location: location?.isEmpty == true ? nil : location
         ) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelLoadingChanged"), object: nil)
+            switch result {
+            case .success(let response):
+                self?.profileDetail = response.data
 
-                switch result {
-                case .success(let response):
-                    self?.profileDetail = response.data
-                    NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelProfileChanged"), object: nil)
+                // 2단계: 이미지가 있으면 업로드
+                if let image = profileImage {
+                    APIService.shared.uploadProfileImage(image: image) { [weak self] imageResult in
+                        DispatchQueue.main.async {
+                            self?.isLoading = false
+                            NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelLoadingChanged"), object: nil)
 
-                case .failure(let error):
+                            switch imageResult {
+                            case .success(let imageResponse):
+                                self?.profileDetail = imageResponse.data
+                                NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelProfileChanged"), object: nil)
+
+                            case .failure(let error):
+                                self?.errorMessage = "프로필 정보는 저장되었으나 이미지 업로드 실패: \(error.localizedDescription)"
+                                NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelErrorChanged"), object: nil)
+                            }
+                        }
+                    }
+                } else {
+                    // 이미지 없으면 바로 완료
+                    DispatchQueue.main.async {
+                        self?.isLoading = false
+                        NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelLoadingChanged"), object: nil)
+                        NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelProfileChanged"), object: nil)
+                    }
+                }
+
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self?.isLoading = false
+                    NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelLoadingChanged"), object: nil)
                     self?.errorMessage = error.localizedDescription
                     NotificationCenter.default.post(name: NSNotification.Name("UserProfileViewModelErrorChanged"), object: nil)
                 }

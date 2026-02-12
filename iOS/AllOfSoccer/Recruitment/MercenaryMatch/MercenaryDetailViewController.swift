@@ -650,9 +650,17 @@ class MercenaryDetailViewController: UIViewController {
     // MARK: - Actions
     @objc private func applyButtonTapped() {
         guard let request = mercenaryRequest else { return }
-        print("신청: \(request.id)")
-        // TODO: 신청 로직 구현
-        showAlert(title: "신청 완료", message: "용병 신청이 완료되었습니다.")
+
+        viewModel.applyForMercenary(requestId: request.id) { [weak self] result in
+            switch result {
+            case .success:
+                self?.showAlert(title: "신청 완료", message: "용병 신청이 완료되었습니다.")
+                self?.loadDetail()
+
+            case .failure(let error):
+                self?.showAlert(title: "신청 실패", message: error.localizedDescription)
+            }
+        }
     }
 
     @objc private func shareButtonTapped() {
@@ -694,6 +702,24 @@ class MercenaryDetailViewModel {
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
                     NotificationCenter.default.post(name: NSNotification.Name("MercenaryDetailViewModelErrorChanged"), object: nil)
+                }
+            }
+        }
+    }
+
+    func applyForMercenary(requestId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        APIService.shared.applyForMercenary(requestId: requestId) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    self?.mercenaryRequest = response.data
+                    NotificationCenter.default.post(name: NSNotification.Name("MercenaryDetailViewModelDetailChanged"), object: nil)
+                    completion(.success(true))
+
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    NotificationCenter.default.post(name: NSNotification.Name("MercenaryDetailViewModelErrorChanged"), object: nil)
+                    completion(.failure(error))
                 }
             }
         }
