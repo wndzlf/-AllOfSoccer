@@ -2,19 +2,11 @@
 //  MyPageViewController.swift
 //  AllOfSoccer
 //
-//  Created by 최원석 on 2021/07/04.
-//
 
 import UIKit
 import MessageUI
 
 class MyPageViewController: UIViewController {
-
-    @IBOutlet private weak var mywritingButton: UIButton!
-    @IBOutlet private weak var myfavoriteButton: UIButton!
-    @IBOutlet private weak var questionsButton: UIButton!
-
-    // 프로필 섹션
     private let profileContainerView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -50,7 +42,19 @@ class MyPageViewController: UIViewController {
         return label
     }()
 
-    private let logoutButton: UIButton = {
+    private let menuContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
+    private lazy var myWritingButton: UIButton = makeMenuButton(title: "내가 쓴 글", icon: "square.and.pencil")
+    private lazy var favoritesButton: UIButton = makeMenuButton(title: "관심 글", icon: "heart")
+    private lazy var profileButton: UIButton = makeMenuButton(title: "프로필 설정", icon: "person.crop.circle.badge.checkmark")
+    private lazy var questionsButton: UIButton = makeMenuButton(title: "문의하기", icon: "envelope")
+    private lazy var logoutButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("로그아웃", for: .normal)
         button.setTitleColor(.white, for: .normal)
@@ -65,38 +69,36 @@ class MyPageViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "마이페이지"
+        view.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
 
-        setupProfileSection()
-        setWritingButton()
-        setFavoriteButton()
-        setQuestionsButton()
-        setMailComposeView()
+        setupLayout()
+        setupActions()
         fetchUserProfile()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // 프로필 정보 갱신
         fetchUserProfile()
     }
 
-    private func setupProfileSection() {
+    private func setupLayout() {
         view.addSubview(profileContainerView)
         profileContainerView.addSubview(profileImageView)
         profileContainerView.addSubview(nameLabel)
         profileContainerView.addSubview(emailLabel)
-        profileContainerView.addSubview(logoutButton)
 
-        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+        view.addSubview(menuContainer)
+        [myWritingButton, favoritesButton, profileButton, questionsButton, logoutButton].forEach { menuContainer.addArrangedSubview($0) }
 
         NSLayoutConstraint.activate([
             profileContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             profileContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             profileContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            profileContainerView.heightAnchor.constraint(equalToConstant: 200),
+            profileContainerView.heightAnchor.constraint(equalToConstant: 150),
 
-            profileImageView.topAnchor.constraint(equalTo: profileContainerView.topAnchor, constant: 20),
             profileImageView.leadingAnchor.constraint(equalTo: profileContainerView.leadingAnchor, constant: 20),
+            profileImageView.centerYAnchor.constraint(equalTo: profileContainerView.centerYAnchor),
             profileImageView.widthAnchor.constraint(equalToConstant: 80),
             profileImageView.heightAnchor.constraint(equalToConstant: 80),
 
@@ -108,11 +110,37 @@ class MyPageViewController: UIViewController {
             emailLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
             emailLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
 
-            logoutButton.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 20),
-            logoutButton.leadingAnchor.constraint(equalTo: profileContainerView.leadingAnchor, constant: 20),
-            logoutButton.trailingAnchor.constraint(equalTo: profileContainerView.trailingAnchor, constant: -20),
-            logoutButton.heightAnchor.constraint(equalToConstant: 50)
+            menuContainer.topAnchor.constraint(equalTo: profileContainerView.bottomAnchor, constant: 20),
+            menuContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            menuContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
+
+        [myWritingButton, favoritesButton, profileButton, questionsButton, logoutButton].forEach { button in
+            button.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        }
+    }
+
+    private func setupActions() {
+        myWritingButton.addTarget(self, action: #selector(myWritingTapped), for: .touchUpInside)
+        favoritesButton.addTarget(self, action: #selector(favoritesTapped), for: .touchUpInside)
+        profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
+        questionsButton.addTarget(self, action: #selector(questionsButtonDidSelected), for: .touchUpInside)
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+    }
+
+    private func makeMenuButton(title: String, icon: String) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle("  \(title)", for: .normal)
+        button.setImage(UIImage(systemName: icon), for: .normal)
+        button.tintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        button.contentHorizontalAlignment = .leading
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 8
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }
 
     private func fetchUserProfile() {
@@ -123,7 +151,6 @@ class MyPageViewController: UIViewController {
                 self?.updateProfileUI(profile)
             case .failure(let error):
                 print("프로필 가져오기 실패: \(error)")
-                // 실패해도 기본 UI는 표시
             }
         }
     }
@@ -132,20 +159,31 @@ class MyPageViewController: UIViewController {
         nameLabel.text = profile.name
         emailLabel.text = profile.email ?? "이메일 정보 없음"
 
-        // 프로필 이미지 로드 (URL이 있는 경우)
         if let imageUrlString = profile.profileImage, let imageUrl = URL(string: imageUrlString) {
             loadProfileImage(from: imageUrl)
         }
     }
 
     private func loadProfileImage(from url: URL) {
-        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             if let data = data, let image = UIImage(data: data) {
                 DispatchQueue.main.async {
                     self?.profileImageView.image = image
                 }
             }
         }.resume()
+    }
+
+    @objc private func myWritingTapped() {
+        navigationController?.pushViewController(MyWritingViewController(), animated: true)
+    }
+
+    @objc private func favoritesTapped() {
+        navigationController?.pushViewController(MyFavoritesViewController(), animated: true)
+    }
+
+    @objc private func profileTapped() {
+        navigationController?.pushViewController(UserProfileViewController(), animated: true)
     }
 
     @objc private func logoutButtonTapped() {
@@ -158,11 +196,8 @@ class MyPageViewController: UIViewController {
     }
 
     private func performLogout() {
-        APIService.shared.logout { [weak self] result in
-            // 서버 응답과 관계없이 로컬 토큰 삭제
+        APIService.shared.logout { [weak self] _ in
             Auth.clearAll()
-
-            // 로그인 화면으로 전환
             DispatchQueue.main.async {
                 self?.navigateToLoginScreen()
             }
@@ -171,54 +206,26 @@ class MyPageViewController: UIViewController {
 
     private func navigateToLoginScreen() {
         guard let window = UIApplication.shared.windows.first else { return }
-
-        let storyboard = UIStoryboard(name: "SignIn", bundle: nil)
-        let loginVC = storyboard.instantiateInitialViewController()
+        let loginVC = UINavigationController(rootViewController: SignInViewController())
 
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {
             window.rootViewController = loginVC
         })
     }
 
-    private func setWritingButton() {
-        self.mywritingButton.centerVertically(4)
-    }
-
-    private func setFavoriteButton() {
-        self.myfavoriteButton.centerVertically(4)
-    }
-
-    private func setQuestionsButton() {
-        self.questionsButton.addTarget(self, action: #selector(questionsButtonDidSelected), for: .touchUpInside)
-    }
-
-    private func setMailComposeView() {
-        if !MFMailComposeViewController.canSendMail() {
-            print("Mail services are not available")
-            return
-        }
-    }
-
-    @objc private func questionsButtonDidSelected(sender: UIButton) {
-
-        let mailComposerViewController = configureMailComposeController()
-        self.present(mailComposerViewController, animated: true, completion: nil)
-    }
-
-    private func configureMailComposeController() -> MFMailComposeViewController {
+    @objc private func questionsButtonDidSelected() {
+        guard MFMailComposeViewController.canSendMail() else { return }
         let mailComposerViewController = MFMailComposeViewController()
         mailComposerViewController.mailComposeDelegate = self
         mailComposerViewController.setToRecipients(["cws653@naver.com"])
         mailComposerViewController.setSubject("탭탭매칭 문의 하기")
         mailComposerViewController.setMessageBody("탭탭매칭 개발팀에게 전하고 싶은 것들을 보내주세요 🥳", isHTML: false)
-
-        return mailComposerViewController
+        present(mailComposerViewController, animated: true)
     }
 }
 
 extension MyPageViewController: MFMailComposeViewControllerDelegate {
-
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-        controller.dismiss(animated: true, completion: nil)
+        controller.dismiss(animated: true)
     }
 }

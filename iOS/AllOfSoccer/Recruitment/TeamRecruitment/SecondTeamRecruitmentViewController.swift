@@ -487,6 +487,26 @@ class SecondTeamRecruitmentViewController: UIViewController {
             return
         }
 
+        // 연락처 필수 정책
+        let contact = contactTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !contact.isEmpty else {
+            showAlert(message: "회장 연락처를 입력해주세요.")
+            return
+        }
+
+        // 최소한의 전화번호 형식 검증 (숫자 8자리 이상)
+        let contactDigits = contact.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+        guard contactDigits.count >= 8 else {
+            showAlert(message: "연락처 형식이 올바르지 않습니다.")
+            return
+        }
+
+        // 연락처 공개 동의 확인
+        guard informationCheckButton.isSelected else {
+            showAlert(message: "연락처 공개 안내에 동의해주세요.")
+            return
+        }
+
         // 나머지 데이터 수집
         data.teamName = teamName
         data.ageRangeMin = Int(ageRangeSlider.selectedMinValue)
@@ -500,14 +520,20 @@ class SecondTeamRecruitmentViewController: UIViewController {
 
         // 팀 소개 수집 (테이블뷰 또는 직접입력)
         if isDirectInputMode {
-            data.teamIntroduction = directInputTextView.text
+            let directInputText = directInputTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if directInputText.isEmpty || directInputText == "소개글을 직접 입력해주세요" {
+                data.teamIntroduction = nil
+            } else {
+                data.teamIntroduction = directInputText
+            }
         } else {
             let introTexts = tableViewModel.map { $0.content }
-            data.teamIntroduction = introTexts.joined(separator: "\n")
+            let joinedIntro = introTexts.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            data.teamIntroduction = joinedIntro.isEmpty ? nil : joinedIntro
         }
 
         // 연락처
-        data.contactInfo = contactTextField.text
+        data.contactInfo = contact
 
         // 로딩 인디케이터 표시
         sender.isEnabled = false

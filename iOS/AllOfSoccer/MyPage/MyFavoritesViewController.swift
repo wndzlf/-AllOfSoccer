@@ -250,8 +250,8 @@ extension MyFavoritesViewController: UITableViewDelegate, UITableViewDataSource 
 
     // MARK: - Navigation
     private func navigateToMatchDetail(matchId: String) {
-        // TODO: Implement navigation to match detail screen
-        print("팀 매칭 상세: \(matchId)")
+        let detailVC = TeamMatchDetailViewController(matchId: matchId)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 
     private func navigateToMercenaryDetail(requestId: String) {

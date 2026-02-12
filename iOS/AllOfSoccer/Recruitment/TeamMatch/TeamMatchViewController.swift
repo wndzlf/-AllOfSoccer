@@ -205,8 +205,8 @@ extension TeamMatchViewController: UITableViewDelegate, UITableViewDataSource {
 // MARK: - Navigation
 extension TeamMatchViewController {
     private func navigateToDetailScreen(matchId: String) {
-        // TODO: Implement navigation to detail screen
-        print("상세 화면으로 이동: \(matchId)")
+        let detailViewController = TeamMatchDetailViewController(matchId: matchId)
+        navigationController?.pushViewController(detailViewController, animated: true)
     }
 }
 
@@ -317,4 +317,3 @@ class TeamMatchCell: UITableViewCell {
         return dateString
     }
 }
-

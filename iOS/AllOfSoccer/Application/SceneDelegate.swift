@@ -16,10 +16,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
 
         if Auth.isLoggedIn() {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            window.rootViewController = storyboard.instantiateInitialViewController()
+            window.rootViewController = MainTabBarController()
         } else {
-            // 코드로 로그인 화면 생성 (Storyboard IBOutlet 에러 회피)
             let signInVC = SignInViewController()
             let navigationController = UINavigationController(rootViewController: signInVC)
             window.rootViewController = navigationController
@@ -57,4 +55,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 }
-

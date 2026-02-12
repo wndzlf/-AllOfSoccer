@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct APIService {
 
@@ -214,9 +215,23 @@ struct APIService {
         dateFormatter.formatOptions = [.withInternetDateTime]
         let dateString = dateFormatter.string(from: data.date)
 
+        let trimmedIntro = data.teamIntroduction?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedContact = data.contactInfo?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let contactLine = (trimmedContact?.isEmpty == false) ? "연락처: \(trimmedContact!)" : nil
+
+        var descriptionParts: [String] = []
+        if let intro = trimmedIntro, !intro.isEmpty {
+            descriptionParts.append(intro)
+        }
+        if let contactLine = contactLine {
+            descriptionParts.append(contactLine)
+        }
+
+        let finalDescription = descriptionParts.isEmpty ? "" : descriptionParts.joined(separator: "\n")
+
         var body: [String: Any] = [
             "title": "\(data.location) \(data.matchType) 경기",
-            "description": data.teamIntroduction ?? "",
+            "description": finalDescription,
             "date": dateString,
             "location": data.location,
             "match_type": data.matchType,
@@ -234,7 +249,7 @@ struct APIService {
         if let ageMax = data.ageRangeMax { body["age_range_max"] = ageMax }
         if let skillMin = data.skillLevelMin { body["skill_level_min"] = skillMin }
         if let skillMax = data.skillLevelMax { body["skill_level_max"] = skillMax }
-        if let intro = data.teamIntroduction { body["team_introduction"] = intro }
+        if let intro = trimmedIntro, !intro.isEmpty { body["team_introduction"] = intro }
 
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 

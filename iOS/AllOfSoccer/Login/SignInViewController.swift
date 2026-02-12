@@ -189,9 +189,7 @@ class SignInViewController: UIViewController {
     private func navigateToMainScreen() {
         guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
               let window = sceneDelegate.window else { return }
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let mainVC = storyboard.instantiateInitialViewController()
-        window.rootViewController = mainVC
+        window.rootViewController = MainTabBarController()
         window.makeKeyAndVisible()
     }
 

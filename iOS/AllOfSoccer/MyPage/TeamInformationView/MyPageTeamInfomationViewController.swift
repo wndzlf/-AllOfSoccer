@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MyPageTeamInfomationViewController: UIViewController {
+class MyPageTeamInformationViewController: UIViewController {
 
     private var teamInfoTableViewModel: [TeamInfoModel] = []
 
@@ -43,11 +43,11 @@ class MyPageTeamInfomationViewController: UIViewController {
     }
 }
 
-extension MyPageTeamInfomationViewController: UITableViewDelegate {
+extension MyPageTeamInformationViewController: UITableViewDelegate {
 
 }
 
-extension MyPageTeamInfomationViewController: UITableViewDataSource {
+extension MyPageTeamInformationViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.teamInfoTableViewModel.count
     }
@@ -66,10 +66,12 @@ extension MyPageTeamInfomationViewController: UITableViewDataSource {
     }
 }
 
-extension MyPageTeamInfomationViewController: TeamInfoTableViewDelegate {
+extension MyPageTeamInformationViewController: TeamInfoTableViewDelegate {
     func changeTeamInfoButtonDidSelected() {
         let vc = MyPageChangeTeamInfoViewController()
 
         navigationController?.pushViewController(vc, animated: true)
     }
 }
+
+typealias MyPageTeamInfomationViewController = MyPageTeamInformationViewController
