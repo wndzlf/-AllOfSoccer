@@ -12,12 +12,7 @@ class Auth {
     private static var accessTokenKey: String = "accessToken"
 
     static func accessToken() -> String? {
-
-        if let accesstoken = UserDefaults.standard.string(forKey: "accesstoken") {
-            return accesstoken
-        } else {
-            return nil
-        }
+        return UserDefaults.standard.string(forKey: "accesstoken")
     }
 
     static func updateAcceessToken(token: String) {
@@ -26,6 +21,26 @@ class Auth {
 
     static func reset() throws {
         try UserDefaults.standard.set(nil, forKey: "accesstoken")
+    }
+
+    // MARK: - Refresh Token
+    static func refreshToken() -> String? {
+        return UserDefaults.standard.string(forKey: "refreshToken")
+    }
+
+    static func updateRefreshToken(token: String) {
+        UserDefaults.standard.set(token, forKey: "refreshToken")
+    }
+
+    // MARK: - Session
+    static func isLoggedIn() -> Bool {
+        return accessToken() != nil
+    }
+
+    static func clearAll() {
+        UserDefaults.standard.removeObject(forKey: "accesstoken")
+        UserDefaults.standard.removeObject(forKey: "refreshToken")
+        UserDefaults.standard.removeObject(forKey: "userIdentifier")
     }
 }
 

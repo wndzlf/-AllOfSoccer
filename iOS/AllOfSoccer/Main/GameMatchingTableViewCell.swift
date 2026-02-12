@@ -347,7 +347,7 @@ class GameMatchingTableViewCell: UITableViewCell {
 }
 
 internal struct GameMatchListViewModel {
-    internal let id: Int
+    internal let id: String
     internal let date: String
     internal let time: String
     internal let address: String
@@ -360,7 +360,7 @@ internal struct GameMatchListViewModel {
     internal let hasFormerPlayer: Bool?
 
     internal init(
-        id: Int,
+        id: String,
         date: String,
         time: String,
         address: String,

@@ -17,4 +17,10 @@ extension Date {
 
         return changedSelectedDate
     }
+
+    func toISO8601String() -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.string(from: self)
+    }
 }

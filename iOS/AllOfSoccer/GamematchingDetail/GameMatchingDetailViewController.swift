@@ -115,7 +115,7 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         super.viewDidLoad()
         setupNavigationItem()
         setupUI()
-        configureData()
+        fetchLatestData()
     }
     
     override func viewDidLayoutSubviews() {
@@ -366,12 +366,12 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
     }
     
     private func setupMessageButton() {
-        messageButton.setTitle("메세지 보내기", for: .normal)
+        messageButton.setTitle("참가 신청하기", for: .normal)
         messageButton.setTitleColor(.white, for: .normal)
         messageButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         messageButton.backgroundColor = Colors.messageButtonColor
-        messageButton.addTarget(self, action: #selector(messageButtonTapped), for: .touchUpInside)
-        
+        messageButton.addTarget(self, action: #selector(participationButtonTapped), for: .touchUpInside)
+
         contentView.addSubview(messageButton)
     }
     
@@ -483,9 +483,94 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         return ceil(boundingBox.height)
     }
     
+    private func fetchLatestData() {
+        // 서버에서 최신 데이터 가져오기
+        viewModel.fetchLatestData { [weak self] result in
+            switch result {
+            case .success():
+                // UI 업데이트
+                self?.configureData()
+            case .failure(let error):
+                print("매칭 상세 데이터 가져오기 실패: \(error)")
+                // 기존 데이터로 UI 표시
+                self?.configureData()
+            }
+        }
+    }
+
     private func configureData() {
         // ViewModel에서 데이터를 가져와서 UI를 업데이트
-        // 현재는 setupUI() 메서드에서 이미 ViewModel 데이터를 사용하고 있음
+        let data = viewModel.data
+
+        dateLabel.text = data.date
+        locationLabel.text = data.location
+        addressLabel.text = data.address
+        feeAmountLabel.text = data.feeAmount
+        ageValueLabel.text = data.ageRange
+        skillValueLabel.text = data.skillLevel
+        contactValueLabel.text = data.contactNumber
+        noteLabel.text = data.noteText
+
+        // 경기 형식 아이템 업데이트
+        formatStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for item in data.formatItems {
+            let itemView = createFormatItemView(title: item.title, iconName: item.iconName)
+            formatStackView.addArrangedSubview(itemView)
+        }
+
+        // 참가 신청 버튼 텍스트 업데이트
+        updateParticipationButton()
+
+        // 레이아웃 업데이트
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+
+    private func updateParticipationButton() {
+        // 참가자 수 확인
+        let participants = viewModel.participants
+        let isParticipating = participants.contains { $0.status == "confirmed" }
+
+        if isParticipating {
+            messageButton.setTitle("참가 취소하기", for: .normal)
+            messageButton.backgroundColor = UIColor.systemGray
+        } else {
+            messageButton.setTitle("참가 신청하기", for: .normal)
+            messageButton.backgroundColor = Colors.messageButtonColor
+        }
+    }
+
+    private func createFormatItemView(title: String, iconName: String) -> UIView {
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconImageView = UIImageView()
+        iconImageView.image = UIImage(systemName: iconName)
+        iconImageView.tintColor = Colors.primaryGreen
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = UIFont.systemFont(ofSize: 13)
+        titleLabel.textColor = .black
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        containerView.addSubview(iconImageView)
+        containerView.addSubview(titleLabel)
+
+        NSLayoutConstraint.activate([
+            iconImageView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            iconImageView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            iconImageView.widthAnchor.constraint(equalToConstant: Layout.formatIconSize),
+            iconImageView.heightAnchor.constraint(equalToConstant: Layout.formatIconHeight),
+
+            titleLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 8),
+            titleLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+
+        return containerView
     }
     
     // MARK: - Actions
@@ -510,20 +595,92 @@ class GameMatchingDetailViewController: UIViewController, MFMessageComposeViewCo
         self.present(activityViewController, animated: true, completion: nil)
     }
     
+    // MARK: - Participation Actions
+    @objc private func participationButtonTapped() {
+        guard let matchId = viewModel.getMatchId() else {
+            showAlert(title: "오류", message: "매칭 정보를 찾을 수 없습니다.")
+            return
+        }
+
+        // 현재 참가 중인지 확인
+        let participants = viewModel.participants
+        let isParticipating = participants.contains { $0.status == "confirmed" }
+
+        if isParticipating {
+            // 참가 취소
+            cancelParticipation(matchId: matchId)
+        } else {
+            // 참가 신청
+            applyForMatch(matchId: matchId)
+        }
+    }
+
+    private func applyForMatch(matchId: String) {
+        messageButton.isEnabled = false
+        messageButton.setTitle("신청 중...", for: .normal)
+
+        APIService.shared.applyForMatch(matchId: matchId) { [weak self] result in
+            self?.messageButton.isEnabled = true
+
+            switch result {
+            case .success(let response):
+                if response.success {
+                    self?.showAlert(title: "성공", message: "참가 신청이 완료되었습니다.") {
+                        self?.fetchLatestData()
+                    }
+                } else {
+                    self?.showAlert(title: "실패", message: response.message ?? "참가 신청에 실패했습니다.")
+                }
+            case .failure(let error):
+                self?.showAlert(title: "오류", message: "네트워크 오류: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func cancelParticipation(matchId: String) {
+        messageButton.isEnabled = false
+        messageButton.setTitle("취소 중...", for: .normal)
+
+        APIService.shared.cancelMatchApplication(matchId: matchId) { [weak self] result in
+            self?.messageButton.isEnabled = true
+
+            switch result {
+            case .success(let response):
+                if response.success {
+                    self?.showAlert(title: "성공", message: "참가가 취소되었습니다.") {
+                        self?.fetchLatestData()
+                    }
+                } else {
+                    self?.showAlert(title: "실패", message: response.message ?? "참가 취소에 실패했습니다.")
+                }
+            case .failure(let error):
+                self?.showAlert(title: "오류", message: "네트워크 오류: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            completion?()
+        })
+        present(alert, animated: true)
+    }
+
     // MARK: - Message Actions
     @objc private func messageButtonTapped() {
         print("메세지 보내기 버튼이 탭되었습니다.")
-        
+
         // 연락처 번호에서 하이픈 제거
         let phoneNumber = viewModel.data.contactNumber.replacingOccurrences(of: "-", with: "")
-        
+
         // SMS 기능이 사용 가능한지 확인
         if MFMessageComposeViewController.canSendText() {
             let messageComposer = MFMessageComposeViewController()
             messageComposer.messageComposeDelegate = self
             messageComposer.recipients = [phoneNumber]
             messageComposer.body = "안녕하세요! \(viewModel.data.teamName) 팀 모집 글을 보고 연락드립니다."
-            
+
             self.present(messageComposer, animated: true, completion: nil)
         } else {
             // SMS 기능이 사용 불가능한 경우 (시뮬레이터 등)
