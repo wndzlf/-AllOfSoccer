@@ -25,6 +25,11 @@ class RecruitmentCalendarView: UIView {
     private let minutes = [0, 30]
     private var selectedHour = 0
     private var selectedMinute = 0
+    private lazy var backgroundTapGesture: UITapGestureRecognizer = {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped(_:)))
+        gesture.delegate = self
+        return gesture
+    }()
 
     private var baseView: UIView = {
         let view = UIView()
@@ -58,6 +63,7 @@ class RecruitmentCalendarView: UIView {
         calendar.calendarWeekdayView.weekdayLabels[6].text = "토"
 
         calendar.allowsMultipleSelection = false
+        calendar.allowsSelection = true
         
         // 이전/다음 달 날짜 숨기기
         calendar.placeholderType = .none
@@ -161,10 +167,12 @@ class RecruitmentCalendarView: UIView {
         setSuperView()
         setCalendar()
         setViewConstraint()
+        setupDismissGesture()
     }
 
     private func setSuperView() {
         self.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
+        self.isUserInteractionEnabled = true
     }
 
     private func setCalendar() {
@@ -174,6 +182,8 @@ class RecruitmentCalendarView: UIView {
         // 현재 날짜를 기본 선택으로 설정
         let today = Date()
         calendar.select(today)
+        calendar.setCurrentPage(today, animated: false)
+        currentPage = today
         appendDate(date: today)
         
         // 현재 시간을 30분 단위로 맞춤
@@ -252,8 +262,24 @@ class RecruitmentCalendarView: UIView {
         ])
     }
 
+    private func setupDismissGesture() {
+        addGestureRecognizer(backgroundTapGesture)
+    }
+
+    @objc private func backgroundTapped(_ sender: UITapGestureRecognizer) {
+        if let delegate = self.delegate {
+            delegate.cancelButtonDidSelected(self)
+        } else {
+            removeFromSuperview()
+        }
+    }
+
     @objc private func cancelButtonTouchUp(sender: UIButton) {
-        self.delegate?.cancelButtonDidSelected(self)
+        if let delegate = self.delegate {
+            delegate.cancelButtonDidSelected(self)
+        } else {
+            removeFromSuperview()
+        }
     }
 
     @objc private func okButtonTouchUp(sender: UIButton) {
@@ -263,7 +289,11 @@ class RecruitmentCalendarView: UIView {
         let timeString = String(format: "%02d:%02d", selectedHour, selectedMinute)
         
         let fullDateString = "\(selectedDate) \(timeString)"
-        self.delegate?.okButtonDidSelected(self, selectedDate: fullDateString)
+        if let delegate = self.delegate {
+            delegate.okButtonDidSelected(self, selectedDate: fullDateString)
+        } else {
+            removeFromSuperview()
+        }
     }
 
     @objc private func monthPrevButtonTouchUp(_ sender: UIButton) {
@@ -290,6 +320,10 @@ class RecruitmentCalendarView: UIView {
 // MARK: - FSCollectionViewDelegate
 extension RecruitmentCalendarView: FSCalendarDelegate {
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
+        if monthPosition != .current {
+            calendar.setCurrentPage(date, animated: true)
+            currentPage = date
+        }
 
         self.appendDate(date: date)
     }
@@ -300,7 +334,7 @@ extension RecruitmentCalendarView: FSCalendarDelegate {
     }
 
     func minimumDate(for calendar: FSCalendar) -> Date {
-        return Date()
+        return Calendar.current.startOfDay(for: Date())
     }
 
     private func appendDate(date: Date) {
@@ -326,6 +360,15 @@ extension RecruitmentCalendarView: FSCalendarDelegate {
 //        let buttonTitle = self.selectedDate.isEmpty ? "선택" : "선택 (\(countOfSeletedDate)건)"
 //        self.okButton.setTitle(buttonTitle, for: .normal)
 //    }
+}
+
+extension RecruitmentCalendarView: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if touch.view?.isDescendant(of: baseView) == true {
+            return false
+        }
+        return true
+    }
 }
 
 // MARK: - FSCollectionViewDataSource

@@ -206,6 +206,12 @@ class UserProfileViewController: UIViewController {
     private func setupUI() {
         title = "프로필 설정"
         view.backgroundColor = UIColor(red: 0.964, green: 0.968, blue: 0.980, alpha: 1.0)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "내 팀 관리",
+            style: .plain,
+            target: self,
+            action: #selector(manageTeamTapped)
+        )
 
         view.addSubview(scrollView)
         view.addSubview(loadingIndicator)
@@ -447,6 +453,10 @@ class UserProfileViewController: UIViewController {
         present(imagePicker, animated: true)
     }
 
+    @objc private func manageTeamTapped() {
+        navigationController?.pushViewController(MyTeamsViewController(), animated: true)
+    }
+
     @objc private func saveButtonTapped() {
         let nickname = nicknameTextField.text ?? ""
 
@@ -464,7 +474,14 @@ class UserProfileViewController: UIViewController {
         }
 
         let position = preferredPositionTextField.text ?? ""
-        let skillLevel = preferredSkillLevelSegmentedControl.titleForSegment(at: preferredSkillLevelSegmentedControl.selectedSegmentIndex) ?? ""
+        let skillLevelLabel = preferredSkillLevelSegmentedControl.titleForSegment(at: preferredSkillLevelSegmentedControl.selectedSegmentIndex) ?? ""
+        let skillLevelMap: [String: String] = [
+            "초급": "beginner",
+            "중급": "intermediate",
+            "고급": "advanced",
+            "전문가": "expert"
+        ]
+        let skillLevel = skillLevelMap[skillLevelLabel] ?? "intermediate"
         let location = locationTextField.text ?? ""
 
         viewModel.saveProfile(

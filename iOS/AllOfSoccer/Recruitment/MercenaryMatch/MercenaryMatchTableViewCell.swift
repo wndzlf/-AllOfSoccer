@@ -23,77 +23,138 @@ class MercenaryMatchTableViewCell: UITableViewCell {
         return view
     }()
 
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        label.textColor = .black
-        label.numberOfLines = 2
-        return label
-    }()
-
-    private let locationLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .gray
-        return label
+    private let leftDateStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 4
+        return stack
     }()
 
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .gray
+        label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        label.textColor = UIColor(red: 0.40, green: 0.40, blue: 0.40, alpha: 1.0)
+        label.textAlignment = .center
         return label
     }()
 
-    private let feeLabel: UILabel = {
+    private let timeLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        label.textColor = UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 1.0)
+        label.font = UIFont.boldSystemFont(ofSize: 22)
+        label.textColor = .black
+        label.textAlignment = .center
         return label
     }()
 
-    private let infoStackView: UIStackView = {
+    private let rightContentStackView: UIStackView = {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .vertical
-        stack.spacing = 6
-        stack.distribution = .fill
+        stack.spacing = 8
         return stack
     }()
 
-    private let bottomStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .horizontal
-        stack.spacing = 12
-        stack.distribution = .fillProportionally
-        return stack
-    }()
-
-    private let tagsStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .horizontal
-        stack.spacing = 6
-        stack.distribution = .fillProportionally
-        return stack
-    }()
-
-    private let statusBadge: UILabel = {
+    private let locationLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.boldSystemFont(ofSize: 11)
-        label.textAlignment = .center
-        label.layer.masksToBounds = true
-        label.layer.cornerRadius = 4
-        label.isHidden = true
-        label.clipsToBounds = true
+        label.font = UIFont.boldSystemFont(ofSize: 17)
+        label.textColor = .black
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
+
+    private let metaChipStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        stack.distribution = .fillProportionally
+        return stack
+    }()
+
+    private let matchTypeChip: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 46/255, green: 108/255, blue: 225/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 46/255, green: 108/255, blue: 225/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        return label
+    }()
+
+    private let skillChip: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        return label
+    }()
+
+    private let feeChip: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        return label
+    }()
+
+    private let teamNameLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        label.textColor = UIColor(red: 0.50, green: 0.50, blue: 0.50, alpha: 1.0)
+        return label
+    }()
+
+    private let statusRowStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        return stack
+    }()
+
+    private let statusBadge: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 11)
+        label.textAlignment = .center
+        label.layer.cornerRadius = 10
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        return label
+    }()
+
+    private let formerPlayerBadge: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 11)
+        label.textAlignment = .center
+        label.layer.cornerRadius = 10
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        return label
+    }()
+
+    private let positionBadge: PaddedLabel = {
+        let label = PaddedLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 11)
+        label.textAlignment = .center
+        label.layer.cornerRadius = 10
+        label.layer.masksToBounds = true
+        label.contentInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        label.textColor = UIColor(red: 86/255, green: 86/255, blue: 86/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 86/255, green: 86/255, blue: 86/255, alpha: 0.12)
+        return label
+    }()
+
+    private let statusSpacerView = UIView()
 
     // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -112,196 +173,190 @@ class MercenaryMatchTableViewCell: UITableViewCell {
 
         contentView.addSubview(containerView)
 
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(infoStackView)
-        containerView.addSubview(bottomStackView)
-        containerView.addSubview(statusBadge)
+        containerView.addSubview(leftDateStackView)
+        containerView.addSubview(rightContentStackView)
 
-        infoStackView.addArrangedSubview(locationLabel)
-        infoStackView.addArrangedSubview(dateLabel)
+        leftDateStackView.addArrangedSubview(dateLabel)
+        leftDateStackView.addArrangedSubview(timeLabel)
 
-        bottomStackView.addArrangedSubview(tagsStackView)
-        bottomStackView.addArrangedSubview(feeLabel)
+        [matchTypeChip, skillChip, feeChip].forEach {
+            $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+            $0.setContentHuggingPriority(.required, for: .horizontal)
+            metaChipStackView.addArrangedSubview($0)
+        }
+
+        statusBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        formerPlayerBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        positionBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        statusBadge.setContentHuggingPriority(.required, for: .horizontal)
+        formerPlayerBadge.setContentHuggingPriority(.required, for: .horizontal)
+        positionBadge.setContentHuggingPriority(.required, for: .horizontal)
+
+        rightContentStackView.addArrangedSubview(locationLabel)
+        rightContentStackView.addArrangedSubview(metaChipStackView)
+        rightContentStackView.addArrangedSubview(teamNameLabel)
+        rightContentStackView.addArrangedSubview(statusRowStackView)
+
+        statusRowStackView.addArrangedSubview(statusBadge)
+        statusRowStackView.addArrangedSubview(formerPlayerBadge)
+        statusRowStackView.addArrangedSubview(positionBadge)
+        statusRowStackView.addArrangedSubview(statusSpacerView)
 
         setupConstraints()
     }
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // Container
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
 
-            // Title
-            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            leftDateStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            leftDateStackView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            leftDateStackView.widthAnchor.constraint(equalToConstant: 92),
+            leftDateStackView.topAnchor.constraint(greaterThanOrEqualTo: containerView.topAnchor, constant: 12),
+            leftDateStackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -12),
 
-            // Info Stack
-            infoStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
-            infoStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            infoStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-
-            // Bottom Stack
-            bottomStackView.topAnchor.constraint(equalTo: infoStackView.bottomAnchor, constant: 10),
-            bottomStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            bottomStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-
-            // Status Badge (positioned below bottom stack)
-            statusBadge.topAnchor.constraint(equalTo: bottomStackView.bottomAnchor, constant: 10),
-            statusBadge.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            statusBadge.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
-            statusBadge.heightAnchor.constraint(equalToConstant: 22),
-            statusBadge.widthAnchor.constraint(greaterThanOrEqualToConstant: 60)
+            rightContentStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 14),
+            rightContentStackView.leadingAnchor.constraint(equalTo: leftDateStackView.trailingAnchor, constant: 14),
+            rightContentStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -14),
+            rightContentStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -14)
         ])
     }
 
     // MARK: - Configure
     func configureWithRequest(_ request: MercenaryRequest, viewModel: MercenaryMatchViewModel) {
-        let teamName = request.team?.name ?? "팀 미지정"
-        titleLabel.text = "[\(teamName)] \(request.title)"
-        locationLabel.text = "📍 \(request.location)"
-        dateLabel.text = "🕐 \(viewModel.formatDate(request.date))"
-        feeLabel.text = viewModel.formatFee(request.fee)
+        let dateParts = viewModel.formatDateTimeComponents(request.date)
+        dateLabel.text = dateParts.date
+        timeLabel.text = dateParts.time.isEmpty ? "--:--" : dateParts.time
 
-        // Clear previous tags
-        tagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        locationLabel.text = viewModel.formatLocationTitle(location: request.location, address: request.address)
+        teamNameLabel.text = request.team?.name ?? "팀 정보 미등록"
 
-        // Add position tags
-        if !request.positionsNeeded.isEmpty {
-            let positionText = viewModel.formatPositions(request.positionsNeeded)
-            let positionTag = createTag(text: positionText)
-            tagsStackView.addArrangedSubview(positionTag)
-        }
+        matchTypeChip.text = viewModel.formatMatchType(request.matchType)
+        skillChip.text = viewModel.formatSkillChip(min: request.skillLevelMin, max: request.skillLevelMax)
+        feeChip.text = viewModel.formatFeeChip(request.fee)
 
-        // Add applicant count with recruitment status
-        let applicantCount = request.mercenaryCount - request.currentApplicants
-        let isRecruiting = applicantCount > 0
-        let statusText = isRecruiting ? "모집 중 (\(applicantCount)명)" : "모집 완료"
-
-        if isRecruiting {
-            statusBadge.text = statusText
-            statusBadge.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
-            statusBadge.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
-            statusBadge.isHidden = false
+        let remainingPositions = max(request.mercenaryCount - request.currentApplicants, 0)
+        if request.status == "closed" || remainingPositions <= 0 {
+            configureStatusBadge(text: "모집 완료", isRecruiting: false)
         } else {
-            statusBadge.text = statusText
-            statusBadge.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
-            statusBadge.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
-            statusBadge.isHidden = false
+            configureStatusBadge(text: "용병 \(remainingPositions)명 모집중", isRecruiting: true)
         }
 
-        // Add applicant count tag
-        let applicantText = "지원자: \(request.currentApplicants)/\(request.mercenaryCount)"
-        let applicantTag = createTag(text: applicantText)
-        tagsStackView.addArrangedSubview(applicantTag)
+        configureFormerPlayerBadge(text: viewModel.formatFormerPlayerType(request.hasFormerPlayer), hasFormerPlayer: request.hasFormerPlayer)
+
+        let positionsText = viewModel.formatPositionSummary(request.positionsNeeded)
+        positionBadge.text = positionsText
+        positionBadge.isHidden = positionsText.isEmpty
     }
 
     func configureWithApplication(_ application: MercenaryApplication, viewModel: MercenaryMatchViewModel) {
-        titleLabel.text = application.title
-        let locations = application.preferredLocations.joined(separator: ", ")
-        locationLabel.text = "📍 \(locations.isEmpty ? "지역 미지정" : locations)"
-        dateLabel.text = "🎯 실력: \(application.skillLevel)"
+        if let firstDate = application.availableDates.sorted().first {
+            let dateParts = viewModel.formatDateTimeComponents(firstDate)
+            dateLabel.text = dateParts.date
+            timeLabel.text = dateParts.time.isEmpty ? "--:--" : dateParts.time
+        } else {
+            dateLabel.text = "날짜 미정"
+            timeLabel.text = "--:--"
+        }
+
+        let location = application.preferredLocations.first ?? "지역 미지정"
+        locationLabel.text = viewModel.formatLocationTitle(location: location, address: nil)
+        teamNameLabel.text = application.user?.name ?? "개인 용병"
+
+        matchTypeChip.text = "용병 지원"
+        skillChip.text = "실력 \(viewModel.formatSkillRange(min: application.skillLevel, max: nil))"
 
         if let minFee = application.preferredFeeMin, let maxFee = application.preferredFeeMax {
-            feeLabel.text = "\(viewModel.formatFee(minFee)) ~ \(viewModel.formatFee(maxFee))"
+            feeChip.text = "희망비 \(viewModel.formatFee(minFee))~\(viewModel.formatFee(maxFee))"
         } else {
-            feeLabel.text = "비용 협의"
+            feeChip.text = "희망비 협의"
         }
 
-        // Clear previous tags
-        tagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
-        // Add position tags
-        if !application.positions.isEmpty {
-            let positionText = application.positions.joined(separator: ", ")
-            let positionTag = createTag(text: positionText)
-            tagsStackView.addArrangedSubview(positionTag)
-        }
-
-        // Add status badge with color coding
-        let statusText = getApplicationStatusText(application.status)
         switch application.status {
         case "available":
-            statusBadge.text = statusText
-            statusBadge.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
-            statusBadge.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.1)
-            statusBadge.isHidden = false
+            configureStatusBadge(text: "구인 중", isRecruiting: true)
         case "matched":
-            statusBadge.text = statusText
-            statusBadge.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
-            statusBadge.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.1)
-            statusBadge.isHidden = false
+            configureStatusBadge(text: "매칭됨", isRecruiting: false)
         case "unavailable":
-            statusBadge.text = statusText
+            statusBadge.text = "불가능"
             statusBadge.textColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0)
-            statusBadge.backgroundColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.1)
+            statusBadge.backgroundColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.12)
             statusBadge.isHidden = false
         default:
             statusBadge.isHidden = true
         }
 
-        // Add status tag for reference (optional, can be removed if badge is sufficient)
-        let statusTag = createTag(text: statusText)
-        tagsStackView.addArrangedSubview(statusTag)
+        formerPlayerBadge.isHidden = true
+        let positionsText = application.positions.isEmpty ? "" : "포지션 \(application.positions.joined(separator: ", "))"
+        positionBadge.text = positionsText
+        positionBadge.isHidden = positionsText.isEmpty
     }
 
-    private func createTag(text: String) -> UIView {
-        let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
+    private func configureStatusBadge(text: String, isRecruiting: Bool) {
+        statusBadge.text = text
+        statusBadge.isHidden = false
 
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = text
-        label.font = UIFont.systemFont(ofSize: 11, weight: .regular)
-        label.textColor = UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 1.0)
-        label.numberOfLines = 1
-
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 0.1)
-        view.layer.cornerRadius = 4
-
-        view.addSubview(label)
-
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: view.topAnchor, constant: 4),
-            label.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -4),
-            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
-            label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -6),
-            view.heightAnchor.constraint(equalToConstant: 20)
-        ])
-
-        containerView.addSubview(view)
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: containerView.topAnchor),
-            view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-            view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
-        ])
-
-        return containerView
+        if isRecruiting {
+            statusBadge.textColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1.0)
+            statusBadge.backgroundColor = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 0.12)
+        } else {
+            statusBadge.textColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
+            statusBadge.backgroundColor = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 0.12)
+        }
     }
 
-    private func getApplicationStatusText(_ status: String) -> String {
-        switch status {
-        case "available": return "구인 중"
-        case "matched": return "매칭됨"
-        case "unavailable": return "불가능"
-        default: return status
+    private func configureFormerPlayerBadge(text: String, hasFormerPlayer: Bool?) {
+        formerPlayerBadge.text = text
+        formerPlayerBadge.isHidden = false
+
+        guard let hasFormerPlayer else {
+            formerPlayerBadge.textColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0)
+            formerPlayerBadge.backgroundColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.12)
+            return
+        }
+
+        if hasFormerPlayer {
+            formerPlayerBadge.textColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1.0)
+            formerPlayerBadge.backgroundColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 0.12)
+        } else {
+            formerPlayerBadge.textColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0)
+            formerPlayerBadge.backgroundColor = UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.12)
         }
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        titleLabel.text = nil
-        locationLabel.text = nil
         dateLabel.text = nil
-        feeLabel.text = nil
+        timeLabel.text = nil
+        locationLabel.text = nil
+        teamNameLabel.text = nil
+        matchTypeChip.text = nil
+        skillChip.text = nil
+        feeChip.text = nil
         statusBadge.text = nil
+        formerPlayerBadge.text = nil
+        positionBadge.text = nil
         statusBadge.isHidden = true
-        tagsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        formerPlayerBadge.isHidden = true
+        positionBadge.isHidden = true
+    }
+}
+
+private final class PaddedLabel: UILabel {
+    var contentInsets = UIEdgeInsets.zero
+
+    override func drawText(in rect: CGRect) {
+        super.drawText(in: rect.inset(by: contentInsets))
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(
+            width: size.width + contentInsets.left + contentInsets.right,
+            height: size.height + contentInsets.top + contentInsets.bottom
+        )
     }
 }

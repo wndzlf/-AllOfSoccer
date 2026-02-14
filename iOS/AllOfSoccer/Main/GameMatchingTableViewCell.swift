@@ -73,14 +73,38 @@ class GameMatchingTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 18)
         label.textColor = .black
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
-    
-    private let contentsLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0)
-        label.numberOfLines = 2
+
+    private let matchTypeTagLabel: PaddedChipLabel = {
+        let label = PaddedChipLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 46/255, green: 108/255, blue: 225/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 46/255, green: 108/255, blue: 225/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        return label
+    }()
+
+    private let skillTagLabel: PaddedChipLabel = {
+        let label = PaddedChipLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        return label
+    }()
+
+    private let feeTagLabel: PaddedChipLabel = {
+        let label = PaddedChipLabel()
+        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.textColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 1.0)
+        label.backgroundColor = UIColor(red: 236/255, green: 95/255, blue: 95/255, alpha: 0.12)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
         return label
     }()
     
@@ -148,7 +172,9 @@ class GameMatchingTableViewCell: UITableViewCell {
         self.contentView.addSubview(dateLabel)
         self.contentView.addSubview(timeLabel)
         self.contentView.addSubview(placeLabel)
-        self.contentView.addSubview(contentsLabel)
+        self.contentView.addSubview(matchTypeTagLabel)
+        self.contentView.addSubview(skillTagLabel)
+        self.contentView.addSubview(feeTagLabel)
         self.contentView.addSubview(teamNameLabel)
         contentView.addSubview(checkbutton)
         contentView.addSubview(recruitmentStatusLabel)
@@ -175,23 +201,23 @@ class GameMatchingTableViewCell: UITableViewCell {
         
         // Layout Constants
         let leftPadding: CGFloat = cardMargin + 20 // Inside card
-        let rightColumnX: CGFloat = cardMargin + 100 // Start of right column
         let rightPadding: CGFloat = cardMargin + 16
-        let contentWidth = contentView.frame.width - rightColumnX - rightPadding
-        
-        // Date Label
+
+        // Date/Time left column (vertically centered)
         dateLabel.sizeToFit()
-        dateLabel.frame.origin = CGPoint(x: leftPadding, y: cardVerticalMargin + 24)
-        
-        // Time Label
         timeLabel.sizeToFit()
-        timeLabel.frame.origin = CGPoint(x: leftPadding, y: dateLabel.frame.maxY + 6)
-        // Align centers of date and time
-        if dateLabel.frame.width > timeLabel.frame.width {
-            timeLabel.center.x = dateLabel.center.x
-        } else {
-            dateLabel.center.x = timeLabel.center.x
-        }
+
+        let leftColumnWidth = max(66, max(dateLabel.bounds.width, timeLabel.bounds.width))
+        let dateTimeSpacing: CGFloat = 6
+        let dateTimeGroupHeight = dateLabel.bounds.height + dateTimeSpacing + timeLabel.bounds.height
+        let dateTimeGroupY = cardView.frame.minY + (cardView.frame.height - dateTimeGroupHeight) / 2
+        let leftCenterX = leftPadding + (leftColumnWidth / 2)
+
+        dateLabel.frame.origin = CGPoint(x: leftCenterX - dateLabel.bounds.width / 2, y: dateTimeGroupY)
+        timeLabel.frame.origin = CGPoint(x: leftCenterX - timeLabel.bounds.width / 2, y: dateLabel.frame.maxY + dateTimeSpacing)
+
+        let rightColumnX: CGFloat = leftPadding + leftColumnWidth + 20
+        let contentWidth = contentView.frame.width - rightColumnX - rightPadding
         
         // Check Button (Top Right)
         let buttonSize: CGFloat = 24
@@ -205,22 +231,25 @@ class GameMatchingTableViewCell: UITableViewCell {
                                   y: cardVerticalMargin + 20,
                                   width: contentWidth - buttonSize - 8,
                                   height: 22)
-        
-        // Contents Label
-        contentsLabel.frame = CGRect(x: rightColumnX,
-                                     y: placeLabel.frame.maxY + 8,
-                                     width: contentWidth,
-                                     height: 40)
-        contentsLabel.sizeToFit()
-        // Limit width
-        if contentsLabel.frame.width > contentWidth {
-            contentsLabel.frame.size.width = contentWidth
-            contentsLabel.sizeToFit()
+
+        // Match Meta Chips (match type / skill / fee)
+        var currentMetaX = rightColumnX
+        let metaY = placeLabel.frame.maxY + 8
+        let metaSpacing: CGFloat = 6
+        let visibleMetaLabels = [matchTypeTagLabel, skillTagLabel, feeTagLabel].filter { !$0.isHidden && !($0.text?.isEmpty ?? true) }
+        var metaRowHeight: CGFloat = 0
+
+        for label in visibleMetaLabels {
+            label.sizeToFit()
+            let labelWidth = min(label.bounds.width, contentWidth)
+            label.frame = CGRect(x: currentMetaX, y: metaY, width: labelWidth, height: label.bounds.height)
+            currentMetaX = label.frame.maxX + metaSpacing
+            metaRowHeight = max(metaRowHeight, label.bounds.height)
         }
-        
-        // Team Name Label
+
+        // Team Name Label (non-card plain text)
         teamNameLabel.sizeToFit()
-        teamNameLabel.frame.origin = CGPoint(x: rightColumnX, y: contentsLabel.frame.maxY + 10)
+        teamNameLabel.frame.origin = CGPoint(x: rightColumnX, y: metaY + metaRowHeight + 10)
         
         // Recruitment Status Labels (Below Team Name)
         // 텍스트 길이에 따라 너비 조정
@@ -256,7 +285,6 @@ class GameMatchingTableViewCell: UITableViewCell {
     
     override func sizeThatFits(_ size: CGSize) -> CGSize {
         let cardVerticalMargin: CGFloat = 12
-        let rightColumnX: CGFloat = 100
         
         // 기본 컨텐츠 높이 계산
         var totalHeight: CGFloat = cardVerticalMargin // 상단 여백
@@ -264,9 +292,9 @@ class GameMatchingTableViewCell: UITableViewCell {
         totalHeight += 8  // 간격
         totalHeight += 22 // 장소 라벨
         totalHeight += 8  // 간격
-        
-        // 내용 라벨 높이 (최대 2줄)
-        totalHeight += contentsLabel.sizeThatFits(size).height
+
+        // 메타 카드 높이
+        totalHeight += max(matchTypeTagLabel.sizeThatFits(size).height, 28)
         totalHeight += 10 // 간격
         
         // 팀 이름 라벨
@@ -287,7 +315,12 @@ class GameMatchingTableViewCell: UITableViewCell {
         self.dateLabel.text = viewModel.date
         self.timeLabel.text = viewModel.time
         self.placeLabel.text = viewModel.address
-        self.contentsLabel.text = viewModel.description
+        self.matchTypeTagLabel.text = viewModel.matchTypeTag
+        self.skillTagLabel.text = viewModel.skillTag
+        self.feeTagLabel.text = viewModel.feeTag
+        self.matchTypeTagLabel.isHidden = viewModel.matchTypeTag.isEmpty
+        self.skillTagLabel.isHidden = viewModel.skillTag.isEmpty
+        self.feeTagLabel.isHidden = viewModel.feeTag.isEmpty
         self.teamNameLabel.text = viewModel.teamName
         self.checkbutton.isSelected = viewModel.isFavorite
         
@@ -358,6 +391,9 @@ internal struct GameMatchListViewModel {
     internal let primaryStatus: MatchStatusType?
     internal let secondaryStatus: MatchStatusType?
     internal let hasFormerPlayer: Bool?
+    internal let matchTypeTag: String
+    internal let skillTag: String
+    internal let feeTag: String
 
     internal init(
         id: String,
@@ -370,7 +406,10 @@ internal struct GameMatchListViewModel {
         teamName: String,
         primaryStatus: MatchStatusType?,
         secondaryStatus: MatchStatusType?,
-        hasFormerPlayer: Bool?
+        hasFormerPlayer: Bool?,
+        matchTypeTag: String = "",
+        skillTag: String = "",
+        feeTag: String = ""
     ) {
         self.id = id
         self.date = date
@@ -383,7 +422,28 @@ internal struct GameMatchListViewModel {
         self.primaryStatus = primaryStatus
         self.secondaryStatus = secondaryStatus
         self.hasFormerPlayer = hasFormerPlayer
+        self.matchTypeTag = matchTypeTag
+        self.skillTag = skillTag
+        self.feeTag = feeTag
     }
 }
 
 // 목데이터는 GameMatchingViewModel에서 통합 관리하므로 제거
+
+private final class PaddedChipLabel: UILabel {
+    private let horizontalPadding: CGFloat = 10
+    private let verticalPadding: CGFloat = 5
+
+    override func drawText(in rect: CGRect) {
+        let insets = UIEdgeInsets(top: verticalPadding, left: horizontalPadding, bottom: verticalPadding, right: horizontalPadding)
+        super.drawText(in: rect.inset(by: insets))
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(
+            width: size.width + (horizontalPadding * 2),
+            height: size.height + (verticalPadding * 2)
+        )
+    }
+}

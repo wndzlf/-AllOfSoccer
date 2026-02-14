@@ -52,6 +52,7 @@ class MyPageViewController: UIViewController {
 
     private lazy var myWritingButton: UIButton = makeMenuButton(title: "내가 쓴 글", icon: "square.and.pencil")
     private lazy var favoritesButton: UIButton = makeMenuButton(title: "관심 글", icon: "heart")
+    private lazy var teamsButton: UIButton = makeMenuButton(title: "내 팀 관리", icon: "person.3")
     private lazy var profileButton: UIButton = makeMenuButton(title: "프로필 설정", icon: "person.crop.circle.badge.checkmark")
     private lazy var questionsButton: UIButton = makeMenuButton(title: "문의하기", icon: "envelope")
     private lazy var logoutButton: UIButton = {
@@ -89,7 +90,7 @@ class MyPageViewController: UIViewController {
         profileContainerView.addSubview(emailLabel)
 
         view.addSubview(menuContainer)
-        [myWritingButton, favoritesButton, profileButton, questionsButton, logoutButton].forEach { menuContainer.addArrangedSubview($0) }
+        [myWritingButton, favoritesButton, teamsButton, profileButton, questionsButton, logoutButton].forEach { menuContainer.addArrangedSubview($0) }
 
         NSLayoutConstraint.activate([
             profileContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -115,7 +116,7 @@ class MyPageViewController: UIViewController {
             menuContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
 
-        [myWritingButton, favoritesButton, profileButton, questionsButton, logoutButton].forEach { button in
+        [myWritingButton, favoritesButton, teamsButton, profileButton, questionsButton, logoutButton].forEach { button in
             button.heightAnchor.constraint(equalToConstant: 50).isActive = true
         }
     }
@@ -123,6 +124,7 @@ class MyPageViewController: UIViewController {
     private func setupActions() {
         myWritingButton.addTarget(self, action: #selector(myWritingTapped), for: .touchUpInside)
         favoritesButton.addTarget(self, action: #selector(favoritesTapped), for: .touchUpInside)
+        teamsButton.addTarget(self, action: #selector(teamsTapped), for: .touchUpInside)
         profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
         questionsButton.addTarget(self, action: #selector(questionsButtonDidSelected), for: .touchUpInside)
         logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
@@ -149,8 +151,9 @@ class MyPageViewController: UIViewController {
             case .success(let profile):
                 self?.userProfile = profile
                 self?.updateProfileUI(profile)
-            case .failure(let error):
-                print("프로필 가져오기 실패: \(error)")
+            case .failure:
+                self?.nameLabel.text = "사용자"
+                self?.emailLabel.text = "이메일 정보 없음"
             }
         }
     }
@@ -180,6 +183,10 @@ class MyPageViewController: UIViewController {
 
     @objc private func favoritesTapped() {
         navigationController?.pushViewController(MyFavoritesViewController(), animated: true)
+    }
+
+    @objc private func teamsTapped() {
+        navigationController?.pushViewController(MyTeamsViewController(), animated: true)
     }
 
     @objc private func profileTapped() {
@@ -214,10 +221,32 @@ class MyPageViewController: UIViewController {
     }
 
     @objc private func questionsButtonDidSelected() {
-        guard MFMailComposeViewController.canSendMail() else { return }
+        let recipient = "cws653@naver.com"
+
+        guard MFMailComposeViewController.canSendMail() else {
+            let encodedSubject = "탭탭매칭 문의 하기".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            let encodedBody = "탭탭매칭 개발팀에게 전하고 싶은 것들을 보내주세요".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            if let url = URL(string: "mailto:\(recipient)?subject=\(encodedSubject)&body=\(encodedBody)"),
+               UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            } else {
+                let alert = UIAlertController(
+                    title: "메일 앱 설정 필요",
+                    message: "메일 앱을 설정한 뒤 다시 시도해주세요.\n문의 메일: \(recipient)",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "확인", style: .default))
+                alert.addAction(UIAlertAction(title: "메일 주소 복사", style: .default, handler: { _ in
+                    UIPasteboard.general.string = recipient
+                }))
+                present(alert, animated: true)
+            }
+            return
+        }
+
         let mailComposerViewController = MFMailComposeViewController()
         mailComposerViewController.mailComposeDelegate = self
-        mailComposerViewController.setToRecipients(["cws653@naver.com"])
+        mailComposerViewController.setToRecipients([recipient])
         mailComposerViewController.setSubject("탭탭매칭 문의 하기")
         mailComposerViewController.setMessageBody("탭탭매칭 개발팀에게 전하고 싶은 것들을 보내주세요 🥳", isHTML: false)
         present(mailComposerViewController, animated: true)

@@ -31,6 +31,34 @@ class MercenaryRequestViewController: UIViewController {
         return label
     }()
 
+    private let teamView = RoundView()
+    private let teamImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(systemName: "person.3.fill")
+        imageView.tintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+
+    private let teamNameValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        label.textColor = .black
+        label.text = "내 팀 확인 중..."
+        return label
+    }()
+
+    private let teamHintLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = UIColor(red: 0.55, green: 0.55, blue: 0.58, alpha: 1.0)
+        label.text = "등록된 팀이 있으면 자동으로 연결됩니다."
+        return label
+    }()
+
     private let titleView = RoundView()
     private let titleTextField: UITextField = {
         let tf = UITextField()
@@ -174,6 +202,36 @@ class MercenaryRequestViewController: UIViewController {
 
     private let skillSelector = SkillLevelSelectorView()
 
+    // Section 6: Mercenary Type
+    private let mercenaryTypeLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "용병 유형"
+        label.font = UIFont.systemFont(ofSize: 17, weight: .bold)
+        label.textColor = .black
+        return label
+    }()
+
+    private let mercenaryTypeControl: UISegmentedControl = {
+        let control = UISegmentedControl(items: ["비선출 우선", "선출 포함"])
+        control.translatesAutoresizingMaskIntoConstraints = false
+        control.selectedSegmentIndex = 0
+        control.backgroundColor = UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+        control.selectedSegmentTintColor = UIColor(red: 0.92, green: 0.37, blue: 0.37, alpha: 1.0)
+        control.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .normal)
+        control.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
+        return control
+    }()
+
+    private let mercenaryTypeHintLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "매칭 시 상대 팀이 선출/비선출 조건을 바로 확인할 수 있습니다."
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = UIColor(red: 0.55, green: 0.55, blue: 0.58, alpha: 1.0)
+        return label
+    }()
+
     // Submit Button
     private let submitButton: UIButton = {
         let button = UIButton(type: .system)
@@ -188,7 +246,11 @@ class MercenaryRequestViewController: UIViewController {
     }()
 
     private var selectedDate: Date?
+    private var selectedTeamId: String?
     private var selectedTeamName: String = "개인 모집"
+    private var hasFormerPlayerRecruitment: Bool {
+        return mercenaryTypeControl.selectedSegmentIndex == 1
+    }
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -198,6 +260,7 @@ class MercenaryRequestViewController: UIViewController {
         setupUI()
         setupConstraints()
         setupActions()
+        loadDefaultTeam()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -232,6 +295,10 @@ class MercenaryRequestViewController: UIViewController {
 
         // Section 1: Basic Info
         contentView.addSubview(basicInfoLabel)
+        contentView.addSubview(teamView)
+        teamView.addSubview(teamImageView)
+        teamView.addSubview(teamNameValueLabel)
+        contentView.addSubview(teamHintLabel)
         contentView.addSubview(titleView)
         titleView.addSubview(titleTextField)
         contentView.addSubview(descriptionView)
@@ -263,12 +330,17 @@ class MercenaryRequestViewController: UIViewController {
         contentView.addSubview(skillLabel)
         contentView.addSubview(skillSelector)
 
+        // Section 6: Mercenary Type
+        contentView.addSubview(mercenaryTypeLabel)
+        contentView.addSubview(mercenaryTypeControl)
+        contentView.addSubview(mercenaryTypeHintLabel)
+
         // Submit Button
         view.addSubview(submitButton)
 
         // Configure RoundViews with subtle borders
         let borderColor = UIColor(red: 0.92, green: 0.92, blue: 0.96, alpha: 1.0)
-        [titleView, descriptionView, dateTimeView, placeView, feeView, countView].forEach { view in
+        [teamView, titleView, descriptionView, dateTimeView, placeView, feeView, countView].forEach { view in
             view.backgroundColor = .white
             view.layer.cornerRadius = 8
             view.borderColor = borderColor
@@ -299,7 +371,25 @@ class MercenaryRequestViewController: UIViewController {
             basicInfoLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: padding),
             basicInfoLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
 
-            titleView.topAnchor.constraint(equalTo: basicInfoLabel.bottomAnchor, constant: 12),
+            teamView.topAnchor.constraint(equalTo: basicInfoLabel.bottomAnchor, constant: 12),
+            teamView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            teamView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            teamView.heightAnchor.constraint(equalToConstant: 50),
+
+            teamImageView.leadingAnchor.constraint(equalTo: teamView.leadingAnchor, constant: 16),
+            teamImageView.centerYAnchor.constraint(equalTo: teamView.centerYAnchor),
+            teamImageView.widthAnchor.constraint(equalToConstant: 16),
+            teamImageView.heightAnchor.constraint(equalToConstant: 16),
+
+            teamNameValueLabel.leadingAnchor.constraint(equalTo: teamImageView.trailingAnchor, constant: 12),
+            teamNameValueLabel.trailingAnchor.constraint(equalTo: teamView.trailingAnchor, constant: -16),
+            teamNameValueLabel.centerYAnchor.constraint(equalTo: teamView.centerYAnchor),
+
+            teamHintLabel.topAnchor.constraint(equalTo: teamView.bottomAnchor, constant: 8),
+            teamHintLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            teamHintLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+
+            titleView.topAnchor.constraint(equalTo: teamHintLabel.bottomAnchor, constant: 12),
             titleView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             titleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             titleView.heightAnchor.constraint(equalToConstant: 50),
@@ -404,7 +494,18 @@ class MercenaryRequestViewController: UIViewController {
             skillSelector.topAnchor.constraint(equalTo: skillLabel.bottomAnchor, constant: 12),
             skillSelector.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             skillSelector.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
-            skillSelector.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -padding)
+            mercenaryTypeLabel.topAnchor.constraint(equalTo: skillSelector.bottomAnchor, constant: 32),
+            mercenaryTypeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+
+            mercenaryTypeControl.topAnchor.constraint(equalTo: mercenaryTypeLabel.bottomAnchor, constant: 12),
+            mercenaryTypeControl.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            mercenaryTypeControl.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            mercenaryTypeControl.heightAnchor.constraint(equalToConstant: 36),
+
+            mercenaryTypeHintLabel.topAnchor.constraint(equalTo: mercenaryTypeControl.bottomAnchor, constant: 8),
+            mercenaryTypeHintLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            mercenaryTypeHintLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            mercenaryTypeHintLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -padding)
         ])
 
         // Submit Button
@@ -451,7 +552,7 @@ class MercenaryRequestViewController: UIViewController {
 
     private func presentPreviousRequestActionSheet(requests: [MercenaryRequest]) {
         let sheet = UIAlertController(title: "이전 글 불러오기", message: "불러올 게시글을 선택하세요.", preferredStyle: .actionSheet)
-        let recentRequests = Array(requests.prefix(8))
+        let recentRequests = Array(requests.prefix(5))
 
         for request in recentRequests {
             let teamName = request.team?.name ?? "내 팀"
@@ -473,7 +574,9 @@ class MercenaryRequestViewController: UIViewController {
         locationTextField.text = request.location
         feeTextField.text = "\(request.fee)"
         countTextField.text = "\(request.mercenaryCount)"
+        selectedTeamId = request.team?.id
         selectedTeamName = request.team?.name ?? "개인 모집"
+        teamNameValueLabel.text = selectedTeamName
 
         if let description = request.description, !description.isEmpty {
             descriptionTextView.text = description
@@ -491,6 +594,7 @@ class MercenaryRequestViewController: UIViewController {
 
         positionSelector.setSelectedPositions(request.positionsNeeded)
         skillSelector.setSelectedLevels(min: request.skillLevelMin, max: request.skillLevelMax)
+        mercenaryTypeControl.selectedSegmentIndex = (request.hasFormerPlayer ?? false) ? 1 : 0
 
         showAlert("안내", "이전 글을 불러왔습니다. 날짜/장소만 수정 후 등록하세요.")
     }
@@ -543,8 +647,6 @@ class MercenaryRequestViewController: UIViewController {
         submitButton.setTitle("등록 중...", for: .normal)
 
         let dateString = selectedDate?.toISO8601String() ?? ""
-        print("Submitting with date: \(dateString)")
-        print("Positions: \(positions)")
 
         // Call API to create mercenary request
         APIService.shared.createMercenaryRequest(
@@ -558,7 +660,9 @@ class MercenaryRequestViewController: UIViewController {
             positionsNeeded: positions,
             skillLevelMin: minLevel,
             skillLevelMax: maxLevel,
-            teamName: selectedTeamName
+            hasFormerPlayer: hasFormerPlayerRecruitment,
+            teamId: selectedTeamId,
+            teamName: selectedTeamId == nil ? selectedTeamName : nil
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.submitButton.isEnabled = true
@@ -571,7 +675,6 @@ class MercenaryRequestViewController: UIViewController {
                         self?.navigationController?.popViewController(animated: true)
                     }
                 case .failure(let error):
-                    print("API Error: \(error)")
                     self?.showAlert("오류", "용병 모집 등록에 실패했습니다: \(error.localizedDescription)")
                 }
             }
@@ -584,16 +687,61 @@ class MercenaryRequestViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func loadDefaultTeam() {
+        APIService.shared.getMyTeams { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let teams):
+                    if let firstTeam = teams.first {
+                        self?.selectedTeamId = firstTeam.id
+                        self?.selectedTeamName = firstTeam.name
+                        self?.teamNameValueLabel.text = firstTeam.name
+                        if self?.titleTextField.text?.isEmpty ?? true {
+                            self?.titleTextField.text = "[\(firstTeam.name)] 용병 모집"
+                        }
+                    } else {
+                        self?.selectedTeamId = nil
+                        self?.selectedTeamName = "개인 모집"
+                        self?.teamNameValueLabel.text = "개인 모집 (등록된 팀 없음)"
+                    }
+                case .failure:
+                    self?.selectedTeamId = nil
+                    self?.selectedTeamName = "개인 모집"
+                    self?.teamNameValueLabel.text = "개인 모집 (팀 조회 실패)"
+                }
+            }
+        }
+    }
+
     private func parseServerDate(_ dateString: String) -> Date? {
+        let isoWithFractional = ISO8601DateFormatter()
+        isoWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoWithFractional.date(from: dateString) {
+            return date
+        }
+
         let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
         if let date = isoFormatter.date(from: dateString) {
             return date
         }
 
-        let fallback = DateFormatter()
-        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        fallback.locale = Locale(identifier: "en_US_POSIX")
-        return fallback.date(from: dateString)
+        let fallbackFormats = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+            "yyyy-MM-dd'T'HH:mm:ssZ",
+            "yyyy-MM-dd'T'HH:mm:ss"
+        ]
+
+        for format in fallbackFormats {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+        }
+
+        return nil
     }
 
     private func formattedDisplayDate(_ date: Date) -> String {

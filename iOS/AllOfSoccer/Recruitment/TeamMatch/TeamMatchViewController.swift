@@ -213,6 +213,13 @@ extension TeamMatchViewController {
 // MARK: - TeamMatchCell
 class TeamMatchCell: UITableViewCell {
     static let identifier = "TeamMatchCell"
+    private static let regionRules: [(canonical: String, display: String, keywords: [String])] = [
+        ("서울북부", "서울 북부", ["노원", "도봉", "강북", "성북", "중랑", "동대문", "광진", "종로", "은평", "서대문", "마포"]),
+        ("서울남부", "서울 남부", ["강남", "서초", "송파", "강동", "강서", "양천", "영등포", "구로", "금천", "동작", "관악", "용산"]),
+        ("경기북부", "경기 북부", ["고양", "파주", "의정부", "양주", "동두천", "연천", "포천", "가평", "남양주", "구리"]),
+        ("경기남부", "경기 남부", ["성남", "수원", "용인", "화성", "평택", "안산", "안양", "과천", "군포", "의왕", "시흥", "광명", "오산", "이천", "안성", "하남", "광주"]),
+        ("인천부천", "인천/부천", ["인천", "부천", "송도", "계양", "부평", "남동", "연수", "미추홀"])
+    ]
 
     private let containerView = UIView()
     private let locationLabel = UILabel()
@@ -244,6 +251,8 @@ class TeamMatchCell: UITableViewCell {
 
         // Setup labels
         locationLabel.font = UIFont.boldSystemFont(ofSize: 16)
+        locationLabel.numberOfLines = 1
+        locationLabel.lineBreakMode = .byTruncatingTail
         locationLabel.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(locationLabel)
 
@@ -299,11 +308,77 @@ class TeamMatchCell: UITableViewCell {
     }
 
     func configure(with match: Match) {
-        locationLabel.text = match.location
+        locationLabel.text = formatLocationTitle(match)
         dateTimeLabel.text = formatDateTime(match.date)
         matchTypeLabel.text = match.matchType
         participantsLabel.text = "\(match.currentParticipants)/\(match.maxParticipants)명"
         feeLabel.text = "₩\(match.fee)"
+    }
+
+    private func formatLocationTitle(_ match: Match) -> String {
+        let rawLocation = match.location.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawAddress = match.address?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let region = resolveRegion(location: rawLocation, address: rawAddress)
+        let detailPlace: String
+        if isRegionOnly(rawLocation) {
+            if let rawAddress, !rawAddress.isEmpty {
+                detailPlace = condensedAddress(rawAddress)
+            } else {
+                detailPlace = "상세 장소 미정"
+            }
+        } else {
+            detailPlace = rawLocation.isEmpty ? (rawAddress ?? "장소 미정") : rawLocation
+        }
+
+        guard let region else { return detailPlace }
+        return "[\(region)] \(detailPlace)"
+    }
+
+    private func resolveRegion(location: String, address: String?) -> String? {
+        let haystack = [location, address ?? ""].joined(separator: " ")
+        let normalizedLocation = normalizeRegionText(location)
+
+        for rule in Self.regionRules {
+            if normalizedLocation == rule.canonical {
+                return rule.display
+            }
+
+            if normalizedLocation.hasPrefix(rule.canonical) {
+                return rule.display
+            }
+
+            if rule.keywords.contains(where: { haystack.contains($0) }) {
+                return rule.display
+            }
+        }
+        return nil
+    }
+
+    private func isRegionOnly(_ location: String) -> Bool {
+        let normalized = normalizeRegionText(location)
+        return Self.regionRules.contains(where: { $0.canonical == normalized })
+    }
+
+    private func normalizeRegionText(_ raw: String) -> String {
+        return raw
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "/", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func condensedAddress(_ rawAddress: String) -> String {
+        let address = rawAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        if address.count <= 22 { return address }
+
+        let parts = address.split(separator: " ").map(String.init)
+        if parts.count >= 3 {
+            return parts.suffix(3).joined(separator: " ")
+        }
+        if parts.count >= 2 {
+            return parts.suffix(2).joined(separator: " ")
+        }
+        return address
     }
 
     private func formatDateTime(_ dateString: String) -> String {

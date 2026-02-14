@@ -61,6 +61,8 @@ class SecondTeamRecruitmentViewController: UIViewController {
     
     // Bottom Button
     private let registerButton = UIButton(type: .system)
+    private var contactTopToAddButtonConstraint: NSLayoutConstraint?
+    private var contactTopToDirectInputConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -225,8 +227,8 @@ class SecondTeamRecruitmentViewController: UIViewController {
         contactTextField.translatesAutoresizingMaskIntoConstraints = false
         
         informationCheckButton.translatesAutoresizingMaskIntoConstraints = false
-        informationCheckButton.setImage(UIImage(systemName: "checkmark.circle"), for: .normal)
-        informationCheckButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
+        informationCheckButton.normalImage = UIImage(systemName: "checkmark.circle")
+        informationCheckButton.selectImage = UIImage(systemName: "checkmark.circle.fill")
         informationCheckButton.normalTintColor = UIColor(red: 0.803, green: 0.803, blue: 0.803, alpha: 1.0)
         informationCheckButton.selectTintColor = UIColor(red: 0.925, green: 0.372, blue: 0.372, alpha: 1.0)
         informationCheckButton.normalBackgroundColor = .clear
@@ -234,6 +236,7 @@ class SecondTeamRecruitmentViewController: UIViewController {
         informationCheckButton.normalBorderColor = .clear
         informationCheckButton.selectBorderColor = .clear
         informationCheckButton.borderWidth = 0
+        informationCheckButton.isSelected = false
         
         informationAgreementLabel.text = "연락처 공개 안내에 동의합니다."
         informationAgreementLabel.font = UIFont.systemFont(ofSize: 14)
@@ -373,7 +376,6 @@ class SecondTeamRecruitmentViewController: UIViewController {
         
         // Contact constraints
         NSLayoutConstraint.activate([
-            contactLabel.topAnchor.constraint(equalTo: addIntroductionButton.bottomAnchor, constant: 20),
             contactLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             
             contactView.topAnchor.constraint(equalTo: contactLabel.bottomAnchor, constant: 12),
@@ -399,6 +401,10 @@ class SecondTeamRecruitmentViewController: UIViewController {
             informationAgreementLabel.leadingAnchor.constraint(equalTo: informationCheckButton.trailingAnchor, constant: 8),
             informationAgreementLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16),
         ])
+        
+        contactTopToAddButtonConstraint = contactLabel.topAnchor.constraint(equalTo: addIntroductionButton.bottomAnchor, constant: 20)
+        contactTopToDirectInputConstraint = contactLabel.topAnchor.constraint(equalTo: directInputTextView.bottomAnchor, constant: 20)
+        contactTopToAddButtonConstraint?.isActive = true
         
         // Bottom button constraints
         NSLayoutConstraint.activate([
@@ -454,7 +460,11 @@ class SecondTeamRecruitmentViewController: UIViewController {
     private func toggleInputMode(isDirectInput: Bool) {
         isDirectInputMode = isDirectInput
         introductionTableView.isHidden = isDirectInput
+        addIntroductionButton.isHidden = isDirectInput
         directInputTextView.isHidden = !isDirectInput
+        
+        contactTopToAddButtonConstraint?.isActive = !isDirectInput
+        contactTopToDirectInputConstraint?.isActive = isDirectInput
         
         if isDirectInput {
             directInputTextView.becomeFirstResponder()
@@ -470,6 +480,8 @@ class SecondTeamRecruitmentViewController: UIViewController {
             directInputTextView.text = "소개글을 직접 입력해주세요"
             directInputTextView.textColor = .lightGray
         }
+        
+        view.layoutIfNeeded()
     }
 
     // MARK: - Actions

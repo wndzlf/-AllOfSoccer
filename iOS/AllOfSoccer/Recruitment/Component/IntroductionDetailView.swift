@@ -221,19 +221,25 @@ class IntroductionDetailView: UIView {
 
     @objc private func commentButtonTouchUp(_ sender: UIButton) {
         guard let tappedComment = Comment(rawValue: sender.tag) else { return }
-        let shouldSelect = !sender.isSelected
 
         // 직접입력은 단독 선택
         if tappedComment == .fifth {
-            let buttons = commentButtonStackView.arrangedSubviews.compactMap { $0 as? SeletableButton }
-            buttons.forEach { $0.isSelected = false }
-            sender.isSelected = shouldSelect
+            if selectedComments.contains(.fifth) {
+                selectedComments.removeAll { $0 == .fifth }
+            } else {
+                selectedComments = [.fifth]
+            }
             return
         }
 
-        // 일반 문구를 누르면 직접입력은 해제
-        fifthCommentButton.isSelected = false
-        sender.isSelected = shouldSelect
+        // 일반 문구를 누르면 직접입력은 항상 해제
+        selectedComments.removeAll { $0 == .fifth }
+
+        if let index = selectedComments.firstIndex(of: tappedComment) {
+            selectedComments.remove(at: index)
+        } else {
+            selectedComments.append(tappedComment)
+        }
     }
 
     @objc func cancelButtonDidSelected(sender: UIButton) {
@@ -241,8 +247,7 @@ class IntroductionDetailView: UIView {
     }
 
     @objc func OKButtonDidSelected(sender: UIButton) {
-        let buttons = self.commentButtonStackView.arrangedSubviews.compactMap { $0 as? UIButton }.filter { $0.isSelected }.compactMap { Comment(rawValue: $0.tag) }
-        self.commentsModel = buttons
+        self.commentsModel = selectedComments.sorted { $0.rawValue < $1.rawValue }
         self.delegate?.OKButtonDidSelected(self, self.commentsModel)
     }
 

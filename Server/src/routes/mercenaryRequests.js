@@ -30,6 +30,17 @@ const REGION_KEYWORDS = {
 
 const normalizeRegionKey = (rawLocation = '') => rawLocation.replace(/\s+/g, '').replace('/', '');
 
+const normalizeBoolean = (value) => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+  }
+  return Boolean(value);
+};
+
 const buildLocationWhere = (location) => {
   const normalized = normalizeRegionKey(location);
   const keywords = REGION_KEYWORDS[normalized];
@@ -235,6 +246,7 @@ if (process.env.NODE_ENV === 'development') {
           positions_needed: { MF: 1, FW: 1 },
           skill_level_min: 'beginner',
           skill_level_max: 'advanced',
+          has_former_player: false,
           match_type: '11v11',
           gender_type: 'male',
           shoes_requirement: 'soccer',
@@ -255,6 +267,7 @@ if (process.env.NODE_ENV === 'development') {
           positions_needed: { DF: 1, MF: 1, FW: 1 },
           skill_level_min: 'intermediate',
           skill_level_max: 'expert',
+          has_former_player: true,
           match_type: '6v6',
           gender_type: 'mixed',
           shoes_requirement: 'futsal',
@@ -275,6 +288,7 @@ if (process.env.NODE_ENV === 'development') {
           positions_needed: { GK: 1, DF: 1 },
           skill_level_min: 'beginner',
           skill_level_max: 'intermediate',
+          has_former_player: false,
           match_type: '11v11',
           gender_type: 'mixed',
           shoes_requirement: 'any',
@@ -329,6 +343,7 @@ router.post('/', auth, async (req, res) => {
       age_range_max,
       skill_level_min,
       skill_level_max,
+      has_former_player,
       team_id,
       team_name
     } = req.body;
@@ -392,6 +407,7 @@ router.post('/', auth, async (req, res) => {
       age_range_max,
       skill_level_min: skill_level_min || 'beginner',
       skill_level_max: skill_level_max || 'expert',
+      has_former_player: normalizeBoolean(has_former_player) ?? false,
       status: 'recruiting',
       current_applicants: 0
     });
@@ -547,12 +563,20 @@ router.put('/:id', validateId, auth, async (req, res) => {
       'latitude', 'longitude', 'fee', 'mercenary_count', 'positions_needed',
       'match_type', 'gender_type', 'shoes_requirement',
       'age_range_min', 'age_range_max', 'skill_level_min', 'skill_level_max',
+      'has_former_player',
       'status'
     ];
     const updateData = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
+        if (field === 'has_former_player') {
+          const normalized = normalizeBoolean(req.body[field]);
+          if (normalized !== undefined) {
+            updateData[field] = normalized;
+          }
+        } else {
+          updateData[field] = req.body[field];
+        }
       }
     }
     await request.update(updateData);

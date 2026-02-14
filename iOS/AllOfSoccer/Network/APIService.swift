@@ -12,9 +12,9 @@ struct APIService {
 
     static let shared = APIService()
 
-    // 로컬 개발 환경: 맥 IP 주소로 설정
-    // 프로덕션: 실제 서버 주소로 변경
-    private let baseURL = "http://172.30.1.76:3000"
+    // iOS 시뮬레이터 로컬 개발 환경
+    // 실제 기기 테스트 시에는 맥의 IP로 변경 필요
+    private let baseURL = "http://localhost:3000"
 
     // MARK: - Email Sign-In
     func emailSignIn(email: String, password: String, completion: @escaping (Result<AppleSignInResponse, Error>) -> Void) {
@@ -430,6 +430,96 @@ struct APIService {
         }.resume()
     }
 
+    // 내가 속한 팀 목록 조회
+    func getMyTeams(completion: @escaping (Result<[Team], Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/teams/my/teams") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let response = try JSONDecoder().decode(TeamListResponse.self, from: data)
+                    completion(.success(response.data))
+                } catch {
+                    print("내 팀 목록 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    // 팀 생성
+    func createTeam(
+        name: String,
+        introduction: String?,
+        completion: @escaping (Result<Team, Error>) -> Void
+    ) {
+        guard let url = URL(string: "\(baseURL)/api/teams") else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = Auth.accessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body: [String: Any] = [
+            "name": name
+        ]
+        if let introduction = introduction, !introduction.isEmpty {
+            body["introduction"] = introduction
+        }
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(TeamResponse.self, from: data)
+                    if let team = response.data {
+                        completion(.success(team))
+                    } else {
+                        completion(.failure(NetworkError.noData))
+                    }
+                } catch {
+                    print("팀 생성 파싱 에러: \(error)")
+                    print("받은 데이터: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
     // 매칭 목록 가져오기
     func getMatches(
         page: Int? = nil,
@@ -687,6 +777,8 @@ extension APIService {
         positionsNeeded: [String: Int],
         skillLevelMin: String?,
         skillLevelMax: String?,
+        hasFormerPlayer: Bool,
+        teamId: String?,
         teamName: String?,
         completion: @escaping (Result<MercenaryRequestResponse, Error>) -> Void
     ) {
@@ -715,6 +807,8 @@ extension APIService {
         if let address = address { body["address"] = address }
         if let skillLevelMin = skillLevelMin { body["skill_level_min"] = skillLevelMin }
         if let skillLevelMax = skillLevelMax { body["skill_level_max"] = skillLevelMax }
+        body["has_former_player"] = hasFormerPlayer
+        if let teamId = teamId { body["team_id"] = teamId }
         if let teamName = teamName { body["team_name"] = teamName }
 
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)

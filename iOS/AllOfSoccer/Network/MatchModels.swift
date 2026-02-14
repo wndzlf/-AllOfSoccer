@@ -93,6 +93,18 @@ struct ProfileResponse: Codable {
     let message: String?
 }
 
+struct TeamListResponse: Codable {
+    let success: Bool
+    let data: [Team]
+    let message: String?
+}
+
+struct TeamResponse: Codable {
+    let success: Bool
+    let data: Team?
+    let message: String?
+}
+
 // MARK: - User Profile Detail (from /api/users/profile/me)
 struct UserProfileDetail: Codable {
     let id: Int?
@@ -667,6 +679,7 @@ struct MercenaryRequest: Codable, Identifiable {
     let positionsNeeded: [String: Int]
     let skillLevelMin: String?
     let skillLevelMax: String?
+    let hasFormerPlayer: Bool?
     let currentApplicants: Int
     let status: String
     let matchType: String?
@@ -684,6 +697,7 @@ struct MercenaryRequest: Codable, Identifiable {
         case positionsNeeded = "positions_needed"
         case skillLevelMin = "skill_level_min"
         case skillLevelMax = "skill_level_max"
+        case hasFormerPlayer = "has_former_player"
         case currentApplicants = "current_applicants"
         case matchType = "match_type"
         case genderType = "gender_type"

@@ -71,6 +71,19 @@ class GameMatchingViewModel {
     private var currentGameTypeFilters: [String] = []
     private var currentStatusFilters: [String] = []
     private var isFilterApplied: Bool = false // 필터가 적용되었는지 여부
+    private let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter
+    }()
+    private static let regionRules: [(canonical: String, display: String, keywords: [String])] = [
+        ("서울북부", "서울 북부", ["노원", "도봉", "강북", "성북", "중랑", "동대문", "광진", "종로", "은평", "서대문", "마포"]),
+        ("서울남부", "서울 남부", ["강남", "서초", "송파", "강동", "강서", "양천", "영등포", "구로", "금천", "동작", "관악", "용산"]),
+        ("경기북부", "경기 북부", ["고양", "파주", "의정부", "양주", "동두천", "연천", "포천", "가평", "남양주", "구리"]),
+        ("경기남부", "경기 남부", ["성남", "수원", "용인", "화성", "평택", "안산", "안양", "과천", "군포", "의왕", "시흥", "광명", "오산", "이천", "안성", "하남", "광주"]),
+        ("인천부천", "인천/부천", ["인천", "부천", "송도", "계양", "부평", "남동", "연수", "미추홀"])
+    ]
 
     internal var count: Int {
         // 필터가 적용되었으면 필터링된 데이터 개수 반환 (0개일 수도 있음)
@@ -187,22 +200,121 @@ class GameMatchingViewModel {
         timeFormatter.timeZone = TimeZone.current
         let time = timeFormatter.string(from: date)
 
-        let description = "\(match.matchType) 실력 하하 구장비 \(match.fee)원"
+        let locationTitle = formatLocationTitle(location: match.location, address: match.address)
+        let matchTypeTag = formatMatchType(match.matchType)
+        let skillTag = "실력 \(formatCompactSkill(min: match.skillLevelMin, max: match.skillLevelMax))"
+        let feeTag = "구장비 \(formattedFee(match.fee))원"
+        let description = "\(matchTypeTag) \(skillTag) \(feeTag)"
         let statuses = createStatusTypes(from: match)
 
         return GameMatchListViewModel(
             id: match.id,
             date: displayDate,
             time: time,
-            address: match.location,
+            address: locationTitle,
             description: description,
             isFavorite: false,
             isRecruiting: match.status == "recruiting",
             teamName: match.team?.name ?? "알 수 없음",
             primaryStatus: statuses.primary,
             secondaryStatus: statuses.secondary,
-            hasFormerPlayer: match.hasFormerPlayer
+            hasFormerPlayer: match.hasFormerPlayer,
+            matchTypeTag: matchTypeTag,
+            skillTag: skillTag,
+            feeTag: feeTag
         )
+    }
+
+    private func formatLocationTitle(location: String, address: String?) -> String {
+        let rawLocation = location.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawAddress = address?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let region = resolveRegion(location: rawLocation, address: rawAddress)
+
+        let detail: String
+        if isRegionOnly(rawLocation) {
+            if let rawAddress, !rawAddress.isEmpty {
+                detail = condensedAddress(rawAddress)
+            } else {
+                detail = "상세 장소 미정"
+            }
+        } else {
+            detail = rawLocation.isEmpty ? (rawAddress ?? "장소 미정") : rawLocation
+        }
+
+        guard let region else { return detail }
+        return "[\(region)] \(detail)"
+    }
+
+    private func resolveRegion(location: String, address: String?) -> String? {
+        let normalizedLocation = normalizeRegionText(location)
+        let haystack = [location, address ?? ""].joined(separator: " ")
+
+        for rule in Self.regionRules {
+            if normalizedLocation == rule.canonical || normalizedLocation.hasPrefix(rule.canonical) {
+                return rule.display
+            }
+            if rule.keywords.contains(where: { haystack.contains($0) }) {
+                return rule.display
+            }
+        }
+        return nil
+    }
+
+    private func isRegionOnly(_ location: String) -> Bool {
+        let normalized = normalizeRegionText(location)
+        return Self.regionRules.contains(where: { $0.canonical == normalized })
+    }
+
+    private func normalizeRegionText(_ raw: String) -> String {
+        return raw
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "/", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func condensedAddress(_ rawAddress: String) -> String {
+        let address = rawAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        if address.count <= 22 { return address }
+
+        let parts = address.split(separator: " ").map(String.init)
+        if parts.count >= 3 { return parts.suffix(3).joined(separator: " ") }
+        if parts.count >= 2 { return parts.suffix(2).joined(separator: " ") }
+        return address
+    }
+
+    private func formatMatchType(_ raw: String) -> String {
+        let normalized = raw.replacingOccurrences(of: " ", with: "").lowercased()
+        if normalized.contains("6v6") || normalized.contains("풋살") {
+            return "풋살"
+        }
+        if normalized.contains("11v11") || normalized.contains("11vs11") {
+            return "11 vs 11"
+        }
+        return raw
+    }
+
+    private func formatCompactSkill(min: String?, max: String?) -> String {
+        let minCode = compactSkillCode(min) ?? "하"
+        let maxCode = compactSkillCode(max) ?? minCode
+        return "\(minCode)\(maxCode)"
+    }
+
+    private func compactSkillCode(_ raw: String?) -> String? {
+        guard let raw else { return nil }
+        switch raw.lowercased() {
+        case "beginner": return "하"
+        case "intermediate": return "중"
+        case "advanced": return "상"
+        case "expert": return "최"
+        case "national": return "선"
+        case "worldclass": return "월"
+        case "legend": return "전"
+        default: return raw.isEmpty ? nil : String(raw.prefix(1))
+        }
+    }
+
+    private func formattedFee(_ fee: Int) -> String {
+        return numberFormatter.string(from: NSNumber(value: fee)) ?? "\(fee)"
     }
 
     private func fetchMatchingList() async throws {
@@ -982,7 +1094,10 @@ class GameMatchingViewModel {
                 teamName: oldModel.teamName,
                 primaryStatus: oldModel.primaryStatus,
                 secondaryStatus: oldModel.secondaryStatus,
-                hasFormerPlayer: oldModel.hasFormerPlayer
+                hasFormerPlayer: oldModel.hasFormerPlayer,
+                matchTypeTag: oldModel.matchTypeTag,
+                skillTag: oldModel.skillTag,
+                feeTag: oldModel.feeTag
             )
             self.matchingListViewModel[index] = newModel
         }
@@ -1002,7 +1117,10 @@ class GameMatchingViewModel {
                     teamName: oldModel.teamName,
                     primaryStatus: oldModel.primaryStatus,
                     secondaryStatus: oldModel.secondaryStatus,
-                    hasFormerPlayer: oldModel.hasFormerPlayer
+                    hasFormerPlayer: oldModel.hasFormerPlayer,
+                    matchTypeTag: oldModel.matchTypeTag,
+                    skillTag: oldModel.skillTag,
+                    feeTag: oldModel.feeTag
                 )
                 self.filteredViewModel[index] = newModel
             }

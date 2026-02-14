@@ -10,6 +10,7 @@ import UIKit
 class MyWritingViewController: UIViewController {
     // MARK: - Properties
     private let viewModel = MyWritingViewModel()
+    private let mercenaryCellViewModel = MercenaryMatchViewModel()
     private var observerTokens: [NSObjectProtocol] = []
     private let teamMatchTableView = UITableView()
     private let mercenaryTableView = UITableView()
@@ -211,7 +212,8 @@ extension MyWritingViewController: UITableViewDelegate, UITableViewDataSource {
                 return UITableViewCell()
             }
             let request = viewModel.myMercenaryRequests[indexPath.row]
-            cell.configureWithRequest(request, viewModel: MercenaryMatchViewModel())
+            cell.configureWithRequest(request, viewModel: mercenaryCellViewModel)
+            cell.selectionStyle = .none
             return cell
         }
     }
@@ -229,11 +231,16 @@ extension MyWritingViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let rowsBeforeRefresh = tableView.tag == 0 ? viewModel.myMatches.count - 5 : viewModel.myMercenaryRequests.count - 5
+        let rowCount = tableView.tag == 0 ? viewModel.myMatches.count : viewModel.myMercenaryRequests.count
+        guard rowCount > 0 else { return }
+
+        let rowsBeforeRefresh = max(rowCount - 5, 0)
         if indexPath.row == rowsBeforeRefresh {
             if tableView.tag == 0 {
+                guard viewModel.hasMoreMatchPages && !viewModel.isLoading else { return }
                 viewModel.loadNextPageOfMatches()
             } else {
+                guard viewModel.hasMoreMercenaryPages && !viewModel.isLoading else { return }
                 viewModel.loadNextPageOfMercenaryRequests()
             }
         }
@@ -256,80 +263,121 @@ class MyWritingViewModel {
     @Published var myMatches: [Match] = []
     @Published var myMercenaryRequests: [MercenaryRequest] = []
     @Published var isLoading = false
+    @Published var hasMoreMatchPages = true
+    @Published var hasMoreMercenaryPages = true
 
+    private var isMatchLoading = false
+    private var isMercenaryLoading = false
     private var currentMatchPage = 1
     private var currentMercenaryPage = 1
     private let pageSize = 20
 
     func fetchMyMatches() {
-        isLoading = true
-        NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelLoadingChanged"), object: nil)
+        guard !isMatchLoading else { return }
+        setMatchLoading(true)
 
         APIService.shared.getMyMatches(page: 1, limit: pageSize) { [weak self] result in
             DispatchQueue.main.async {
-                self?.isLoading = false
-                NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelLoadingChanged"), object: nil)
+                self?.setMatchLoading(false)
 
                 switch result {
                 case .success(let response):
+                    let pageSize = self?.pageSize ?? 20
                     self?.myMatches = response.data
                     self?.currentMatchPage = 1
+                    self?.hasMoreMatchPages = response.data.count >= pageSize
                     NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
 
-                case .failure(let error):
-                    print("내 팀 매칭 로드 실패: \(error.localizedDescription)")
+                case .failure:
+                    break
                 }
             }
         }
     }
 
     func fetchMyMercenaryRequests() {
-        isLoading = true
-        NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelLoadingChanged"), object: nil)
+        guard !isMercenaryLoading else { return }
+        setMercenaryLoading(true)
 
         APIService.shared.getMyMercenaryRequests(page: 1, limit: pageSize) { [weak self] result in
             DispatchQueue.main.async {
-                self?.isLoading = false
-                NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelLoadingChanged"), object: nil)
+                self?.setMercenaryLoading(false)
 
                 switch result {
                 case .success(let response):
+                    let pageSize = self?.pageSize ?? 20
                     self?.myMercenaryRequests = response.data
                     self?.currentMercenaryPage = 1
+                    self?.hasMoreMercenaryPages = response.data.count >= pageSize
                     NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
 
-                case .failure(let error):
-                    print("내 용병 모집 로드 실패: \(error.localizedDescription)")
+                case .failure:
+                    break
                 }
             }
         }
     }
 
     func loadNextPageOfMatches() {
-        APIService.shared.getMyMatches(page: currentMatchPage + 1, limit: pageSize) { [weak self] result in
-            switch result {
-            case .success(let response):
-                self?.myMatches.append(contentsOf: response.data)
-                self?.currentMatchPage += 1
-                NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
+        guard !isMatchLoading && hasMoreMatchPages else { return }
+        setMatchLoading(true)
 
-            case .failure(let error):
-                print("팀 매칭 다음 페이지 로드 실패: \(error.localizedDescription)")
+        APIService.shared.getMyMatches(page: currentMatchPage + 1, limit: pageSize) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.setMatchLoading(false)
+
+                switch result {
+                case .success(let response):
+                    let pageSize = self?.pageSize ?? 20
+                    self?.myMatches.append(contentsOf: response.data)
+                    self?.currentMatchPage += 1
+                    self?.hasMoreMatchPages = response.data.count >= pageSize
+                    NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
+
+                case .failure:
+                    break
+                }
             }
         }
     }
 
     func loadNextPageOfMercenaryRequests() {
-        APIService.shared.getMyMercenaryRequests(page: currentMercenaryPage + 1, limit: pageSize) { [weak self] result in
-            switch result {
-            case .success(let response):
-                self?.myMercenaryRequests.append(contentsOf: response.data)
-                self?.currentMercenaryPage += 1
-                NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
+        guard !isMercenaryLoading && hasMoreMercenaryPages else { return }
+        setMercenaryLoading(true)
 
-            case .failure(let error):
-                print("용병 모집 다음 페이지 로드 실패: \(error.localizedDescription)")
+        APIService.shared.getMyMercenaryRequests(page: currentMercenaryPage + 1, limit: pageSize) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.setMercenaryLoading(false)
+
+                switch result {
+                case .success(let response):
+                    let pageSize = self?.pageSize ?? 20
+                    self?.myMercenaryRequests.append(contentsOf: response.data)
+                    self?.currentMercenaryPage += 1
+                    self?.hasMoreMercenaryPages = response.data.count >= pageSize
+                    NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelDataChanged"), object: nil)
+
+                case .failure:
+                    break
+                }
             }
         }
+    }
+
+    private func setMatchLoading(_ loading: Bool) {
+        isMatchLoading = loading
+        updateGlobalLoading()
+    }
+
+    private func setMercenaryLoading(_ loading: Bool) {
+        isMercenaryLoading = loading
+        updateGlobalLoading()
+    }
+
+    private func updateGlobalLoading() {
+        let next = isMatchLoading || isMercenaryLoading
+        guard isLoading != next else { return }
+        isLoading = next
+        NotificationCenter.default.post(name: NSNotification.Name("MyWritingViewModelLoadingChanged"), object: nil)
     }
 }

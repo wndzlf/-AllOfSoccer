@@ -101,6 +101,7 @@ class MercenaryMatchViewController: UIViewController {
     // MARK: - Filter Data
     private var tagCellModel: [FilterTagModel] = []
     private var didSelectedFilterList: [String: FilterType] = [:]
+    private var isShowingRateLimitAlert = false
 
     var horizontalCalendarViewModel = HorizonralCalendarViewModel()
 
@@ -327,14 +328,21 @@ class MercenaryMatchViewController: UIViewController {
 
     // MARK: - Data Fetching
     private func fetchData() {
+        let filters = currentRequestFilters()
+
         if !self.didSelectedFilterList.isEmpty {
-            self.applyFilters()
+            applyFilters()
         } else {
-            // 필터가 없으면 전체 데이터 로드
             viewModel.fetchMercenaryRequests(
-                page: 1
+                page: 1,
+                location: filters.location,
+                position: filters.position,
+                skillLevel: filters.skillLevel,
+                matchType: filters.matchType,
+                status: filters.status
             ) { [weak self] success in
                 self?.tableView.reloadData()
+                self?.presentRateLimitAlertIfNeeded(success: success)
             }
         }
     }
@@ -497,12 +505,27 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
 
     // MARK: - Filter Application
     private func applyFilters() {
-        // 필터 분류
+        let filters = currentRequestFilters()
+
+        viewModel.fetchMercenaryRequests(
+            page: 1,
+            location: filters.location,
+            position: filters.position,
+            skillLevel: filters.skillLevel,
+            matchType: filters.matchType,
+            status: filters.status
+        ) { [weak self] success in
+            self?.tableView.reloadData()
+            self?.presentRateLimitAlertIfNeeded(success: success)
+        }
+    }
+
+    private func currentRequestFilters() -> MercenaryMatchViewModel.RequestFilters {
         var locationFilters: [String] = []
         var gameTypeFilters: [String] = []
         var statusFilters: [String] = []
 
-        for (filterKey, filterType) in self.didSelectedFilterList {
+        for (filterKey, filterType) in didSelectedFilterList {
             switch filterType {
             case .location:
                 locationFilters.append(filterKey)
@@ -513,21 +536,31 @@ extension MercenaryMatchViewController: UICollectionViewDelegate, UICollectionVi
             }
         }
 
-        // API 호출 (필터 파라미터 전달)
-        let location = locationFilters.first
-        let matchType = normalizeMatchTypeFilter(gameTypeFilters.first)
-        let status = normalizeStatusFilter(statusFilters.first)
-
-        viewModel.fetchMercenaryRequests(
-            page: 1,
-            location: location,
+        return MercenaryMatchViewModel.RequestFilters(
+            location: locationFilters.first,
             position: nil,
             skillLevel: nil,
-            matchType: matchType,
-            status: status
-        ) { [weak self] success in
-            self?.tableView.reloadData()
-        }
+            matchType: normalizeMatchTypeFilter(gameTypeFilters.first),
+            status: normalizeStatusFilter(statusFilters.first)
+        )
+    }
+
+    private func presentRateLimitAlertIfNeeded(success: Bool) {
+        guard !success else { return }
+        guard let errorMessage = viewModel.errorMessage else { return }
+        guard errorMessage.contains("429") || errorMessage.lowercased().contains("too many requests") else { return }
+        guard !isShowingRateLimitAlert, presentedViewController == nil else { return }
+        isShowingRateLimitAlert = true
+
+        let alert = UIAlertController(
+            title: "요청이 많습니다",
+            message: "목록을 빠르게 불러오는 중이라 잠시 제한되었습니다. 잠시 후 다시 시도해주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: { [weak self] _ in
+            self?.isShowingRateLimitAlert = false
+        }))
+        present(alert, animated: true)
     }
 }
 
@@ -640,33 +673,20 @@ extension MercenaryMatchViewController: UITableViewDelegate, UITableViewDataSour
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let requestCount = viewModel.getRequestCount()
-        if indexPath.row == requestCount - 1 {
-            // 필터 분류
-            var locationFilters: [String] = []
-            var gameTypeFilters: [String] = []
-            var statusFilters: [String] = []
+        guard requestCount > 0 else { return }
+        let rowsBeforeRefresh = max(requestCount - 5, 0)
 
-            for (filterKey, filterType) in self.didSelectedFilterList {
-                switch filterType {
-                case .location:
-                    locationFilters.append(filterKey)
-                case .game:
-                    gameTypeFilters.append(filterKey)
-                case .status:
-                    statusFilters.append(filterKey)
-                }
-            }
-
-            let location = locationFilters.first
-            let matchType = normalizeMatchTypeFilter(gameTypeFilters.first)
-            let status = normalizeStatusFilter(statusFilters.first)
-
+        if indexPath.row == rowsBeforeRefresh && viewModel.hasMoreRequestPages && !viewModel.isLoading {
+            let filters = currentRequestFilters()
             viewModel.loadNextPageOfRequests(
-                location: location,
-                matchType: matchType,
-                status: status
-            ) { [weak self] _ in
+                location: filters.location,
+                position: filters.position,
+                skillLevel: filters.skillLevel,
+                matchType: filters.matchType,
+                status: filters.status
+            ) { [weak self] success in
                 self?.tableView.reloadData()
+                self?.presentRateLimitAlertIfNeeded(success: success)
             }
         }
     }

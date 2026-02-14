@@ -172,6 +172,23 @@ class MercenaryDetailViewController: UIViewController {
         return label
     }()
 
+    private let mercenaryTypeTitleLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "용병 유형"
+        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        label.textColor = .black
+        return label
+    }()
+
+    private let mercenaryTypeValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 13)
+        label.textColor = .gray
+        return label
+    }()
+
     private let shoesRequirementTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -336,6 +353,8 @@ class MercenaryDetailViewController: UIViewController {
         detailsContainer.addSubview(positionsValueLabel)
         detailsContainer.addSubview(skillLevelTitleLabel)
         detailsContainer.addSubview(skillLevelValueLabel)
+        detailsContainer.addSubview(mercenaryTypeTitleLabel)
+        detailsContainer.addSubview(mercenaryTypeValueLabel)
         detailsContainer.addSubview(shoesRequirementTitleLabel)
         detailsContainer.addSubview(shoesRequirementValueLabel)
         detailsContainer.addSubview(participantsTitleLabel)
@@ -434,7 +453,13 @@ class MercenaryDetailViewController: UIViewController {
             skillLevelValueLabel.topAnchor.constraint(equalTo: skillLevelTitleLabel.bottomAnchor, constant: 6),
             skillLevelValueLabel.leadingAnchor.constraint(equalTo: detailsContainer.leadingAnchor, constant: 16),
 
-            shoesRequirementTitleLabel.topAnchor.constraint(equalTo: skillLevelValueLabel.bottomAnchor, constant: 16),
+            mercenaryTypeTitleLabel.topAnchor.constraint(equalTo: skillLevelValueLabel.bottomAnchor, constant: 16),
+            mercenaryTypeTitleLabel.leadingAnchor.constraint(equalTo: detailsContainer.leadingAnchor, constant: 16),
+
+            mercenaryTypeValueLabel.topAnchor.constraint(equalTo: mercenaryTypeTitleLabel.bottomAnchor, constant: 6),
+            mercenaryTypeValueLabel.leadingAnchor.constraint(equalTo: detailsContainer.leadingAnchor, constant: 16),
+
+            shoesRequirementTitleLabel.topAnchor.constraint(equalTo: mercenaryTypeValueLabel.bottomAnchor, constant: 16),
             shoesRequirementTitleLabel.leadingAnchor.constraint(equalTo: detailsContainer.leadingAnchor, constant: 16),
 
             shoesRequirementValueLabel.topAnchor.constraint(equalTo: shoesRequirementTitleLabel.bottomAnchor, constant: 6),
@@ -554,17 +579,18 @@ class MercenaryDetailViewController: UIViewController {
         updateStatusBadge(request)
 
         // Match info
-        locationLabel.text = "📍 위치: \(request.location)"
+        locationLabel.text = "📍 위치: \(formatLocationTitle(location: request.location, address: request.address))"
         dateLabel.text = "🕐 날짜: \(formatDate(request.date))"
-        matchTypeLabel.text = request.matchType ?? "11v11"
+        matchTypeLabel.text = formatMatchType(request.matchType)
         genderTypeLabel.text = formatGenderType(request.genderType)
-        feeLabel.text = "₩\(request.fee)"
+        feeLabel.text = formattedPrice(request.fee)
 
         // Details
         let positionsText = formatPositions(request.positionsNeeded)
         positionsValueLabel.text = positionsText.isEmpty ? "-" : positionsText
 
         skillLevelValueLabel.text = formatSkillLevel(request.skillLevelMin, request.skillLevelMax)
+        mercenaryTypeValueLabel.text = formatFormerPlayerType(request.hasFormerPlayer)
 
         shoesRequirementValueLabel.text = formatShoesRequirement(request.shoesRequirement)
 
@@ -604,11 +630,11 @@ class MercenaryDetailViewController: UIViewController {
     }
 
     private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: dateString) {
+        if let date = parseDate(dateString) {
             let displayFormatter = DateFormatter()
-            displayFormatter.dateFormat = "MM월 dd일 HH:mm"
+            displayFormatter.dateFormat = "M월 d일(E) a h:mm"
             displayFormatter.locale = Locale(identifier: "ko_KR")
+            displayFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
             return displayFormatter.string(from: date)
         }
         return dateString
@@ -618,15 +644,50 @@ class MercenaryDetailViewController: UIViewController {
         return positions.map { "\($0.key)(\($0.value)명)" }.joined(separator: ", ")
     }
 
+    private func formatLocationTitle(location: String, address: String?) -> String {
+        let regionRules: [(display: String, keywords: [String])] = [
+            ("서울 북부", ["노원", "도봉", "강북", "성북", "중랑", "동대문", "광진", "종로", "은평", "서대문", "마포"]),
+            ("서울 남부", ["강남", "서초", "송파", "강동", "강서", "양천", "영등포", "구로", "금천", "동작", "관악", "용산"]),
+            ("경기 북부", ["고양", "파주", "의정부", "양주", "동두천", "연천", "포천", "가평", "남양주", "구리"]),
+            ("경기 남부", ["성남", "수원", "용인", "화성", "평택", "안산", "안양", "과천", "군포", "의왕", "시흥", "광명", "오산", "이천", "안성", "하남", "광주"]),
+            ("인천/부천", ["인천", "부천", "송도", "계양", "부평", "남동", "연수", "미추홀"])
+        ]
+
+        let source = "\(location) \(address ?? "")"
+        if let region = regionRules.first(where: { rule in
+            rule.keywords.contains(where: { source.contains($0) })
+        })?.display {
+            return "[\(region)] \(location)"
+        }
+        return location
+    }
+
     private func formatSkillLevel(_ min: String?, _ max: String?) -> String {
-        if let min = min, let max = max {
-            return "\(min) ~ \(max)"
-        } else if let min = min {
-            return min
-        } else if let max = max {
-            return max
+        let localizedMin = localizeSkill(min)
+        let localizedMax = localizeSkill(max)
+
+        if let localizedMin, let localizedMax {
+            return localizedMin == localizedMax ? localizedMin : "\(localizedMin) ~ \(localizedMax)"
+        } else if let localizedMin {
+            return localizedMin
+        } else if let localizedMax {
+            return localizedMax
         }
         return "상관없음"
+    }
+
+    private func formatFormerPlayerType(_ hasFormerPlayer: Bool?) -> String {
+        guard let hasFormerPlayer else { return "유형 무관" }
+        return hasFormerPlayer ? "선출 포함" : "비선출 우선"
+    }
+
+    private func formatMatchType(_ matchType: String?) -> String {
+        switch matchType {
+        case "6v6": return "풋살"
+        case "11v11": return "11 vs 11"
+        case .none: return "11 vs 11"
+        default: return matchType ?? "11 vs 11"
+        }
     }
 
     private func formatGenderType(_ genderType: String?) -> String {
@@ -645,6 +706,58 @@ class MercenaryDetailViewController: UIViewController {
         case "any": return "상관없음"
         default: return "상관없음"
         }
+    }
+
+    private func localizeSkill(_ rawSkill: String?) -> String? {
+        guard let rawSkill else { return nil }
+        switch rawSkill.lowercased() {
+        case "beginner": return "초급"
+        case "intermediate": return "중급"
+        case "advanced": return "상급"
+        case "expert": return "최상"
+        default: return rawSkill
+        }
+    }
+
+    private func formattedPrice(_ price: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "ko_KR")
+        let value = formatter.string(from: NSNumber(value: price)) ?? "\(price)"
+        return "\(value)원"
+    }
+
+    private func parseDate(_ dateString: String) -> Date? {
+        let isoWithFractional = ISO8601DateFormatter()
+        isoWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoWithFractional.date(from: dateString) {
+            return date
+        }
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
+        if let date = isoFormatter.date(from: dateString) {
+            return date
+        }
+
+        let fallbackFormats = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+            "yyyy-MM-dd'T'HH:mm:ssZ",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm"
+        ]
+
+        for format in fallbackFormats {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+            formatter.dateFormat = format
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+        }
+        return nil
     }
 
     // MARK: - Actions

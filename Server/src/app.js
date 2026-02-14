@@ -43,9 +43,10 @@ const io = new Server(server, {
 });
 
 // Rate limiting
+const isProduction = process.env.NODE_ENV === 'production';
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || (isProduction ? 100 : 1000),
   message: 'Too many requests from this IP, please try again later.'
 });
 

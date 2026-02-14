@@ -72,6 +72,11 @@ const MercenaryRequest = sequelize.define('MercenaryRequest', {
     allowNull: true,
     defaultValue: 'expert'
   },
+  has_former_player: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+    defaultValue: false
+  },
   current_applicants: {
     type: DataTypes.INTEGER,
     allowNull: false,
